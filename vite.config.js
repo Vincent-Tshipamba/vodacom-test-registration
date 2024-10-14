@@ -11,4 +11,9 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    // server: {
+    //     host: '192.168.43.247', // Permet l'accès depuis d'autres appareils
+    //     port: 3000,      // Port sur lequel Vite écoutera
+    //     strictPort: true, // Échoue si le port est déjà utilisé
+    // },
 });

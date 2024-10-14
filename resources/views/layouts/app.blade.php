@@ -36,6 +36,7 @@
     </footer>
 
     <script src="{{ Vite::asset('node_modules/jquery/dist/jquery.min.js') }}"></script>
+    <script src="{{ Vite::asset('node_modules/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
     <script src="{{ Vite::asset('node_modules/flowbite/dist/flowbite.min.js') }}"></script>
     <script src="{{ Vite::asset('node_modules/jquery-validation/dist/jquery.validate.js') }}"></script>
     @yield('script')

@@ -8,3 +8,7 @@ Alpine.start();
 
 import 'preline';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
+
+import $ from 'jquery';
+window.$ = window.jQuery = $;
+

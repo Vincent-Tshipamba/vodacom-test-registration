@@ -18,7 +18,7 @@
 </head>
 
 <body class="font-sans antialiased">
-    @include('layouts.navigation')
+    @include('admin.layouts.navigation')
     <div class="min-h-screen bg-gray-200 dark:bg-gray-700 mt-20 p-6">
         <!-- Page Content -->
         @yield('content')
@@ -38,6 +38,7 @@
 
     <script src="{{ Vite::asset('node_modules/jquery/dist/jquery.min.js') }}"></script>
     <script src="{{ Vite::asset('node_modules/flowbite/dist/flowbite.min.js') }}"></script>
+    <script src="{{ Vite::asset('node_modules/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
     <script src="{{ Vite::asset('node_modules/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
     @yield('script')
 </body>
