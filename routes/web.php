@@ -9,12 +9,16 @@ Route::get('/', function () {
     return response()
         ->view('index')
         ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-});
-// ->middleware('checkSubmission');
+})->middleware('checkSubmission');
 
 Route::get('success', function () {
     return view('success');
 })->name('success');
+
+// Route::post('/check-code-exetat', [CandidatController::class, 'checkCodeExetat'])->name('check.code.exetat');
+Route::post('/check-code-exetat', function(){
+    return response()->json('Vu', 200);
+})->name('check.code.exetat');
 
 Route::resource('candidats', CandidatController::class);
 Route::get('candidats-search', [CandidatController::class, 'search'])->name('candidats.search');
