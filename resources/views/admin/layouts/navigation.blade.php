@@ -17,10 +17,10 @@
                         fill-rule="evenodd" clip-rule="evenodd"></path>
                 </svg>
             </button>
-            <!-- <a href="{{ route('logout') }}" class="hover:text-blue-500">
+            <a href="{{ route('logout') }}" onclick="event.preventDefault();this.closest('form').submit();" class="hover:text-blue-500">
                 Se deconnecter
-            </a> -->
+            </a>
         </div>
-        
+
     </div>
 </nav>

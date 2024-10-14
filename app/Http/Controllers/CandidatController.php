@@ -6,8 +6,10 @@ use App\Models\Candidat;
 use Illuminate\Support\Str;
 use App\Imports\CodesImport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use Illuminate\Validation\Rule;
 
 class CandidatController extends Controller
 {
@@ -23,19 +25,19 @@ class CandidatController extends Controller
 
     public function checkCodeExetat(Request $request)
     {
-        dd('ghghkjl');
         // Lire le fichier Excel
-        $filePath = storage_path('codes/codes_exetat.xls'); // Le chemin du fichier Excel
+        $filePath = storage_path('codes/codes_exetat.xls');
         $spreadsheet = IOFactory::load($filePath);
         $sheet = $spreadsheet->getActiveSheet();
-        
+
         $codesList = [];
-    
+
         foreach ($sheet->getRowIterator() as $row) {
-            $cell = $sheet->getCell('B' . $row->getRowIndex()); // Remplace 'A' par la bonne lettre si nécessaire
+            $cell = $sheet->getCell('B' . $row->getRowIndex());
+            dd($cell->getValue());
             $codesList[] = $cell->getValue();
         }
-    
+
         // Vérifier si le code d'exetat soumis est dans la liste
         $codeExetat = $request->input('code_exetat');
         if (in_array($codeExetat, $codesList)) {
@@ -67,87 +69,95 @@ class CandidatController extends Controller
     public function store(Request $request)
     {
         try {
-            // Vérifier si le code d'exetat existe déjà
-            $existingCandidat = Candidat::where('code_exetat', $request->code_exetat)->first();
-            if ($existingCandidat) {
-                throw new \Exception('Désolé, nous ne pouvons pas accepter cet enregistrement car ce code d\'exetat a déjà été utilisé.');
-            }
-
-            // Valider les données du formulaire
+            // Valider les données du formulaire avec des messages d'erreur personnalisés
             $request->validate([
                 'name' => 'required|string|max:255',
                 'phone' => 'required|string|max:20',
-                'code_exetat' => 'required|digits:14',
-                'identity' => 'required|max:20480',
-                'certificate' => 'required|max:20480',
-                'photo' => 'required|max:20480',
+                'code_exetat' => 'required|digits:14|unique:candidats',
+                'pourcentage' => 'required|numeric|min:70|max:100',
+                'identity' => 'required|file|max:20480|mimes:pdf,jpeg,png,jpg,avif',
+                'certificate' => 'required|file|max:20480|mimes:pdf,jpeg,png,jpg,avif',
+                'photo' => 'required|file|max:20480|mimes:jpeg,png,jpg,avif',
             ], [
-                'name.required' => 'Le nom est obligatoire',
-                'name.string' => 'Le nom doit être une chaîne de caractères',
-                'name.max' => 'Le nom ne peut pas dépasser 255 caractères',
-                'phone.required' => 'Le téléphone est obligatoire',
-                'phone.string' => 'Le téléphone doit être une chaîne de caractères',
-                'phone.max' => 'Le téléphone ne peut pas dépasser 20 caractères',
-                'code_exetat.required' => 'Le code d\'exetat est obligatoire',
-                'code_exetat.digits' => 'Le code d\'exetat doit être un nombre de 14 chiffres',
-                'identity.required' => 'L\'identité est obligatoire',
-                'certificate.required' => 'Le certificat est obligatoire',
-                'identity.max' => 'La taille de l\'identité ne peut pas dépasser 20 Mo',
-                'certificate.max' => 'La taille du certificat ne peut pas dépasser 20 Mo',
-                'photo.max' => 'La taille de la photo ne peut pas dépasser 20 Mo',
+                'code_exetat.required' => 'Le code d\'exetat est obligatoire.',
+                'code_exetat.digits' => 'Le code d\'exetat doit comporter exactement 14 chiffres.',
+                'code_exetat.unique' => 'Ce code d\'exetat est déjà utilisé. Impossible de l\'enregistrer à nouveau.',
+                'pourcentage.required' => 'Le pourcentage est obligatoire.',
+                'pourcentage.min' => 'Le pourcentage minimum requis est de 70.',
+                'pourcentage.max' => 'Le pourcentage maximum autorisé est de 100.',
+                'identity.required' => 'Le fichier d\'identité est obligatoire.',
+                'certificate.required' => 'Le fichier du certificat est obligatoire.',
+                'photo.required' => 'La photo est obligatoire.',
             ]);
 
-            if ($request->file('identity')->getClientOriginalExtension() !== 'pdf' && !in_array($request->file('identity')->getClientOriginalExtension(), ['jpeg', 'png', 'jpg', 'avif'])) {
-                return back()->withErrors(['identity' => 'Le fichier doit être un PDF ou une image.']);
+            // Chemin du fichier Excel
+            $filePath = public_path('codes/codes_exetat.xlsx');
+
+            // Charger le fichier Excel
+            $spreadsheet = IOFactory::load($filePath);
+            $worksheet = $spreadsheet->getActiveSheet();
+
+            $codeExetat = $request->code_exetat;
+            $pourcentageInput = $request->pourcentage;
+
+            // Parcourir les lignes du fichier Excel
+            $found = false;
+            foreach ($worksheet->getRowIterator() as $row) {
+                $cell = $worksheet->getCell('A' . $row->getRowIndex()); // Supposons que les codes sont dans la colonne A
+                $codeInExcel = $cell->getValue();
+
+                // Si le code est trouvé, on arrête la recherche
+                if ($codeExetat == $codeInExcel) {
+                    $found = true;
+
+                    // Vérifier le pourcentage
+                    if ($pourcentageInput < 70) {
+                        throw new \Exception("Le pourcentage minimum requis est de 70. Vous avez soumis $pourcentageInput.");
+                    }
+
+                    break; // On arrête la boucle si on trouve le code
+                }
             }
 
-            if ($request->file('certificate')->getClientOriginalExtension() !== 'pdf' && !in_array($request->file('certificate')->getClientOriginalExtension(), ['jpeg', 'png', 'jpg', 'avif'])) {
-                return back()->withErrors(['identity' => 'Le fichier doit être un PDF ou une image.']);
+            if (!$found) {
+                throw new \Exception("Le code d'exetat n'a pas été trouvé dans notre base de données.");
             }
-
-            if ($request->file('photo')->getClientOriginalExtension() !== 'pdf' && !in_array($request->file('photo')->getClientOriginalExtension(), ['jpeg', 'png', 'jpg', 'avif'])) {
-                return back()->withErrors(['identity' => 'Le fichier doit être un PDF ou une image.']);
-            }
-
 
             // Stocker les fichiers
             $identityPath = $request->file('identity')->store('candidats/identity', 'public');
             $certificatePath = $request->file('certificate')->store('candidats/certificates', 'public');
             $photoPath = $request->file('photo')->store('candidats/photos', 'public');
 
-            //dd($identityPath, $certificatePath, $photoPath);
             // Générer un coupon unique de 5 caractères
             do {
                 $coupon = strtoupper(Str::random(5));
             } while (Candidat::where('coupon', $coupon)->exists());
 
             // Créer un nouveau candidat avec le coupon généré
-            Candidat::create([
+            Candidat::firstOrCreate([
                 'name' => $request->name,
                 'phone' => $request->phone,
                 'code_exetat' => $request->code_exetat,
+                'pourcentage' => $request->pourcentage,
                 'identity' => $identityPath,
                 'certificate' => $certificatePath,
                 'photo' => $photoPath,
                 'coupon' => $coupon,
             ]);
 
-            session(['code_exetat' => $request->code_exetat]);
-            session(['success' => "Merci d'avoir rempli ce formulaire. Votre coupon est : $coupon.
-                Prière de bien le garder et surtout de ne pas l'oublier, car il vous donnera l'accès
-                à la salle de passation du test.
-                En attendant, bonne préparation $request->name."]);
+            // Sauvegarder les données de session et rediriger vers la page de succès
+            session([
+                'success' => "Merci d'avoir rempli ce formulaire. Votre coupon est : $coupon.
+                          Prière de bien le garder et surtout de ne pas l'oublier, car il vous donnera l'accès
+                          à la salle de passation du test. Bonne préparation $request->name.",
+                'coupon' => $coupon,
+                'name' => $request->name
+            ]);
 
-            return redirect()
-                ->route('success');
+            return redirect()->route('success');
         } catch (\Exception $e) {
-            return redirect()
-                ->back()
-                ->withErrors(['error' => $e->getMessage()])
-                ->withInput();
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return redirect()
-                ->back()
+            Log::error('error', $e->getMessage());
+            return redirect()->back()
                 ->withErrors(['error' => $e->getMessage()])
                 ->withInput();
         }

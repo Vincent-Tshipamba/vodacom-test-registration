@@ -13,6 +13,7 @@ class Candidat extends Model
         'name',
         'phone',
         'code_exetat',
+        'pourcentage',
         'photo',
         'identity',
         'certificate',

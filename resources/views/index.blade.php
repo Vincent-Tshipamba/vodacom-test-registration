@@ -37,7 +37,8 @@
                             class="mb-3 block text-base font-medium dark:text-gray-200 text-[#07074D]">
                             Code d'exetat (14 chiffres)
                         </label>
-                        <input type="text" name="code_exetat" id="code_exetat" placeholder="Entrez votre code d'exetat"
+                        <input type="text" name="code_exetat" id="code_exetat"
+                            placeholder="Entrez votre code d'exetat"
                             class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
                             pattern="\d{14}" required />
                     </div>
@@ -46,7 +47,8 @@
                             class="mb-3 block text-base font-medium dark:text-gray-200 text-[#07074D]">
                             Pourcentage obtenu (70 ou plus)
                         </label>
-                        <input type="number" name="pourcentage" id="pourcentage" placeholder="Ex: 70" min="70" max="100"
+                        <input type="number" name="pourcentage" id="pourcentage" placeholder="Ex: 70"
+                            max="100"
                             class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
                             pattern="\d{14}" required />
                     </div>
@@ -55,7 +57,8 @@
                 <!-- Photo du candidat -->
                 <div class="flex items-center justify-between space-x-6">
                     <div class="mb-5 w-full">
-                        <label for="photo" class="mb-3 block text-base font-medium dark:text-gray-200 text-[#07074D]">
+                        <label for="photo"
+                            class="mb-3 block text-base font-medium dark:text-gray-200 text-[#07074D]">
                             Photo du candidat
                         </label>
                         <input type="file" onchange="loadPhoto(event)" name="photo" id="photo"
@@ -119,127 +122,71 @@
     </div>
 
     @section('script')
-
-
-    <script>
-        $(document).ready(function () {
-            $('#code_exetat').on('input', function () {
-                const codeExetat = $(this).val();
-                console.log('{{ csrf_token() }}');
-                var url = "{{ route('check.code.exetat') }}"
-
-                console.log(url)
-                // Vérifier si le code contient exactement 14 chiffres
-                $.ajax({
-                    type: "post",
-                    url: "{{ route('check.code.exetat') }}",
-                    data: codeExetat,
-                    beforeSend: function(xhr){
-                        console.log('Before send');
-                        xhr.setRequestHeader('X-CSRF-TOKEN', '{{ csrf_token() }}');
-                    },
-                    dataType: "json",
-                    success: function (response) {
-                        console.log('success')
-                    },
-                    error: function(xhr)
-                    {
-                        console.log(xhr);
-                    }
-                    
-                });
-                if (codeExetat.length === 14) {
-                    // Envoyer la requête AJAX pour vérifier le code
-                }
+        <script>
+            $('#candidatForm').on('submit', function() {
+                $(this).find('button[type="submit"]').prop('disabled', true); // Désactiver le bouton
+                $(this).find('button[type="submit"]').text('Soumission en cours...'); // Changer le texte du bouton
             });
-        });
-    </script>
+        </script>
+        <script>
+            // Aperçu de la photo du candidat
+            var loadPhoto = function(event) {
 
-    <script>
-        $(function () {
-            $('#pourcentage').on('input', function () {
-                var pourcentage = $(this).val();
+                var inputPhoto = event.target;
+                var photoFile = inputPhoto.files[0];
+                var typePhoto = photoFile.type;
+                let pdfSrc = "{{ asset('img/PDF_file_icon.svg.png') }}"
 
-                if (pourcentage.length >= 2) {
-                    if (pourcentage < 70) {
-                        Swal.fire({
-                            title: 'Erreur',
-                            text: 'Désolé, n\'est éligible que tout candidat ayant obtenu au moins 70%.',
-                            icon: 'warning',
-                            confirmButtonText: 'OK'
-                        })
-                        $('#submitButton').prop('disabled', true)
+                var outputPhoto = document.getElementById('preview_photo');
+
+                if (typePhoto === 'application/pdf') {
+                    outputPhoto.src = pdfSrc;
+                } else {
+                    outputPhoto.src = URL.createObjectURL(event.target.files[0]);
+                    outputPhoto.onload = function() {
+                        URL.revokeObjectURL(outputPhoto.src) // free memory
                     }
                 }
-            })
-        });
-    </script>
+            };
 
-    <script>
-        $('#candidatForm').on('submit', function () {
-            $(this).find('button[type="submit"]').prop('disabled', true); // Désactiver le bouton
-            $(this).find('button[type="submit"]').text('Soumission en cours...'); // Changer le texte du bouton
-        });
-    </script>
-    <script>
-        // Aperçu de la photo du candidat
-        var loadPhoto = function (event) {
+            // Aperçu de la pièce d'identité
+            var loadID = function(event) {
 
-            var inputPhoto = event.target;
-            var photoFile = inputPhoto.files[0];
-            var typePhoto = photoFile.type;
-            let pdfSrc = "{{ asset('img/PDF_file_icon.svg.png') }}"
+                var inputIDCard = event.target;
+                var IDfile = inputIDCard.files[0];
+                var typeID = IDfile.type;
+                let pdfSrc = "{{ asset('img/PDF_file_icon.svg.png') }}"
 
-            var outputPhoto = document.getElementById('preview_photo');
+                var outputID = document.getElementById('preview_identity_card');
 
-            if (typePhoto === 'application/pdf') {
-                outputPhoto.src = pdfSrc;
-            } else {
-                outputPhoto.src = URL.createObjectURL(event.target.files[0]);
-                outputPhoto.onload = function () {
-                    URL.revokeObjectURL(outputPhoto.src) // free memory
+                if (typeID === 'application/pdf') {
+                    outputID.src = pdfSrc;
+                } else {
+                    outputID.src = URL.createObjectURL(event.target.files[0]);
+                    outputID.onload = function() {
+                        URL.revokeObjectURL(outputID.src)
+                    }
                 }
-            }
-        };
+            };
 
-        // Aperçu de la pièce d'identité
-        var loadID = function (event) {
+            // Aperçu de l'attestation de réussite
+            var loadCertificate = function(event) {
+                var inputCertificate = event.target;
+                var certificateFile = inputCertificate.files[0];
+                var typeCertificate = certificateFile.type;
+                let pdfSrc = "{{ asset('img/PDF_file_icon.svg.png') }}"
 
-            var inputIDCard = event.target;
-            var IDfile = inputIDCard.files[0];
-            var typeID = IDfile.type;
-            let pdfSrc = "{{ asset('img/PDF_file_icon.svg.png') }}"
+                var outputCertificate = document.getElementById('preview_certificate');
 
-            var outputID = document.getElementById('preview_identity_card');
-
-            if (typeID === 'application/pdf') {
-                outputID.src = pdfSrc;
-            } else {
-                outputID.src = URL.createObjectURL(event.target.files[0]);
-                outputID.onload = function () {
-                    URL.revokeObjectURL(outputID.src)
+                if (typeCertificate === 'application/pdf') {
+                    outputCertificate.src = pdfSrc;
+                } else {
+                    outputCertificate.src = URL.createObjectURL(event.target.files[0]);
+                    outputCertificate.onload = function() {
+                        URL.revokeObjectURL(outputCertificate.src) // free memory
+                    }
                 }
-            }
-        };
-
-        // Aperçu de l'attestation de réussite
-        var loadCertificate = function (event) {
-            var inputCertificate = event.target;
-            var certificateFile = inputCertificate.files[0];
-            var typeCertificate = certificateFile.type;
-            let pdfSrc = "{{ asset('img/PDF_file_icon.svg.png') }}"
-
-            var outputCertificate = document.getElementById('preview_certificate');
-
-            if (typeCertificate === 'application/pdf') {
-                outputCertificate.src = pdfSrc;
-            } else {
-                outputCertificate.src = URL.createObjectURL(event.target.files[0]);
-                outputCertificate.onload = function () {
-                    URL.revokeObjectURL(outputCertificate.src) // free memory
-                }
-            }
-        };
-    </script>
+            };
+        </script>
     @endsection
 </x-app-layout>
