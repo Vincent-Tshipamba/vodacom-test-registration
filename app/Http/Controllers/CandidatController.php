@@ -23,29 +23,6 @@ class CandidatController extends Controller
         //
     }
 
-    public function checkCodeExetat(Request $request)
-    {
-        // Lire le fichier Excel
-        $filePath = storage_path('codes/codes_exetat.xls');
-        $spreadsheet = IOFactory::load($filePath);
-        $sheet = $spreadsheet->getActiveSheet();
-
-        $codesList = [];
-
-        foreach ($sheet->getRowIterator() as $row) {
-            $cell = $sheet->getCell('B' . $row->getRowIndex());
-            dd($cell->getValue());
-            $codesList[] = $cell->getValue();
-        }
-
-        // Vérifier si le code d'exetat soumis est dans la liste
-        $codeExetat = $request->input('code_exetat');
-        if (in_array($codeExetat, $codesList)) {
-            return response()->json(['success' => 'Le code d\'exetat est valide.']);
-        } else {
-            return response()->json(['error' => 'Le code d\'exetat n\'est pas valide.']);
-        }
-    }
     public function updateStatus(Request $request)
     {
         $candidat = Candidat::find($request->id);
@@ -156,7 +133,6 @@ class CandidatController extends Controller
 
             return redirect()->route('success');
         } catch (\Exception $e) {
-            Log::error('error', $e->getMessage());
             return redirect()->back()
                 ->withErrors(['error' => $e->getMessage()])
                 ->withInput();
