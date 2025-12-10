@@ -1,7 +1,7 @@
 <x-app-layout>
     @if ($errors->any())
         @foreach ($errors->all() as $error)
-            <div class="p-4 mb-4 text-center text-sm text-red-800 rounded-lg bg-white border-2 border-gray-400 shadow dark:bg-gray-800 dark:text-red-400"
+            <div class="bg-white dark:bg-gray-800 shadow mb-4 p-4 border-2 border-gray-400 rounded-lg text-red-800 dark:text-red-400 text-sm text-center"
                 role="alert">
 
                 <span class="font-medium">{{ $error }}</span>
@@ -9,184 +9,185 @@
             </div>
         @endforeach
     @endif
-    <div class="h-full flex items-center justify-center">
-        <div class="mx-auto w-full max-w-[750px] bg-white dark:bg-gray-900 p-8">
-            <form id="candidatForm" action="{{ route('candidats.store') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="mb-5">
-                    <label for="name" class="mb-3 block text-base font-medium dark:text-gray-200 text-[#07074D]">
-                        Nom complet
-                    </label>
-                    <input type="text" name="name" id="name" placeholder="Nom Postnom Prénom"
-                        class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium dark:text-gray-200 text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-                        required />
-                </div>
+    <!-- Hero Section -->
+    @include('home.hero-section')
 
-                <div class="mb-5">
-                    <label for="phone" class="mb-3 block text-base font-medium dark:text-gray-200 text-[#07074D]">
-                        Numéro de téléphone
-                    </label>
-                    <input type="text" name="phone" id="phone" placeholder="Ex: 0826869063"
-                        class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium dark:text-gray-200 text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-                        required />
-                </div>
+    <!-- Statistics -->
+    @include('home.stats-section')
 
-                <div class="mb-5 full flex space-x-2 justify-between">
-                    <div class="w-full">
-                        <label for="code_exetat"
-                            class="mb-3 block text-base font-medium dark:text-gray-200 text-[#07074D]">
-                            Code d'exetat (14 chiffres)
-                        </label>
-                        <input type="text" name="code_exetat" id="code_exetat"
-                            placeholder="Entrez votre code d'exetat"
-                            class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-                            pattern="\d{14}" required />
-                    </div>
-                    <div class="w-96">
-                        <label for="pourcentage"
-                            class="mb-3 block text-base font-medium dark:text-gray-200 text-[#07074D]">
-                            Pourcentage obtenu (70 ou plus)
-                        </label>
-                        <input type="number" name="pourcentage" id="pourcentage" placeholder="Ex: 70"
-                            max="100"
-                            class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-                            pattern="\d{14}" required />
-                    </div>
-                </div>
-
-                <!-- Photo du candidat -->
-                <div class="flex items-center justify-between space-x-6">
-                    <div class="mb-5 w-full">
-                        <label for="photo"
-                            class="mb-3 block text-base font-medium dark:text-gray-200 text-[#07074D]">
-                            Photo du candidat
-                        </label>
-                        <input type="file" onchange="loadPhoto(event)" name="photo" id="photo"
-                            accept="image/*,application/pdf"
-                            class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-                            required />
-                    </div>
-                    <div class="shrink-0">
-                        <img id='preview_photo' class="h-24 w-24 object-cover rounded-full"
-                            src="https://ralfvanveen.com/wp-content/uploads/2021/06/Espace-r%C3%A9serv%C3%A9-_-Glossaire.svg"
-                            alt="Aperçu de votre image" />
-                    </div>
-
-                </div>
-
-                <!-- Pièce d'identité -->
-                <div class="flex items-center justify-between space-x-6">
-                    <div class="mb-5 w-full">
-                        <label for="identity"
-                            class="mb-3 block text-base font-medium dark:text-gray-200 text-[#07074D]">
-                            Pièce d'identité (une image nette)
-                        </label>
-                        <input type="file" onchange="loadID(event)" name="identity" id="identity"
-                            accept="image/*,application/pdf"
-                            class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-                            required />
-                    </div>
-                    <div class="shrink-0">
-                        <img id='preview_identity_card' class="h-24 w-24 object-cover rounded-full"
-                            src="https://ralfvanveen.com/wp-content/uploads/2021/06/Espace-r%C3%A9serv%C3%A9-_-Glossaire.svg"
-                            alt="Aperçu de la pièce d'identité" />
-                    </div>
-                </div>
-
-                <!-- Attestation de réussite -->
-                <div class="flex items-center justify-between space-x-6">
-                    <div class="mb-5 w-full">
-                        <label for="certificate"
-                            class="mb-3 block text-base font-medium dark:text-gray-200 text-[#07074D]">
-                            Attestation de réussite (image nette s'il vous plait)
-                        </label>
-                        <input type="file" onchange="loadCertificate(event)" name="certificate" id="certificate"
-                            accept="image/*,application/pdf"
-                            class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-                            required />
-                    </div>
-                    <div class="shrink-0">
-                        <img id='preview_certificate' class="h-24 w-24 object-cover rounded-full"
-                            src="https://ralfvanveen.com/wp-content/uploads/2021/06/Espace-r%C3%A9serv%C3%A9-_-Glossaire.svg"
-                            alt="Aperçu du certificat" />
-                    </div>
-                </div>
-                <div>
-                    <button id="submitButton"
-                        class="hover:shadow-form w-full rounded-md hover:bg-[#4b38dc] bg-[#2f1acd] py-3 px-8 text-center text-base font-semibold text-white outline-none">
-                        Soumettre la candidature
-                    </button>
-                </div>
-            </form>
-        </div>
+    <div class="wave-divider dark:bg-slate-900">
+        <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path
+                d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
+                class="fill-blue-100 dark:fill-blue-900"></path>
+        </svg>
     </div>
+
+    <!-- Qu'est-ce que la bourse ? -->
+    @include('home.what-is-it-section')
+
+    <div class="wave-divider dark:bg-slate-900">
+        <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path
+                d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
+                class="fill-blue-100 dark:fill-blue-900"></path>
+        </svg>
+    </div>
+
+    <!-- Conditions d'eligibiite-->
+    @include('home.conditions-section')
+
+    <div class="wave-divider dark:bg-slate-900">
+        <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path
+                d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
+                class="fill-blue-100 dark:fill-blue-900"></path>
+        </svg>
+    </div>
+
+    <!-- Comment postuler ? -->
+    @include('home.process-section')
+
+    <div class="wave-divider dark:bg-slate-900">
+        <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path
+                d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
+                class="fill-blue-100 dark:fill-blue-900"></path>
+        </svg>
+    </div>
+
+    <!-- CTA -->
+    @include('home.cta-section')
+
+    <div class="wave-divider dark:bg-slate-900">
+        <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path
+                d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
+                class="fill-blue-100 dark:fill-blue-900"></path>
+        </svg>
+    </div>
+
+    @include('home.testimonials')
 
     @section('script')
         <script>
-            $('#candidatForm').on('submit', function() {
-                $(this).find('button[type="submit"]').prop('disabled', true); // Désactiver le bouton
-                $(this).find('button[type="submit"]').text('Soumission en cours...'); // Changer le texte du bouton
-            });
+            const cardsData = [
+                {
+                    image: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=200',
+                    name: 'Briar Martin',
+                    handle: '@neilstellar',
+                    date: 'April 20, 2025'
+                },
+                {
+                    image: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200',
+                    name: 'Avery Johnson',
+                    handle: '@averywrites',
+                    date: 'May 10, 2025'
+                },
+                {
+                    image: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=200&auto=format&fit=crop&q=60',
+                    name: 'Jordan Lee',
+                    handle: '@jordantalks',
+                    date: 'June 5, 2025'
+                },
+                {
+                    image: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=200&auto=format&fit=crop&q=60',
+                    name: 'Avery Johnson',
+                    handle: '@averywrites',
+                    date: 'May 10, 2025'
+                },
+            ];
+
+            const row1 = document.getElementById('row1');
+            const row2 = document.getElementById('row2');
+
+            const createCard = (card) => `
+                                                        <div class="p-4 rounded-lg mx-4 shadow hover:shadow-lg dark:shadow-slate-700 transition-all duration-200 w-72 shrink-0">
+                                                            <div class="flex gap-2">
+                                                                <img class="size-11 rounded-full" src="${card.image}" alt="User Image">
+                                                                <div class="flex flex-col">
+                                                                    <div class="flex items-center gap-1">
+                                                                        <p class="text-slate-800 dark:text-slate-400">${card.name}</p>
+                                                                        <svg class="mt-0.5" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M4.555.72a4 4 0 0 1-.297.24c-.179.12-.38.202-.59.244a4 4 0 0 1-.38.041c-.48.039-.721.058-.922.129a1.63 1.63 0 0 0-.992.992c-.071.2-.09.441-.129.922a4 4 0 0 1-.041.38 1.6 1.6 0 0 1-.245.59 3 3 0 0 1-.239.297c-.313.368-.47.551-.56.743-.213.444-.213.96 0 1.404.09.192.247.375.56.743.125.146.187.219.24.297.12.179.202.38.244.59.018.093.026.189.041.38.039.48.058.721.129.922.163.464.528.829.992.992.2.071.441.09.922.129.191.015.287.023.38.041.21.042.411.125.59.245.078.052.151.114.297.239.368.313.551.47.743.56.444.213.96.213 1.404 0 .192-.09.375-.247.743-.56.146-.125.219-.187.297-.24.179-.12.38-.202.59-.244a4 4 0 0 1 .38-.041c.48-.039.721-.058.922-.129.464-.163.829-.528.992-.992.071-.2.09-.441.129-.922a4 4 0 0 1 .041-.38c.042-.21.125-.411.245-.59.052-.078.114-.151.239-.297.313-.368.47-.551.56-.743.213-.444.213-.96 0-1.404-.09-.192-.247-.375-.56-.743a4 4 0 0 1-.24-.297 1.6 1.6 0 0 1-.244-.59 3 3 0 0 1-.041-.38c-.039-.48-.058-.721-.129-.922a1.63 1.63 0 0 0-.992-.992c-.2-.071-.441-.09-.922-.129a4 4 0 0 1-.38-.041 1.6 1.6 0 0 1-.59-.245A3 3 0 0 1 7.445.72C7.077.407 6.894.25 6.702.16a1.63 1.63 0 0 0-1.404 0c-.192.09-.375.247-.743.56m4.07 3.998a.488.488 0 0 0-.691-.69l-2.91 2.91-.958-.957a.488.488 0 0 0-.69.69l1.302 1.302c.19.191.5.191.69 0z" fill="#2196F3" />
+                                                                        </svg>
+                                                                    </div>
+                                                                    <span class="text-xs text-slate-500">${card.handle}</span>
+                                                                </div>
+                                                            </div>
+                                                            <p class="text-sm pt-4 text-gray-800 dark:text-slate-400">Radiant made undercutting all of our competitors an absolute breeze.</p>
+                                                        </div>
+                                                    `;
+
+            const renderCards = (target) => {
+                const doubled = [...cardsData, ...cardsData];
+                doubled.forEach(card => target.insertAdjacentHTML('beforeend', createCard(card)));
+            };
+
+            renderCards(row1);
+            renderCards(row2);
         </script>
         <script>
-            // Aperçu de la photo du candidat
-            var loadPhoto = function(event) {
+            const makeSlider = (container) => {
+                let isDown = false;
+                let startX;
+                let scrollLeft;
 
-                var inputPhoto = event.target;
-                var photoFile = inputPhoto.files[0];
-                var typePhoto = photoFile.type;
-                let pdfSrc = "{{ asset('img/PDF_file_icon.svg.png') }}"
+                // Pause animation on interaction
+                const pauseAnimation = () => container.style.animationPlayState = 'paused';
+                const resumeAnimation = () => container.style.animationPlayState = 'running';
 
-                var outputPhoto = document.getElementById('preview_photo');
+                container.addEventListener('mousedown', (e) => {
+                    isDown = true;
+                    container.classList.add('cursor-grabbing');
+                    pauseAnimation();
 
-                if (typePhoto === 'application/pdf') {
-                    outputPhoto.src = pdfSrc;
-                } else {
-                    outputPhoto.src = URL.createObjectURL(event.target.files[0]);
-                    outputPhoto.onload = function() {
-                        URL.revokeObjectURL(outputPhoto.src) // free memory
-                    }
-                }
+                    startX = e.pageX - container.offsetLeft;
+                    scrollLeft = container.scrollLeft;
+                });
+
+                container.addEventListener('mouseleave', () => {
+                    if (isDown) resumeAnimation();
+                    isDown = false;
+                });
+
+                container.addEventListener('mouseup', () => {
+                    isDown = false;
+                    resumeAnimation();
+                });
+
+                container.addEventListener('mousemove', (e) => {
+                    if (!isDown) return;
+                    e.preventDefault();
+                    const x = e.pageX - container.offsetLeft;
+                    const walk = (x - startX) * 1.5; // speed
+                    container.scrollLeft = scrollLeft - walk;
+                });
+
+                // Mobile touch support
+                container.addEventListener('touchstart', (e) => {
+                    isDown = true;
+                    pauseAnimation();
+                    startX = e.touches[0].pageX - container.offsetLeft;
+                    scrollLeft = container.scrollLeft;
+                });
+
+                container.addEventListener('touchend', () => {
+                    isDown = false;
+                    resumeAnimation();
+                });
+
+                container.addEventListener('touchmove', (e) => {
+                    if (!isDown) return;
+                    const x = e.touches[0].pageX - container.offsetLeft;
+                    const walk = (x - startX) * 1.4;
+                    container.scrollLeft = scrollLeft - walk;
+                });
             };
 
-            // Aperçu de la pièce d'identité
-            var loadID = function(event) {
-
-                var inputIDCard = event.target;
-                var IDfile = inputIDCard.files[0];
-                var typeID = IDfile.type;
-                let pdfSrc = "{{ asset('img/PDF_file_icon.svg.png') }}"
-
-                var outputID = document.getElementById('preview_identity_card');
-
-                if (typeID === 'application/pdf') {
-                    outputID.src = pdfSrc;
-                } else {
-                    outputID.src = URL.createObjectURL(event.target.files[0]);
-                    outputID.onload = function() {
-                        URL.revokeObjectURL(outputID.src)
-                    }
-                }
-            };
-
-            // Aperçu de l'attestation de réussite
-            var loadCertificate = function(event) {
-                var inputCertificate = event.target;
-                var certificateFile = inputCertificate.files[0];
-                var typeCertificate = certificateFile.type;
-                let pdfSrc = "{{ asset('img/PDF_file_icon.svg.png') }}"
-
-                var outputCertificate = document.getElementById('preview_certificate');
-
-                if (typeCertificate === 'application/pdf') {
-                    outputCertificate.src = pdfSrc;
-                } else {
-                    outputCertificate.src = URL.createObjectURL(event.target.files[0]);
-                    outputCertificate.onload = function() {
-                        URL.revokeObjectURL(outputCertificate.src) // free memory
-                    }
-                }
-            };
+            // Apply to both rows
+            makeSlider(document.getElementById('row1'));
+            makeSlider(document.getElementById('row2'));
         </script>
     @endsection
 </x-app-layout>

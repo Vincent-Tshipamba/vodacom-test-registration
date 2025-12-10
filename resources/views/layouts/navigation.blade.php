@@ -1,13 +1,17 @@
 <nav class="bg-white dark:bg-gray-900 fixed w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <a href="https://www.vodaeduc.vodacom.cd" class="flex items-center space-x-3 rtl:space-x-reverse">
-            <img src="{{ asset('img/vodacom-seeklogo.png') }}" Loading="lazy" class="h-8" alt="Logo Vodacom">
-            <img src="{{ asset('img/instant-school-logo.png') }}" Loading="lazy" class="h-8" alt="Logo Vodacom">
+            <img src="{{ asset('img/vodacom-seeklogo.png') }}" Loading="lazy" class="h-6 sm:h-8" alt="Logo Vodacom">
+            <img src="{{ asset('img/instant-school-logo.png') }}" Loading="lazy" class="h-6 sm:h-8" alt="Logo Vodacom">
             <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white"></span>
         </a>
         <div class="flex items-center space-x-3">
+            <button type="button"
+                class="hidden sm:block bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 shadow-lg px-6 py-2 rounded-full font-semibold text-white text-lg hover:scale-105 transition duration-300 ease-in-out transform">
+                S'inscrire
+            </button>
             <button onclick="(() => document.body.classList.toggle('dark'))()"
-            class="h-12 w-12 rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+                class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-700">
                 <svg class="fill-violet-700 block dark:hidden" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
                 </svg>
@@ -21,6 +25,6 @@
                 Se deconnecter
             </a> -->
         </div>
-        
+
     </div>
 </nav>
