@@ -1,10 +1,10 @@
 <section id="testimonials-section" class="bg-gray-50 dark:bg-slate-900 mx-auto px-6 py-20 sm:py-20">
     <div class="text-center mb-16">
         <h2 class="text-3xl font-bold text-slate-900 dark:text-gray-200 sm:text-4xl">
-            Ils ont obtenu la Bourse Vodacom
+            {{ __('testimonials.title') }}
         </h2>
         <p class="mt-4 text-lg text-slate-700 dark:text-gray-300">
-            Des témoignages inspirants d’anciens boursiers qui ont transformé leur avenir grâce à ce programme.
+            {{ __('testimonials.subtitle') }}
         </p>
     </div>
 
