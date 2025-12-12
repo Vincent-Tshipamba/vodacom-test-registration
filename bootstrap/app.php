@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
 use Illuminate\Database\QueryException;
 use App\Http\Middleware\CheckCandidatSubmission;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -17,7 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'checkSubmission' => CheckCandidatSubmission::class
+            'checkSubmission' => CheckCandidatSubmission::class,
+            'setLocale' => SetLocale::class
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
