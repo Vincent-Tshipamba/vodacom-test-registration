@@ -14,6 +14,10 @@ export default {
     darkMode: 'class',
 
     theme: {
+        screens: {
+            'xs': '375px',
+            ...defaultTheme.screens,
+        },
         extend: {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
