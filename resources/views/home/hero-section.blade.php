@@ -21,7 +21,7 @@
                     class="bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 shadow-lg px-8 py-4 rounded-full font-semibold text-white text-lg hover:scale-105 transition duration-300 ease-in-out transform">
                     {{ __('hero.cta') }}
                 </a>
-                <a href="#what-is-it-section"
+                <a href="#what-is-it"
                     class="hover:bg-white px-8 py-4 border-2 border-white rounded-full font-semibold text-white hover:text-gray-900 text-lg transition duration-300 ease-in-out">
                     {{ __('hero.learn_more') }}
                 </a>
