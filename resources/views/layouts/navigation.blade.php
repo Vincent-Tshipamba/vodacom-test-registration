@@ -38,8 +38,8 @@ $current = $languages[$locale] ?? $languages['fr'];
         <div class="flex items-center md:order-2 space-x-1 md:space-x-0 rtl:space-x-reverse">
             <button type="button" data-dropdown-toggle="language-dropdown-menu"
                 class="flex items-center text-heading dark:text-slate-300 bg-transparent box-border border border-transparent hover:bg-neutral-secondary-medium focus:ring-4 focus:ring-neutral-tertiary font-medium leading-5 rounded-base text-sm px-3 py-2 focus:outline-none">
-                <img src="{{ $current['flag'] }}" alt="flag" class="w-6 h-6 me-2">
-                {{ $current['label'] }}
+                <img src="{{ $current['flag'] }}" alt="flag" class="w-6 h-6 xs:me-2">
+                <span class="hidden xs:block">{{ $current['label'] }}</span>
             </button>
             <!-- Dropdown -->
             <div class="z-50 hidden bg-neutral-primary-medium bg-slate-200 dark:bg-slate-900 border border-default-medium rounded-base shadow-lg w-44"
