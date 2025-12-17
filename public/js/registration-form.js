@@ -16,6 +16,7 @@ function app() {
             gender: 'male',
             birthdate: '',
             age: 0,
+            identification_type: 'none',
 
             // Étape 2: Adresse
             current_city: '',
@@ -26,6 +27,7 @@ function app() {
             school_name: '',
             study_option: '',
             other_study_option: '',
+            student_code: '',
             diploma_score: '',
             diploma_year: '',
 
@@ -147,6 +149,14 @@ function app() {
                     }
                 }
 
+                if (field.validateCode) {
+                    if (!/^\d{14}$/.test(this.formData[field.name])) {
+                        this.errors[field.name] = fieldElement.dataset.errorPattern;
+                        isValid = false;
+                        return;
+                    }
+                }
+
                 if (field.validateScore) {
                     if (this.formData[field.name] < this.minScore || this.formData[field.name] > this.maxScore) {
                         this.errors[field.name] = fieldElement.dataset.errorPercentage;
@@ -192,7 +202,11 @@ function app() {
                         'name': 'birthdate',
                         'id': 'birthdate',
                         'validateAge': true,
-                        'required': true,
+                    },
+                    {
+                        'name': 'identification_type',
+                        'id': 'identification_type',
+                        'required': true
                     }
                 ];
 
@@ -240,6 +254,12 @@ function app() {
                         'name': 'diploma_score',
                         'id': 'diploma_score',
                         'validateScore': true,
+                        'required': true,
+                    },
+                    {
+                        'name': 'student_code',
+                        'id': 'student_code',
+                        'validateCode': true,
                         'required': true,
                     }
                 ];

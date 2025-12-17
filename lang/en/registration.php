@@ -32,6 +32,15 @@ return [
     'input_birthdate_placeholder' => 'DD/MM/YYYY',
     'age_label' => 'Age',
     'years_old' => 'years',
+    'identification_type_label' => 'Please select what identifies you',
+    'identification_type_disabled' => 'Person with a disability',
+    'identification_type_albinos' => 'I am albino',
+    'identification_type_pygmee' => 'I am Pygmy',
+    'identification_type_refugee' => 'I live in a refugee camp',
+    'identification_type_orphan' => 'I am an orphan of a fallen military parent',
+    'identification_type_none' => 'None of the above applies to me',
+    'student_code_label' => 'Student code (14 digits)',
+    'student_code_placeholder' => 'Enter your 14-digit student code...',
 
     // Step 2: Address
     'current_city_label' => 'Current City of Residence',
@@ -78,6 +87,7 @@ return [
 
     // Validation
     'validation' => [
+        'pattern' => 'Code must contain exactly 14 digits',
         'required' => 'This field is required',
         'email' => 'Please enter a valid email address',
         'min' => 'Must be at least :min characters',

@@ -32,6 +32,15 @@ return [
     'input_birthdate_placeholder' => 'Mokolo/sanza/mobú',
     'age_label' => 'Mibu',
     'years_old' => 'mibu',
+    'identification_type_label' => 'Pona oyo ozali',
+    'identification_type_disabled' => 'Moto na nzela mabe',
+    'identification_type_albinos' => 'Nazali albinos',
+    'identification_type_pygmee' => 'Nazali mokísi',
+    'identification_type_refugee' => 'Nazali kofanda na camp ya bavandá',
+    'identification_type_orphan' => 'Nazali mwana ya mokonzi ya armée akufi na libanda',
+    'identification_type_none' => 'Nazali te na eloko kati na yango',
+    'student_code_label' => 'Nimero ya mwana kelasi (14 minoko)',
+    'student_code_placeholder' => 'Tya nimero na yo ya mwana kelasi ya minoko 14...',
 
     // Etapa 2: Adrese
     'current_city_label' => 'Mbanza ozali kofanda kuna sikoyo',
@@ -78,6 +87,7 @@ return [
 
     // Bapesi maloba
     'validation' => [
+        'pattern' => 'Code esengeli kozala na minoko 14 kaka',
         'required' => 'Esengeli kotya maloba awa',
         'email' => 'Tya adresse email ya soló',
         'min' => 'Esengeli kozala na min :min ba caractères',

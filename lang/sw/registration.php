@@ -32,6 +32,15 @@ return [
     'input_birthdate_placeholder' => 'DD/MM/YYYY',
     'age_label' => 'Umri',
     'years_old' => 'miaka',
+    'identification_type_label' => 'Tafadhali chagua kile kinakufananisha',
+    'identification_type_disabled' => 'Mwenye ulemavu',
+    'identification_type_albinos' => 'Mimi ni mwenye ualbino',
+    'identification_type_pygmee' => 'Mimi ni Mpygmee',
+    'identification_type_refugee' => 'Ninaishi kwenye kambi ya wakimbizi',
+    'identification_type_orphan' => 'Mimi ni yatima ya askari aliyekufa katika vita',
+    'identification_type_none' => 'Hakuna kati ya hizi zinanifaa',
+    'student_code_label' => 'Nambari ya mwanafunzi (tarakimu 14)',
+    'student_code_placeholder' => 'Weka nambari yako ya mwanafunzi yenye tarakimu 14...',
 
     // Hatua ya 2: Anwani
     'current_city_label' => 'Jiji la Makazi ya Sasa',
@@ -78,6 +87,7 @@ return [
 
     // Uthibitisho
     'validation' => [
+        'pattern' => 'Nambari inapaswa kuwa na tarakimu 14 tu',
         'required' => 'Sehemu hii inahitajika',
         'email' => 'Tafadhali weka barua pepe halali',
         'min' => 'Lazima iwe na herufi angalau :min',

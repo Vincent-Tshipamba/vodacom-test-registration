@@ -228,6 +228,67 @@
                                             x-text="formData.age + ' ' + '{{ __('registration.years_old') }}'"></span>
                                     </div>
                                 </div>
+
+                                <!-- Type d'identification -->
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">
+                                        {{ __('registration.identification_type_label') }} <span
+                                            class="text-red-500">*</span>
+                                    </label>
+                                    <div class="space-y-2">
+                                        <div class="flex items-center">
+                                            <input type="radio" id="disabled" name="identification_type"
+                                                value="disabled" x-model="formData.identification_type"
+                                                class="h-4 w-4 text-red-500 focus:ring-red-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700">
+                                            <label for="disabled" class="ml-2 block text-sm">
+                                                {{ __('registration.identification_type_disabled') }}
+                                            </label>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <input type="radio" id="albinos" name="identification_type"
+                                                value="albinos" x-model="formData.identification_type"
+                                                class="h-4 w-4 text-red-500 focus:ring-red-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700">
+                                            <label for="albinos" class="ml-2 block text-sm">
+                                                {{ __('registration.identification_type_albinos') }}
+                                            </label>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <input type="radio" id="pygmee" name="identification_type"
+                                                value="pygmee" x-model="formData.identification_type"
+                                                class="h-4 w-4 text-red-500 focus:ring-red-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700">
+                                            <label for="pygmee" class="ml-2 block text-sm">
+                                                {{ __('registration.identification_type_pygmee') }}
+                                            </label>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <input type="radio" id="refugee" name="identification_type"
+                                                value="refugee" x-model="formData.identification_type"
+                                                class="h-4 w-4 text-red-500 focus:ring-red-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700">
+                                            <label for="refugee" class="ml-2 block text-sm">
+                                                {{ __('registration.identification_type_refugee') }}
+                                            </label>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <input type="radio" id="orphan" name="identification_type"
+                                                value="orphan" x-model="formData.identification_type"
+                                                class="h-4 w-4 text-red-500 focus:ring-red-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700">
+                                            <label for="orphan" class="ml-2 block text-sm">
+                                                {{ __('registration.identification_type_orphan') }}
+                                            </label>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <input type="radio" id="none" name="identification_type"
+                                                value="none" x-model="formData.identification_type"
+                                                class="h-4 w-4 text-red-500 focus:ring-red-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                                                checked>
+                                            <label for="none" class="ml-2 block text-sm">
+                                                {{ __('registration.identification_type_none') }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <p x-show="errors.identification_type" class="mt-1 text-sm text-red-500"
+                                        x-text="errors.identification_type"></p>
+                                </div>
                             </div>
                         </div>
                         <!-- Step 2: Address Information -->
@@ -349,7 +410,7 @@
                                     <div class="relative">
                                         <input type="number" id="diploma_score" name="diploma_score"
                                             x-model="formData.diploma_score" min="50" max="100"
-                                            step="1"
+                                            pattern="\d{3}" step="1"
                                             data-error-required="{{ __('registration.validation.required') }}"
                                             data-error-percentage="{{ __('registration.validation.percentage') }}"
                                             class="w-full pl-12 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700"
@@ -362,6 +423,25 @@
                                     </div>
                                     <p x-show="errors.diploma_score" class="mt-1 text-sm text-red-500"
                                         x-text="errors.diploma_score"></p>
+                                </div>
+
+                                <!-- Code élève -->
+                                <div>
+                                    <label for="student_code" class="block text-sm font-medium mb-1">
+                                        {{ __('registration.student_code_label') }} <span
+                                            class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" id="student_code" name="student_code"
+                                        x-model="formData.student_code"
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700"
+                                        :class="{ 'border-red-500': errors.student_code }"
+                                        data-error-required="{{ __('registration.validation.required') }}"
+                                        data-error-pattern="{{ __('registration.validation.pattern') }}"
+                                        placeholder="{{ __('registration.student_code_placeholder') }}"
+                                        maxlength="14" pattern="\d{14}"
+                                        title="{{ __('registration.validation.pattern') }}" required>
+                                    <p x-show="errors.student_code" class="mt-1 text-sm text-red-500"
+                                        x-text="errors.student_code"></p>
                                 </div>
                             </div>
                         </div>

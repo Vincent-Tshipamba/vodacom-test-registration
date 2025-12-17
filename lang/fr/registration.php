@@ -32,6 +32,15 @@ return [
     'input_birthdate_placeholder' => 'JJ/MM/AAAA',
     'age_label' => 'Âge',
     'years_old' => 'ans',
+    'identification_type_label' => 'Veuillez sélectionner ce qui vous identifie',
+    'identification_type_disabled' => 'Porteur de handicap',
+    'identification_type_albinos' => 'Je suis albinos',
+    'identification_type_pygmee' => 'Je suis Pygmée',
+    'identification_type_refugee' => 'Je vis dans un camp de réfugiés',
+    'identification_type_orphan' => 'Je suis orphelin de militaire tombé au front',
+    'identification_type_none' => 'Rien de tout ceci ne s\'applique à moi',
+    'student_code_label' => 'Code élève (14 chiffres)',
+    'student_code_placeholder' => 'Entrez votre code élève à 14 chiffres...',
 
     // Étape 2: Adresse
     'current_city_label' => 'Ville de résidence actuelle',
@@ -78,6 +87,7 @@ return [
 
     // Validation
     'validation' => [
+        'pattern' => 'Le code doit contenir exactement 14 chiffres',
         'required' => 'Ce champ est obligatoire',
         'email' => 'Veuillez entrer une adresse email valide',
         'min' => 'Doit contenir au moins :min caractères',
