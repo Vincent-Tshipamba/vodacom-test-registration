@@ -281,5 +281,12 @@ return [
         'winner'                   => 'winner',
         'work'                     => 'work',
         'year'                     => 'year',
+
+        'percentage' => 'percentage',
+        'field' => 'intended field',
+        'motivation' => 'motivation',
+        'career_goals' => 'career goals',
+        'additional_infos' => 'additional information',
+        'locale' => 'language',
     ],
 ];

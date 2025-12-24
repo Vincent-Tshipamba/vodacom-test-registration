@@ -12,15 +12,18 @@ return [
     'scholarship' => 'Udhamini wa masomo',
     'apply_now' => 'Omba Sasa',
     'learn_more' => 'Jifunze Zaidi',
-    
+
     // Majina ya lugha
     'language_fr' => 'Kifaransa',
     'language_en' => 'Kiingereza',
     'language_sw' => 'Kiswahili',
     'language_ln' => 'Lingala',
-    
+
     // Sehemu ya mawasiliano
     'contact_description' => 'Kwa maswali yoyote au maelezo zaidi, tafadhali jisikie huru kututafutia.',
     'phone' => 'Simu',
     'address' => 'Anwani',
+    'saved' => 'Imehifadhiwa kwa mafanikio',
+    'updated' => 'Imesasishwa kwa mafanikio',
+    'deleted' => 'Imefutwa kwa mafanikio',
 ];

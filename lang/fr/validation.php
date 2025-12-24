@@ -222,7 +222,7 @@ return [
         'mobile'                   => 'portable',
         'month'                    => 'mois',
         'name'                     => 'nom',
-        'national_code'            => 'code national',
+        'national_code'            => 'code exetat',
         'number'                   => 'numéro',
         'password'                 => 'mot de passe',
         'password_confirmation'    => 'confirmation du mot de passe',
@@ -281,5 +281,12 @@ return [
         'winner'                   => 'gagnant',
         'work'                     => 'travail',
         'year'                     => 'année',
+
+        'percentage' => 'pourcentage',
+        'field' => 'filière envisagée',
+        'motivation' => 'motivation',
+        'career_goals' => 'objectifs de carrière',
+        'additional_infos' => 'informations supplémentaires',
+        'locale' => 'langue',
     ],
 ];
