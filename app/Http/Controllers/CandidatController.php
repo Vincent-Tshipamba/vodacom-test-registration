@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Candidat;
+use App\Http\Requests\StoreCandidatRequest;
 use Illuminate\Support\Str;
 use App\Imports\CodesImport;
 use Illuminate\Http\Request;
@@ -43,96 +44,114 @@ class CandidatController extends Controller
         return response()->json($candidats);
     }
 
-    public function store(Request $request)
+    public function store(StoreCandidatRequest $request)
     {
         try {
-            // Valider les données du formulaire avec des messages d'erreur personnalisés
-            $request->validate([
-                'name' => 'required|string|max:255',
-                'phone' => 'required|string|max:20',
-                'code_exetat' => 'required|digits:14|unique:candidats',
-                'pourcentage' => 'required|numeric|min:70|max:100',
-                'identity' => 'required|file|max:20480|mimes:pdf,jpeg,png,jpg,avif',
-                'certificate' => 'required|file|max:20480|mimes:pdf,jpeg,png,jpg,avif',
-                'photo' => 'required|file|max:20480|mimes:jpeg,png,jpg,avif',
-            ], [
-                'code_exetat.required' => 'Le code d\'exetat est obligatoire.',
-                'code_exetat.digits' => 'Le code d\'exetat doit comporter exactement 14 chiffres.',
-                'code_exetat.unique' => 'Ce code d\'exetat est déjà utilisé. Impossible de l\'enregistrer à nouveau.',
-                'pourcentage.required' => 'Le pourcentage est obligatoire.',
-                'pourcentage.min' => 'Le pourcentage minimum requis est de 70.',
-                'pourcentage.max' => 'Le pourcentage maximum autorisé est de 100.',
-                'identity.required' => 'Le fichier d\'identité est obligatoire.',
-                'certificate.required' => 'Le fichier du certificat est obligatoire.',
-                'photo.required' => 'La photo est obligatoire.',
-            ]);
+            $validatedData = $request->validated();
 
-            // Chemin du fichier Excel
-            $filePath = public_path('codes/codes_exetat.xlsx');
+            // Vérifier le code exétat dans le fichier Excel
+            // $filePath = public_path('codes/codes_exetat.xlsx');
+            // $spreadsheet = IOFactory::load($filePath);
+            // $worksheet = $spreadsheet->getActiveSheet();
 
-            // Charger le fichier Excel
-            $spreadsheet = IOFactory::load($filePath);
-            $worksheet = $spreadsheet->getActiveSheet();
+            // $codeExetat = $validatedData['student_code'];
+            // $found = false;
 
-            $codeExetat = $request->code_exetat;
-            $pourcentageInput = $request->pourcentage;
+            // foreach ($worksheet->getRowIterator() as $row) {
+            //     $cell = $worksheet->getCell('A' . $row->getRowIndex());
+            //     $codeInExcel = $cell->getValue();
 
-            // Parcourir les lignes du fichier Excel
-            $found = false;
-            foreach ($worksheet->getRowIterator() as $row) {
-                $cell = $worksheet->getCell('A' . $row->getRowIndex()); // Supposons que les codes sont dans la colonne A
-                $codeInExcel = $cell->getValue();
+            //     if ($codeExetat == $codeInExcel) {
+            //         $found = true;
+            //         break;
+            //     }
+            // }
 
-                // Si le code est trouvé, on arrête la recherche
-                if ($codeExetat == $codeInExcel) {
-                    $found = true;
-
-                    // Vérifier le pourcentage
-                    if ($pourcentageInput < 70) {
-                        throw new \Exception("Le pourcentage minimum requis est de 70. Vous avez soumis $pourcentageInput.");
-                    }
-
-                    break; // On arrête la boucle si on trouve le code
-                }
-            }
-
-            if (!$found) {
-                throw new \Exception("Le code d'exetat n'a pas été trouvé dans notre base de données.");
-            }
+            // if (!$found) {
+            //     throw new \Exception("Le code d'exetat n'a pas été trouvé dans notre base de données.");
+            // }
 
             // Stocker les fichiers
-            $identityPath = $request->file('identity')->store('candidats/identity', 'public');
-            $certificatePath = $request->file('certificate')->store('candidats/certificates', 'public');
-            $photoPath = $request->file('photo')->store('candidats/photos', 'public');
+            $photoPath = null;
+            if ($request->hasFile('photo')) {
+                $photoPath = $request->file('photo')->store('candidats/photos', 'public');
+            }
+
+            $idDocumentPath = null;
+            if ($request->hasFile('id_document_path')) {
+                $idDocumentPath = $request->file('id_document_path')->store('candidats/documents', 'public');
+            }
+
+            $diplomaPath = null;
+            if ($request->hasFile('diploma_path')) {
+                $diplomaPath = $request->file('diploma_path')->store('candidats/diplomas', 'public');
+            }
+
+            $recommendationPath = null;
+            if ($request->hasFile('recommendation_path')) {
+                $recommendationPath = $request->file('recommendation_path')->store('candidats/recommendations', 'public');
+            }
 
             // Générer un coupon unique de 5 caractères
             do {
                 $coupon = strtoupper(Str::random(5));
             } while (Candidat::where('coupon', $coupon)->exists());
 
-            // Créer un nouveau candidat avec le coupon généré
-            Candidat::firstOrCreate([
-                'name' => $request->name,
-                'phone' => $request->phone,
-                'code_exetat' => $request->code_exetat,
-                'pourcentage' => $request->pourcentage,
-                'identity' => $identityPath,
-                'certificate' => $certificatePath,
+            // Créer le candidat avec toutes les données validées
+            $candidat = Candidat::create([
+                // Informations personnelles
+                'firstname' => $validatedData['firstname'],
+                'lastname' => $validatedData['lastname'],
+                'phone' => $validatedData['phone'],
+                'gender' => $validatedData['gender'],
+                'birthdate' => $validatedData['birthdate'],
+                'identification_type' => $validatedData['identification_type'],
                 'photo' => $photoPath,
+
+                // Adresse
+                'current_city' => $validatedData['current_city'],
+                'diploma_city' => $validatedData['diploma_city'],
+                'full_address' => $validatedData['full_address'],
+
+                // Informations scolaires
+                'school_name' => $validatedData['school_name'],
+                'study_option' => $validatedData['study_option'],
+                'diploma_score' => $validatedData['diploma_score'],
+                'student_code' => $validatedData['student_code'],
+
+                // Documents
+                'id_document_path' => $idDocumentPath,
+                'diploma_path' => $diplomaPath,
+                'recommendation_path' => $recommendationPath,
+
+                // Ambitions personnelles
+                'university_field' => $validatedData['university_field'],
+                'other_university_field' => $validatedData['other_university_field'] ?? null,
+                'passion' => $validatedData['passion'],
+                'passion_locale' => $validatedData['passion_locale'],
+                'career_goals' => $validatedData['career_goals'],
+                'career_goals_locale' => $validatedData['career_goals_locale'],
+                'additional_infos' => $validatedData['additional_infos'] ?? null,
+                'additional_infos_locale' => $validatedData['additional_infos_locale'] ?? null,
+
+                // Champs système
                 'coupon' => $coupon,
+                'status' => 'pending',
             ]);
 
             // Sauvegarder les données de session et rediriger vers la page de succès
             session([
-                'success' => "Merci d'avoir rempli ce formulaire. Votre coupon est : $coupon.
-                          Prière de bien le garder et surtout de ne pas l'oublier, car il vous donnera l'accès
-                          à la salle de passation du test. Bonne préparation $request->name.",
-                'coupon' => $coupon,
-                'name' => $request->name
+                'confirmation_message' => __('registration.confirmation_message'),
+                'confirmation_name' => $validatedData['firstname'],
+                'confirmation_coupon' => $coupon
             ]);
-
-            return redirect()->route('success');
+            return response()->json([
+                'success' => true,
+                'redirect' => route('registration.form') . '#confirmation'
+            ]);
         } catch (\Exception $e) {
+            Log::error('Error creating candidat: ' . $e->getMessage());
+
             return redirect()->back()
                 ->withErrors(['error' => $e->getMessage()])
                 ->withInput();
