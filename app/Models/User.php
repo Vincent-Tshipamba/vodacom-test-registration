@@ -43,6 +43,19 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
+            'last_login' => 'datetime',
         ];
+    }
+
+    // Relations
+    public function staffProfile()
+    {
+        return $this->hasOne(StaffProfile::class);
+    }
+
+    public function applicant()
+    {
+        return $this->hasOne(Applicant::class);
     }
 }
