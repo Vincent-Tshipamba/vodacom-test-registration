@@ -51,7 +51,7 @@ class Applicant extends Model
         return $this->belongsTo(ScholarshipEdition::class, 'edition_id');
     }
 
-    public function documents()
+    public function application_documents()
     {
         return $this->hasMany(ApplicationDocument::class);
     }

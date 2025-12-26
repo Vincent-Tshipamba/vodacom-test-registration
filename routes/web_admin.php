@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Candidat;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ScholarController;
@@ -18,7 +17,9 @@ use App\Http\Controllers\EvaluationCriteriaController;
 use App\Http\Controllers\InterviewEvaluatorController;
 use App\Http\Controllers\ScholarshipEditionController;
 use App\Http\Controllers\ApplicationDocumentController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ScholarshipDocumentController;
+use App\Models\Applicant;
 
 Route::group(['prefix' => '{locale}', 'middleware' => 'setLocale'], function () {
     Route::post('/check-code-exetat', [CandidatController::class, 'checkCodeExetat'])->name('check.code.exetat');
@@ -47,8 +48,5 @@ Route::group(['prefix' => '{locale}', 'middleware' => 'setLocale'], function () 
     Route::resource('academic-year-records', AcademicYearRecordController::class);
     Route::resource('interview-sessions', InterviewSessionController::class);
 
-    Route::get('/dashboard', function () {
-        $candidats = Candidat::latest()->get();
-        return view('dashboard', compact('candidats'));
-    })->middleware(['auth', 'verified'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('admin.dashboard');
 });

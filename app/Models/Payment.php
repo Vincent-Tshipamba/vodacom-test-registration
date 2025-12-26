@@ -23,7 +23,7 @@ class Payment extends Model
         'processed_at' => 'datetime',
     ];
 
-    public function record()
+    public function acadmic_year_record()
     {
         return $this->belongsTo(AcademicYearRecord::class, 'academic_year_record_id');
     }
