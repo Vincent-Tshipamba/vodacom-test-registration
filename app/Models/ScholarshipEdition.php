@@ -6,6 +6,8 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use function Symfony\Component\Clock\now;
+
 class ScholarshipEdition extends Model
 {
     use HasFactory;
@@ -23,6 +25,15 @@ class ScholarshipEdition extends Model
         'start_date' => 'datetime',
         'end_date' => 'datetime',
     ];
+
+    public static function getCurrentEdition(): ?self
+    {
+        $currentYear = Carbon::now()->format('Y');
+        $active = static::where('year', $currentYear)
+            ->whereIn('status', ['SELECTION_PHASE', 'INTERVIEW_PHASE', 'TEST_PHASE'])
+            ->first();
+        return $active;
+    }
 
     public static function getActiveEdition(): ?self
     {
