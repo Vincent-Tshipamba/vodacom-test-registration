@@ -96,6 +96,7 @@ $current = $languages[$locale] ?? $languages['fr'];
     <!-- App js -->
     <script src="{{ asset('assets/js/app.js') }}"></script>
     @yield('script')
+    @yield('modal')
 </body>
 
 </html>
