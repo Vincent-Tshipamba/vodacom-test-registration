@@ -15,7 +15,7 @@ return new class extends Migration
             $table->integer('scholar_quota')->default(0);
             $table->dateTime('start_date');
             $table->dateTime('end_date');
-            $table->string('status', 50)->default('SELECTION_PHASE'); // OPEN, CLOSED, ARCHIVED
+            $table->string('status', 50)->default('SELECTION_PHASE'); // SELECTION_PHASE, INTERVIEW_PHASE, TEST_PHASE, OPEN, CLOSED, ARCHIVED
             $table->timestamps();
         });
     }
