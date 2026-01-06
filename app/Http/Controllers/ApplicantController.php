@@ -122,10 +122,10 @@ class ApplicantController extends Controller
             ]);
 
             // Stocker les fichiers
-            $this->storeApplicationDocument($request, $applicant, 'photo', 'applicants/photos', 'photo');
-            $this->storeApplicationDocument($request, $applicant, 'id_document', 'applicants/ids', 'id');
-            $this->storeApplicationDocument($request, $applicant, 'recommendation', 'applicants/recommendations', 'reco_letter');
-            $this->storeApplicationDocument($request, $applicant, 'diploma', 'applicants/diplomas', 'diploma');
+            $this->storeApplicationDocument($request, $applicant, 'photo', 'applicants/' . $applicant->id . '/photos', 'photo');
+            $this->storeApplicationDocument($request, $applicant, 'id_document', 'applicants/' . $applicant->id . '/ids', 'id');
+            $this->storeApplicationDocument($request, $applicant, 'recommendation', 'applicants/' . $applicant->id . '/reco_letters', 'reco_letter');
+            $this->storeApplicationDocument($request, $applicant, 'diploma', 'applicants/' . $applicant->id . '/diplomas', 'diploma');
 
 
             // Sauvegarder les données de session et rediriger vers la page de succès
