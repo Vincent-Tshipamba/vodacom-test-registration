@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'welcome' => 'Welcome to Vodacom School',
+    'welcome' => 'Welcome :username',
     'home' => 'Home',
     'about' => 'About',
     'contact' => 'Contact',
