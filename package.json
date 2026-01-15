@@ -16,11 +16,13 @@
         "vite": "^5.0"
     },
     "dependencies": {
+        "datatables.net-dt": "^2.3.6",
         "flowbite": "^2.5.2",
         "jquery": "^3.7.1",
         "jquery-validation": "^1.21.0",
         "pdfjs-dist": "^4.7.76",
         "preline": "^2.5.0",
+        "simple-datatables": "^10.2.0",
         "sweetalert2": "^11.14.3"
     }
 }
