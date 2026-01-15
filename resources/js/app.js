@@ -14,5 +14,7 @@ import 'preline';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 
 import $ from 'jquery';
-window.$ = window.jQuery = $;
+
+import DataTable from 'datatables.net-dt';
+
 
