@@ -17,9 +17,9 @@
             <h1 class="text-4xl font-bold text-gray-800 mb-6">Erreur interne du serveur</h1>
             <p class="text-lg text-gray-600 mb-8">Nous nous excusons pour la gêne occasionnée. Veuillez réessayer plus
                 tard.</p>
-            <a href="{{ route('dashboard') }}"
+            <a href="{{ route('dashboard', ['locale' => app()->getLocale()]) }}"
                 class="inline-block bg-orange-500 text-white font-semibold px-6 py-3 rounded-md hover:bg-orange-500 transition-colors duration-300">
-                Veuillez réessayer
+                Retourner au tableau de bord
             </a>
         </div>
     </div>
