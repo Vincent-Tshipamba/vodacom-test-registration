@@ -13,6 +13,7 @@ class ApplicationDocument extends Model
         'applicant_id',
         'document_type',
         'file_url',
+        'file_type',
         'file_name',
         'is_valid',
         'reviewed_by_agent',
