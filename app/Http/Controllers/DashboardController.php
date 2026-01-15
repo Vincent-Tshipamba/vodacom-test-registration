@@ -16,8 +16,8 @@ class DashboardController extends Controller
         $applicants = Applicant::latest()->get();
         $current_edition = ScholarshipEdition::getCurrentEdition();
         $count_applicants_this_year = Applicant::where('edition_id', $current_edition->id)->count();
-        $count_accepted_applicants = Applicant::where('application_status', 'ADMITTED')->count();
-        $count_rejected_applicants = Applicant::where('application_status', 'REJECTED')->count();
+        $count_accepted_applicants = Applicant::where('application_status', 'ADMITTED')->where('edition_id', $current_edition->id)->count();
+        $count_rejected_applicants = Applicant::where('application_status', 'REJECTED')->where('edition_id', $current_edition->id)->count();
         $count_boursiers = Scholar::count();
         $count_editions = ScholarshipEdition::count();
 
