@@ -48,6 +48,7 @@ class ApplicantSeeder extends Seeder
                 ApplicationDocument::create([
                     'applicant_id' => $applicant->id,
                     'document_type' => $type,
+                    'file_type' => pathinfo($newPath, PATHINFO_EXTENSION),
                     'file_url' => $newPath,
                     'file_name' => basename($newPath),
                     'is_valid' => false,

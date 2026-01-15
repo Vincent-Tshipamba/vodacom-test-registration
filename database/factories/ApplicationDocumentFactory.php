@@ -20,6 +20,7 @@ class ApplicationDocumentFactory extends Factory
         return [
             // 'applicant_id' => $this->faker->randomElement(Applicant::pluck('id')),
             'document_type' => $this->faker->randomElement(['PHOTO', 'ID', 'DIPLOMA', 'RECO_LETTER']),
+            'file_type' => $this->faker->randomElement(['jpg', 'png', 'pdf']),
             'file_url' => $this->faker->imageUrl(),
             'file_name' => $this->faker->word() . '.jpg',
             'is_valid' => $this->faker->boolean(0),
