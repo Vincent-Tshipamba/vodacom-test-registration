@@ -13,6 +13,7 @@ use App\Http\Controllers\StaffProfileController;
 use App\Http\Controllers\InterviewSessionController;
 use App\Http\Controllers\CandidateResponseController;
 use App\Http\Controllers\AcademicYearRecordController;
+use App\Http\Controllers\Admin\ApplicantController as AdminApplicantController;
 use App\Http\Controllers\EvaluationCriteriaController;
 use App\Http\Controllers\InterviewEvaluatorController;
 use App\Http\Controllers\ScholarshipEditionController;
@@ -21,7 +22,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ScholarshipDocumentController;
 use App\Models\Applicant;
 
-Route::group(['prefix' => '{locale}', 'middleware' => 'setLocale'], function () {
+Route::group(['prefix' => '{locale}', 'middleware' => ['setLocale', 'auth']], function () {
     Route::post('/check-code-exetat', [CandidatController::class, 'checkCodeExetat'])->name('check.code.exetat');
 
     Route::resource('candidats', CandidatController::class);
@@ -29,7 +30,10 @@ Route::group(['prefix' => '{locale}', 'middleware' => 'setLocale'], function () 
     Route::patch('update-status', [CandidatController::class, 'updateStatus'])->name('status.update');
 
     // Web resources for scholarship management
-    Route::resource('applicants', ApplicantController::class);
+    Route::get('/admin/applicants', [AdminApplicantController::class, 'index'])->name('admin.applicants.index');
+    Route::get('/admin/applicants/{applicant}', [AdminApplicantController::class, 'index'])->name('admin.applicants.show');
+    Route::post('/admin/applicants/search', [AdminApplicantController::class, 'search'])->name('admin.applicants.search');
+    Route::put('application-documents/change-status', [ApplicationDocumentController::class, 'change_status'])->name('application-documents.change-status');
     Route::resource('application-documents', ApplicationDocumentController::class);
     Route::resource('scholarship-documents', ScholarshipDocumentController::class);
     Route::resource('payments', PaymentController::class);

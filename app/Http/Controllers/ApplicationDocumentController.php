@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use Illuminate\Http\Request;
+use App\Models\ApplicationDocument;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\StoreApplicationDocumentRequest;
 use App\Http\Requests\UpdateApplicationDocumentRequest;
-use App\Models\ApplicationDocument;
-use Illuminate\Support\Facades\Storage;
 
 class ApplicationDocumentController extends Controller
 {
@@ -18,6 +21,36 @@ class ApplicationDocumentController extends Controller
     public function create()
     {
         return view('application-documents.create');
+    }
+
+    public function change_status(Request $request)
+    {
+        $is_valid = $request->boolean('is_valid');
+
+        $user = User::find(Auth::id());
+
+        $related_scholar_applicant = $user->applicant;
+        $scholar_id = $related_scholar_applicant->scholar?->id;
+        $agent_id = $user->staff_profile?->id;
+
+        $application_document = ApplicationDocument::find($request->input('id'));
+
+        if (!$application_document) {
+            return response()->json([
+                'message' => 'Aucun document correspondant a l\'identifiant envoye n\'a ete trouve',
+            ]);
+        }
+
+        $application_document->update([
+            'is_valid' => $is_valid,
+            'reviewed_by_agent' => $agent_id ?? null,
+            'reviewed_by_scholar' => $scholar_id ?? null,
+            'reviewed_at' => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Document examiné avec succès !'
+        ]);
     }
 
     public function store(StoreApplicationDocumentRequest $request)

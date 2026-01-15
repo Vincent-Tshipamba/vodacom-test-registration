@@ -1,316 +1,80 @@
 @extends('admin.layouts.app')
-@section('modal')
-    <!-- Main modal -->
-    <div id="search-activities" data-modal-backdrop="static" tabindex="-1" aria-hidden="true"
-        class="hidden overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full transition-opacity duration-300 ease-in-out">
-        <div class="relative p-4 w-full max-w-2xl max-h-full">
-            <!-- Modal content -->
-            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700" style="max-height: 80vh; overflow: hidden;">
-                <!-- Modal header -->
-                <div class="sticky top-0 bg-white dark:bg-gray-700 z-10 border-b dark:border-gray-600">
-                    <div class="flex items-center justify-between p-4 md:p-5">
-                        <input type="search" id="search"
-                            class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 dark:focus:ring-orange-900 dark:placeholder-gray-400"
-                            placeholder="Rechercher des Activites ..." required aria-label="Rechercher des Activités" />
-                        <button type="button"
-                            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                            data-modal-hide="search-activities" aria-label="Fermer le modal">
-                            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 14 14">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                            </svg>
-                            <span class="sr-only">Close modal</span>
-                        </button>
-                    </div>
-                </div>
-                <!-- Modal body -->
-                <div class="p-4 md:p-5 space-y-4 relative overflow-y-auto" id="resultsContainer"
-                    style="max-height: calc(80vh - 100px);">
-                    <p class="text-gray-500">Chargement des résultats...</p>
-                    <!-- Indication de chargement -->
-                </div>
-            </div>
-        </div>
-    </div>
-@endsection
+
 @section('content')
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-4">
-        <div>
-            <!-- View Toggle -->
-            <div class="inline-flex rounded-lg shadow-sm bg-gray-100 dark:bg-gray-700 p-1">
-                <button id="gridViewBtn"
-                    class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200   text-gray-800 dark:text-white active">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                    </svg>
-                    Grille
-                </button>
-                <button id="listViewBtn"
-                    class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                    Liste
-                </button>
-            </div>
-        </div>
-
-        <!-- Actions Section -->
-        <div class="flex flex-wrap items-center gap-3">
-            <!-- Search Bar -->
-            <div class="relative">
-                <input type="search" onclick="openModal()"
-                    class="w-64 pl-10 pr-4 py-2 text-sm text-gray-700 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 dark:focus:ring-orange-900 dark:text-white transition-colors duration-200"
-                    placeholder="Rechercher des Boutique..." data-modal-target="search-activities"
-                    data-modal-toggle="search-activities" />
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-
-
-        <!-- Export Dropdown -->
-        <div class="relative inline-block">
-            <button id="dropdownBgHoverButton" data-dropdown-toggle="dropdownBgHover"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600 transition-all duration-200">
-                <svg class="mr-2" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M6 12C7.10457 12 8 11.1046 8 10C8 8.89543 7.10457 8 6 8C4.89543 8 4 8.89543 4 10C4 11.1046 4.89543 12 6 12Z"
-                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                    <path d="M6 4V8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                        stroke-linejoin="round" />
-                    <path d="M6 12V20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                        stroke-linejoin="round" />
-                    <path
-                        d="M12 18C13.1046 18 14 17.1046 14 16C14 14.8954 13.1046 14 12 14C10.8954 14 10 14.8954 10 16C10 17.1046 10.8954 18 12 18Z"
-                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                    <path d="M12 4V14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                        stroke-linejoin="round" />
-                    <path d="M12 18V20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                        stroke-linejoin="round" />
-                    <path
-                        d="M18 9C19.1046 9 20 8.10457 20 7C20 5.89543 19.1046 5 18 5C16.8954 5 16 5.89543 16 7C16 8.10457 16.8954 9 18 9Z"
-                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                    <path d="M18 4V5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                        stroke-linejoin="round" />
-                    <path d="M18 9V20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                        stroke-linejoin="round" />
+    <div class="flex justify-between items-center mb-6">
+        <!-- View Toggle -->
+        <div class="inline-flex bg-gray-100 dark:bg-gray-700 shadow-sm p-1 rounded-lg">
+            <button id="gridViewBtn"
+                class="inline-flex items-center px-3 py-2 rounded-md font-medium text-gray-800 dark:text-white text-sm transition-all duration-200 active">
+                <svg class="mr-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                 </svg>
-                Filtrer
+                Grille
             </button>
-
-            <div id="dropdownBgHover" class="z-10 hidden w-48 bg-white rounded-lg shadow-sm dark:bg-gray-700">
-                <ul class="p-3 space-y-1 text-sm text-gray-700 dark:text-gray-200"
-                    aria-labelledby="dropdownBgHoverButton">
-                    <li>
-                        <div class="flex items-center p-2 rounded-sm hover:bg-gray-100 dark:hover:bg-gray-600">
-                            <input id="recent-applicants" type="checkbox" value="recent"
-                                class="filter-checkbox w-4 h-4">
-                            <label for="recent-applicants" class="ms-2 text-sm font-medium">Produits
-                                récents</label>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="flex items-center p-2 rounded-sm hover:bg-gray-100 dark:hover:bg-gray-600">
-                            <input id="active-applicants" type="checkbox" value="is_active"
-                                class="filter-checkbox w-4 h-4" checked>
-                            <label for="active-applicants" class="ms-2 text-sm font-medium">Produits
-                                actifs</label>
-                        </div>
-                    </li>
-
-                </ul>
-            </div>
+            <button id="listViewBtn"
+                class="inline-flex items-center hover:bg-white dark:hover:bg-gray-600 px-3 py-2 rounded-md font-medium text-gray-600 dark:text-gray-300 text-sm transition-all duration-200">
+                <svg class="mr-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                Liste
+            </button>
         </div>
-
-        <!-- Create Activity Button -->
-        <a href=""
-            class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-[#e38407] text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all duration-200">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            Ajouter un candidat
-        </a>
+        <!-- Search Button -->
+        <button id="searchModalButton" type="button" class="bg-blue-600 hover:bg-blue-700 text-white btn">
+            <i data-lucide="search" class="inline-block mr-2 size-4"></i>
+            Recherche avancée
+        </button>
     </div>
-
-    <div id="listView" class="hidden w-full rounded-lg shadow-md overflow-hidden mt-7">
-        <div class="overflow-x-auto">
-            <table id="" class="w-full whitespace-nowrap">
-                <thead>
-                    <tr class="bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
-                        <th class="group px-6 py-3 text-left">
-                            <div class="flex items-center gap-2">
-                                <span
-                                    class="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">N°</span>
-                                <svg class="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M5 12l5-5 5 5H5z" />
-                                </svg>
-                            </div>
-                        </th>
-                        <th class="group px-6 py-3 text-left">
-                            <div class="flex items-center gap-2">
-                                <span
-                                    class="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Prénom</span>
-                                <svg class="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M5 12l5-5 5 5H5z" />
-                                </svg>
-                            </div>
-                        </th>
-                        <th class="group px-6 py-3 text-left">
-                            <div class="flex items-center gap-2">
-                                <span
-                                    class="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Nom</span>
-                            </div>
-                        </th>
-                        <th class="group px-6 py-3 text-left">
-                            <div class="flex items-center gap-2">
-                                <span
-                                    class="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Phone</span>
-                            </div>
-                        </th>
-                        <th class="group px-6 py-3 text-left">
-                            <div class="flex items-center gap-2">
-                                <span
-                                    class="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Status</span>
-                            </div>
-                        </th>
-                        <th class="px-6 py-3 text-left">
-                            <span
-                                class="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Actions</span>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
-                    @foreach ($applicants as $key => $applicant)
-                        <tr>
-                            <td>{{ $key + 1 }}</td>
-                            <td>{{ $applicant->first_name }}</td>
-                            <td>{{ $applicant->last_name }}</td>
-                            <td>{{ $applicant->phone_number }}</td>
-                            <td>{{ $applicant->application_status }}</td>
-                            <td>Actions</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        @if ($applicants->hasPages())
-            <div class="mt-6 p-4">
-                {{ $applicants->links() }}
-            </div>
-        @endif
-    </div>
-
-    <div id="gridView" class="w-full rounded-lg shadow-md overflow-hidden p-4">
-        <div id="grid" class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-8 ">
-
-            @foreach ($applicants as $candidat)
-                <div
-                    class="max-w-md w-full overflow-hidden bg-white dark:bg-gray-900 rounded-lg shadow-lg hover:shadow-red-400">
-                    @php
-                        $applicant_photo = $candidat->application_documents()->where('document_type', 'PHOTO')->first();
-                        $photo_path = $applicant_photo->file_url;
-                        $photoUrl = Storage::url($photo_path);
-                        $isPhotoPdf = pathinfo($photo_path, PATHINFO_EXTENSION) === 'pdf';
-
-                        $applicant_id = $candidat->application_documents()->where('document_type', 'ID')->first();
-                        $id_path = $applicant_id->file_url;
-                        $id_url = Storage::url($id_path);
-
-                        $applicant_diploma = $candidat
-                            ->application_documents()
-                            ->where('document_type', 'DIPLOMA')
-                            ->first();
-                        $diploma_path = $applicant_diploma->file_url;
-                        $diploma_url = Storage::url($diploma_path);
-                    @endphp
-
-                    <div class="relative">
-                        @if ($isPhotoPdf)
-                            <iframe src="{{ $photoUrl }}" style="width: 100%; height: 200px;"
-                                frameborder="0"></iframe>
-                        @else
-                            <img class="w-full h-48 object-cover" src="{{ $photoUrl }}" alt="Photo du candidat">
-                        @endif
-                    </div>
-
-                    <div class="text-xl text-center mt-4 font-semibold dark:text-gray-200 text-gray-800">
-                        {{ $candidat->first_name . ' ' . $candidat->last_name }}</div>
-                    <div class="flex justify-between items-center">
-                        <div class="px-4 py-2">
-                            <p class="text-gray-600">{{ $candidat->phone_number }}</p>
-                        </div>
-                        @if ($candidat->application_status === 'PENDING')
-                            <a href="#" id="checkpresent{{ $candidat->id }}"
-                                onclick="changeStatus(event, '{{ $candidat->id }}')">
-                                <span>
-                                    <svg class="w-6 h-6 text-green-400 dark:text-white hover:text-green-900"
-                                        aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
-                                        height="24" fill="none" viewBox="0 0 24 24">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                            stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5" />
-                                    </svg>
-                                </span>
-                            </a>
-                        @endif
-                        <div class="px-6 py-4">
-                            <span id="statusSpan{{ $candidat->id }}"
-                                class="inline-block px-2 py-1 font-semibold {{ $candidat->status === 'Présent' ? 'text-teal-900 bg-teal-200' : 'text-red-900 bg-red-200' }}  rounded-full">{{ $candidat->status }}</span>
-                        </div>
-                    </div>
-                    <div class="px-6 py-4 text-center">
-                        <p class="text-blue-500 hover:underline">
-                            Coupon : {{ $candidat->registration_code }}
-                        </p>
-                        <a href="#" class="text-blue-500 hover:underline"
-                            onclick="showIdentity('{{ $id_url }}', '{{ $candidat->id }}', '{{ $candidat->first_name }}', '{{ pathinfo($id_path, PATHINFO_EXTENSION) === 'pdf' ? 'true' : 'false' }}')">
-                            Voir la pièce d'identité
-                        </a><br>
-                        <a href="#" class="text-blue-500 hover:underline"
-                            onclick="showCertificate('{{ $diploma_url }}', '{{ $candidat->id }}', '{{ $candidat->first_name }}', '{{ pathinfo($diploma_path, PATHINFO_EXTENSION) === 'pdf' ? 'true' : 'false' }}')">
-                            Voir l'attestation
-                        </a>
-                    </div>
-                </div>
-            @endforeach
+    <!-- Grid View -->
+    <div id="gridView" class="w-full">
+        <div id="applicantsGrid" class="gap-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
+            @include('admin.applicants.partials.applicants-grid', ['applicants' => $gridApplicants])
         </div>
     </div>
+
+    <!-- List View (initially hidden) -->
+    <div id="listView" class="hidden w-full">
+        @include('admin.applicants.partials.applicants-list')
+    </div>
+
+    <!-- Loading Placeholders (initially hidden) -->
+    <div id="loadingPlaceholders" class="hidden">
+        @include('admin.applicants.partials.loading-placeholders')
+    </div>
+    <!-- Search Modal -->
+    @include('admin.applicants.partials.search-modal')
 @endsection
 @section('script')
+    <script src="https://cdn.datatables.net/2.3.6/js/dataTables.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialiser DataTable avec les options de pagination
+            const dataTable = $('#applicants-table').DataTable({
+                paging: true,
+                pageLength: 10,
+                lengthChange: false,
+                info: true,
+                language: {
+                    search: "Rechercher:",
+                    paginate: {
+                        next: "Suivant",
+                        previous: "Précédent"
+                    },
+                    info: "Affichage de _START_ à _END_ sur _TOTAL_ entrées"
+                }
+            });
+        })
+    </script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
+            setupModal();
             const gridViewBtn = document.getElementById("gridViewBtn");
             const listViewBtn = document.getElementById("listViewBtn");
             const gridView = document.getElementById("gridView");
             const listView = document.getElementById("listView");
-
-            // Fonction pour changer la vue
-            function switchView(view) {
-                if (view === 'grid') {
-                    gridView.classList.remove("hidden");
-                    listView.classList.add("hidden");
-                    gridViewBtn.classList.add("active");
-                    listViewBtn.classList.remove("active");
-                    localStorage.setItem('selectedView', 'grid');
-                } else {
-                    listView.classList.remove("hidden");
-                    gridView.classList.add("hidden");
-                    listViewBtn.classList.add("active");
-                    gridViewBtn.classList.remove("active");
-                    localStorage.setItem('selectedView', 'list');
-                }
-            }
+            const loadingPlaceholders = document.getElementById('loadingPlaceholders');
 
             // Restaurer la vue précédemment sélectionnée
             const savedView = localStorage.getItem('selectedView') || 'grid';
@@ -319,57 +83,440 @@
             // Gestionnaires d'événements pour les boutons
             gridViewBtn.addEventListener("click", () => switchView('grid'));
             listViewBtn.addEventListener("click", () => switchView('list'));
+
+            // Infinite scroll for grid view
+            const grid = document.getElementById('applicantsGrid');
+            const loadMoreContainer = document.getElementById('load-more-container');
+
+            // Search functionality
+            const searchModalButton = document.getElementById('searchModalButton');
+            const searchModal = document.getElementById('searchModal');
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+            const noResults = document.getElementById('noResults');
+            let searchTimeout;
+            // Search input event listener
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    clearTimeout(searchTimeout);
+                    const query = e.target.value.trim();
+                    if (query.length < 2) {
+                        searchResults.classList.add('hidden');
+                        noResults.classList.add('hidden');
+                        return;
+                    }
+                    searchTimeout = setTimeout(() => {
+                        searchApplicants(query);
+                    }, 300);
+                });
+            }
+
+            // Initialize modals
+            const modals = document.querySelectorAll('[data-modal-toggle]');
+            modals.forEach(button => {
+                button.addEventListener('click', () => {
+                    const target = button.getAttribute('data-modal-toggle');
+                    const modal = document.getElementById(target);
+                    modal.classList.toggle('hidden');
+                });
+            });
+            // Close modals when clicking outside
+            window.addEventListener('click', (e) => {
+                modals.forEach(button => {
+                    const target = button.getAttribute('data-modal-toggle');
+                    const modal = document.getElementById(target);
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            });
         });
 
+        let isLoading = false;
+        let isScrolling = false;
+        let nextPageUrl = '{{ $gridApplicants->nextPageUrl() }}';
+        window.addEventListener('scroll', () => {
+            if (isScrolling) return;
 
-        function openModal() {
-            const modal = document.getElementById('search-activities').classList.remove('hidden')
-            const inputField = document.getElementById('search').focus()
+            isScrolling = true;
+            const {
+                scrollTop,
+                scrollHeight,
+                clientHeight
+            } = document.documentElement;
+
+            if (!gridView.classList.contains('hidden') && scrollTop + clientHeight >= scrollHeight - 50) {
+                loadMoreApplicants();
+            }
+
+            setTimeout(() => {
+                isScrolling = false;
+            }, 100);
+        }, {
+            passive: true
+        });
+    </script>
+    <script>
+        document.addEventListener('click', function(e) {
+            const toggleBtn = e.target.closest('[data-bs-toggle]');
+            const isInsideDropdown = e.target.closest('.dropdown-menu');
+
+            if (toggleBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const dropdownId = toggleBtn.dataset.bsToggle;
+                const dropdown = document.getElementById(dropdownId);
+                if (dropdown) {
+                    // Fermer tous les autres dropdowns
+                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                        if (menu !== dropdown && !menu.contains(toggleBtn)) {
+                            menu.classList.add('hidden');
+                        }
+                    });
+
+                    // Basculer le dropdown actuel
+                    dropdown.classList.toggle('hidden');
+                    return false;
+                }
+            }
+
+            if (!isInsideDropdown) {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.classList.add('hidden');
+                });
+            }
+        });
+    </script>
+    <script>
+        function setupModal() {
+            const modal = document.getElementById('searchModal');
+            const modalBackdrop = document.getElementById('modalBackdrop');
+            const closeModal = document.getElementById('closeModal');
+            const searchModalButton = document.getElementById('searchModalButton');
+
+            function openModal() {
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+
+            function closeModalHandler() {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+            if (searchModalButton) {
+                searchModalButton.addEventListener('click', openModal);
+            }
+            if (closeModal) {
+                closeModal.addEventListener('click', closeModalHandler);
+            }
+            if (modalBackdrop) {
+                modalBackdrop.addEventListener('click', closeModalHandler);
+            }
         }
 
-        function showCertificate(certificateUrl, candidateId, name, isPdf) {
-            let contentHtml;
+        function displaySearchResults(results) {
+            const resultsContainer = document.querySelector('#searchResults ul');
+            resultsContainer.innerHTML = '';
+            if (results.length === 0) {
+                noResults.classList.remove('hidden');
+                searchResults.classList.add('hidden');
+                return;
+            }
+            noResults.classList.add('hidden');
 
-            if (isPdf === 'true') {
+            results.forEach(applicant => {
+                const li = document.createElement('li');
+                li.className = 'p-3 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer';
+                li.innerHTML = `
+                <a href="/admin/applicants/${applicant.id}" class="block">
+                    <div class="font-medium text-gray-900 dark:text-white">
+                        ${applicant.first_name} ${applicant.last_name}
+                    </div>
+                    <div class="text-gray-500 dark:text-gray-400 text-sm">
+                        ${applicant.province} ${applicant.coupon_code ? '• ' + applicant.coupon_code : ''}
+                    </div>
+                </a>
+            `;
+                resultsContainer.appendChild(li);
+            });
+            searchResults.classList.remove('hidden');
+        }
+
+        // Search applicants function
+        async function searchApplicants(query) {
+            try {
+                const response = await fetch(
+                    '{{ route('admin.applicants.search', ['locale' => app()->getLocale()]) }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            query
+                        })
+                    });
+                const results = await response.json();
+                displaySearchResults(results);
+            } catch (error) {
+                console.error('Error searching applicants:', error);
+            }
+        }
+
+        // Load more applicants function
+        async function loadMoreApplicants() {
+            if (isLoading || !nextPageUrl) return;
+
+            isLoading = true;
+            loadingPlaceholders.classList.remove('hidden');
+
+            try {
+                const response = await fetch(nextPageUrl + '&ajax=1');
+                const data = await response.json();
+
+                if (data.html) {
+                    const temp = document.createElement('div');
+                    temp.innerHTML = data.html;
+                    const newItems = temp.querySelectorAll('.card');
+
+                    newItems.forEach(item => {
+                        if (gridView.classList.contains('hidden')) {
+                            return;
+                        } else {
+                            document.getElementById('applicantsGrid').appendChild(item);
+                            lucide.createIcons();
+                        }
+                    });
+
+                    nextPageUrl = data.next_page_url;
+                    if (!nextPageUrl) {
+                        document.getElementById('load-more-container')?.remove();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading more applicants:', error);
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'col-span-1 md:col-span-2 xl:col-span-4 text-center p-4 text-red-500';
+                errorDiv.textContent = 'Erreur lors du chargement des candidats. Veuillez réessayer.';
+                document.getElementById('applicantsGrid').appendChild(errorDiv);
+            } finally {
+                isLoading = false;
+                loadingPlaceholders.classList.add('hidden');
+            }
+        }
+
+        // Fonction pour changer la vue
+        function switchView(view) {
+            if (view === 'grid') {
+                gridView.classList.remove("hidden");
+                listView.classList.add("hidden");
+                gridViewBtn.classList.add("active");
+                listViewBtn.classList.remove("active");
+                localStorage.setItem('selectedView', 'grid');
+            } else {
+                listView.classList.remove("hidden");
+                gridView.classList.add("hidden");
+                listViewBtn.classList.add("active");
+                gridViewBtn.classList.remove("active");
+                localStorage.setItem('selectedView', 'list');
+
+                const url = new URL(window.location.href);
+                url.searchParams.set('view', 'list');
+                // window.location.href = url.toString();
+            }
+        }
+
+        function showDocument(fileUrl, fileId, fileType, candidateId, name, isPdf) {
+            let contentHtml;
+            let title;
+            if (fileType === 'DIPLOMA') {
+                title = `Attestation de réussite de ${name}`;
+            } else if (fileType === 'PHOTO') {
+                title = `Image de ${name}`;
+            } else if (fileType === 'ID') {
+                title = `Pièce d'identité de ${name}`;
+            }
+
+            if (isPdf) {
                 contentHtml = `
                 <div>
-                    <iframe id="certificateIframe${candidateId}" src="${certificateUrl}"
-                            style="width: 1000px; height: 400px;" frameborder="0"></iframe>
+                    <iframe id="certificateIframe${candidateId}" src="${fileUrl}"
+                            style="width: 100%; height: 65vh;" frameborder="0"></iframe>
                 </div>
             `;
             } else {
                 contentHtml = `
                 <div>
-                    <img id="certificateImage${candidateId}" src="${certificateUrl}" alt="Certificat" class="w-full h-48 object-cover">
+                    <img id="certificateImage${candidateId}" src="${fileUrl}" alt="${fileType}" class="w-full h-48 object-cover">
                 </div>
             `;
             }
             Swal.fire({
-                title: `Attestation de réussite de ${name}`,
-                html: `
-                    ${contentHtml}
-                    <div id="pourcentageMessage${candidateId}" class="mt-2 text-blue-600"></div>
-
-                    <div class="mt-2" id="progressIndicator${candidateId}" style="display: none;">Vérification en cours...</div>
-                    <button id="checkpourcentage${candidateId}" class="mt-4 p-2 bg-blue-500 text-white rounded">Vérifier le pourcentage</button>
-                    `,
-                showCloseButton: true,
+                title: title,
+                html: `${contentHtml}`,
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonText: "Je valide le document",
+                denyButtonText: "Je ne valide pas le document",
+                cancelButtonText: "Fermer",
                 focusConfirm: false,
-                confirmButtonText: 'Fermer',
                 customClass: {
                     popup: 'custom-swal'
                 }
-            });
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // TODO: Handle confirmation
+                    console.log('Document validated');
+                    $.ajax({
+                        type: "PUT",
+                        url: "{{ route('application-documents.change-status', app()->getLocale()) }}",
+                        data: {
+                            _token: "{{ csrf_token() }}",
+                            id: fileId,
+                            is_valid: true
+                        },
+                        dataType: "json",
+                        success: function(response) {
+                            const Toast = Swal.mixin({
+                                toast: true,
+                                position: "top-end",
+                                showConfirmButton: false,
+                                timer: 3000,
+                                timerProgressBar: true,
+                                didOpen: (toast) => {
+                                    toast.onmouseenter = Swal.stopTimer;
+                                    toast.onmouseleave = Swal.resumeTimer;
+                                }
+                            });
+                            Toast.fire({
+                                icon: "success",
+                                title: response.message,
+                            });
+                        },
+                        error: function(xhr, status, error) {
+                            const Toast = Swal.mixin({
+                                toast: true,
+                                position: "top-end",
+                                showConfirmButton: false,
+                                timer: 3000,
+                                timerProgressBar: true,
+                                didOpen: (toast) => {
+                                    toast.onmouseenter = Swal.stopTimer;
+                                    toast.onmouseleave = Swal.resumeTimer;
+                                }
+                            });
+                            Toast.fire({
+                                icon: "error",
+                                title: "Une erreur est survenue lors de la validation.",
+                            });
+                        }
+                    });
+                } else if (result.isDenied) {
+                    // TODO: Handle denial
+                    console.log('Document not validated');
+                    $.ajax({
+                        type: "PUT",
+                        url: "{{ route('application-documents.change-status', app()->getLocale()) }}",
+                        data: {
+                            _token: "{{ csrf_token() }}",
+                            is_valid: false,
+                            id: fileId,
+                        },
+                        dataType: "json",
+                        success: function(response) {
+                            const Toast = Swal.mixin({
+                                toast: true,
+                                position: "top-end",
+                                showConfirmButton: false,
+                                timer: 3000,
+                                timerProgressBar: true,
+                                didOpen: (toast) => {
+                                    toast.onmouseenter = Swal.stopTimer;
+                                    toast.onmouseleave = Swal.resumeTimer;
+                                }
+                            });
+                            Toast.fire({
+                                icon: "error",
+                                title: response.message,
+                            });
+                        },
+                        error: function(xhr, status, error) {
+                            const Toast = Swal.mixin({
+                                toast: true,
+                                position: "top-end",
+                                showConfirmButton: false,
+                                timer: 3000,
+                                timerProgressBar: true,
+                                didOpen: (toast) => {
+                                    toast.onmouseenter = Swal.stopTimer;
+                                    toast.onmouseleave = Swal.resumeTimer;
+                                }
+                            });
+                            Toast.fire({
+                                icon: "error",
+                                title: "Une erreur est survenue lors de l'invalidation.",
+                            });
+                        }
+                    });
+                }
+            })
+        }
 
-            // Ajoutez un écouteur d'événements sur le bouton
-            const checkpourcentageButton = Swal.getHtmlContainer().querySelector('#checkpourcentage' + candidateId);
-            checkpourcentageButton.addEventListener('click', () => extractTextFromImage(certificateUrl, candidateId));
+
+        function extractTextFromImage(certificateUrl, candidatId) {
+            const pourcentageMessage = document.getElementById('pourcentageMessage' + candidatId);
+            const progressIndicator = document.getElementById('progressIndicator' + candidatId);
+
+            // Affiche l'indicateur de progression
+            progressIndicator.style.display = 'block';
+            progressIndicator.innerHTML = 'Vérification en cours : 0%';
+            pourcentageMessage.innerText = '';
+
+            Tesseract.recognize(
+                certificateUrl,
+                'eng', // Langue d'analyse
+                {
+                    logger: (m) => {
+                        if (m.status === 'recognizing text') {
+                            const progress = Math.round(m.progress * 100);
+                            progressIndicator.innerHTML = `Vérification en cours : ${progress}%`;
+                        }
+                    }
+                }
+            ).then(({
+                data: {
+                    text
+                }
+            }) => {
+                // Masque l'indicateur de progression
+                progressIndicator.style.display = 'none';
+
+                // Recherche de la mention "AVEC XX % DES POINTS" dans le texte extrait
+                const match = text.match(/(\d[\d\s\[\]]*)\s*%\s*DES\s*POINTS/i);
+
+                if (match && match[1]) {
+                    const pourcentage = parseInt(match[1], 10);
+
+                    pourcentageMessage.innerText =
+                        `Le candidat a obtenu un pourcentage de ${pourcentage}%.`;
+
+                } else {
+                    pourcentageMessage.innerText =
+                        "Le pourcentage n'a pas pu être détecté sur l'attestation.";
+                }
+            }).catch((err) => {
+                // Masque l'indicateur de progression et affiche un message d'erreur
+                progressIndicator.style.display = 'none';
+                pourcentageMessage.innerText = 'Erreur lors de la reconnaissance du texte.';
+                console.error(err);
+            });
         }
 
         function showIdentity(identityUrl, candidatId, name, isPDF) {
             let contentHtml;
 
-            if (isPDF === 'true') {
+            if (isPDF) {
                 contentHtml = `
                 <div>
                     <iframe id="IdentityIframe${candidatId}" src="${identityUrl}"
@@ -397,4 +544,5 @@
             });
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@9.0.3"></script>
 @endsection

@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="{{ asset('assets/scss/icons.scss') }}">
     <!-- Tailwind CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/tailwind2.css') }}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.6/css/dataTables.dataTables.min.css">
 
     {{-- <link rel="stylesheet" href="{{ asset('assets/scss/tailwind.scss') }}"> --}}
     <!-- Scripts -->
@@ -78,7 +79,6 @@ $current = $languages[$locale] ?? $languages['fr'];
     <script src="{{ Vite::asset('node_modules/jquery/dist/jquery.min.js') }}"></script>
     <script src="{{ Vite::asset('node_modules/flowbite/dist/flowbite.min.js') }}"></script>
     <script src="{{ Vite::asset('node_modules/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
-    <script src="{{ Vite::asset('node_modules/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
 
     <script src="{{ asset('assets/libs/choices.js/public/assets/scripts/choices.min.js') }}"></script>
     <script src="{{ asset('assets/libs/@popperjs/core/umd/popper.min.js') }}"></script>
@@ -93,6 +93,14 @@ $current = $languages[$locale] ?? $languages['fr'];
     <script src="{{ asset('assets/libs/vanilla-calendar-pro/build/vanilla-calendar.min.js') }}"></script>
 
     <script src="{{ asset('assets/js/pages/dashboards-hr.init.js') }}"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+    <!-- Dans la section head -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@9.0.3"></script>
+
+    <script src="https://cdn.datatables.net/2.3.6/js/dataTables.min.js"></script>
+
     <!-- App js -->
     <script src="{{ asset('assets/js/app.js') }}"></script>
     @yield('script')
