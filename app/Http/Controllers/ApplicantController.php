@@ -173,6 +173,7 @@ class ApplicantController extends Controller
                 'applicant_id' => $applicant->id,
                 'document_type' => strtoupper($docType),
                 'file_url' => $storedPath,
+                'file_type' => $fileExt,
                 'file_name' => $fileName,
             ]);
         }
