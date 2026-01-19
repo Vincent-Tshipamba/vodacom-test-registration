@@ -1,21 +1,10 @@
 @foreach ($applicants as $candidat)
-    @php
-        $photo = $candidat->application_documents->firstWhere('document_type', 'PHOTO')->file_url;
-        $idEl = $candidat->application_documents->firstWhere('document_type', 'ID');
-        $diplomaEl = $candidat->application_documents->firstWhere('document_type', 'DIPLOMA');
-        $id = $idEl->file_url;
-        $idId = $idEl->id;
-        $idIsPdf = $idEl->file_type === 'pdf' ? true : false;
-        $diploma = $diplomaEl->file_url;
-        $diplomaId = $diplomaEl->id;
-        $diplomaIsPdf = $diplomaEl->file_type === 'pdf' ? true : false;
-    @endphp
     <div class="card">
         <div class="card-body">
             <div
                 class="relative flex justify-center items-center bg-slate-100 dark:bg-zink-600 mx-auto rounded-full size-16 text-lg">
-                @if ($photo)
-                    <img src="{{ Storage::url($photo) }}" alt="{{ 'Diplome de ' . $candidat->first_name }}"
+                @if ($candidat->documents->photo)
+                    <img src="{{ $candidat->documents->photo['url'] }}" alt="{{ 'Diplome de ' . $candidat->first_name }}"
                         class="rounded-full size-16">
                     <span
                         class="ltr:right-1 bottom-1 rtl:left-1 absolute bg-green-400 border-2 border-white dark:border-zink-700 rounded-full size-3"></span>
@@ -27,19 +16,20 @@
                 @endif
             </div>
             <div class="mt-4 text-center">
-                <h5 class="mb-1 text-16"><a href="pages-account.html">
-                        {{ $candidat->first_name }}
-                        {{ $candidat->last_name }}</a>
+                <h5 class="mb-1 text-16">
+                    <a href="pages-account.html">
+                        {{ $candidat->full_name }}
+                    </a>
                 </h5>
                 <p class="mb-3 text-slate-500 dark:text-zink-200">{{ $candidat->diploma_city }}</p>
                 @if ($candidat->application_status == 'PENDING')
                     <span
                         class="inline-flex items-center bg-orange-100 dark:bg-green-500/20 px-2.5 py-0.5 border border-transparent dark:border-transparent rounded font-medium text-red-500 text-xs status">
                         <i data-lucide="loader" class="mr-1.5 size-3"></i>En attente</span>
-                @elseif ($candidat->application_status == 'APPROVED')
+                @elseif ($candidat->application_status == 'ADMITTED')
                     <span
                         class="inline-flex items-center bg-green-100 dark:bg-green-500/20 px-2.5 py-0.5 border border-transparent dark:border-transparent rounded font-medium text-green-500 text-xs status"><i
-                            data-lucide="check-circle" class="mr-1.5 size-3"></i>Approuvé</span>
+                            data-lucide="check-circle" class="mr-1.5 size-3"></i>Admis</span>
                 @elseif ($candidat->application_status == 'REJECTED')
                     <span
                         class="inline-flex items-center bg-red-100 dark:bg-green-500/20 px-2.5 py-0.5 border border-transparent dark:border-transparent rounded font-medium text-red-500 text-xs status">
@@ -50,6 +40,16 @@
                                 d="M6 18 17.94 6M18 18 6.06 6" />
                         </svg>
                         Refusé</span>
+                @elseif ($candidat->application_status == 'SHORTLISTED')
+                    <span
+                        class="inline-flex items-center bg-yellow-100 dark:bg-green-500/20 px-2.5 py-0.5 border border-transparent dark:border-transparent rounded font-medium text-red-500 text-xs status">
+                        <svg class="w-4 h-4 text-yellow-600 dark:text-yellow-800" aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                            viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18 17.94 6M18 18 6.06 6" />
+                        </svg>
+                        Préselectionné</span>
                 @elseif ($candidat->application_status == 'INTERVIEW_PASSED')
                     <span
                         class="inline-flex items-center bg-green-100 dark:bg-green-500/20 px-2.5 py-0.5 border border-transparent dark:border-transparent rounded font-medium text-green-500 text-xs status">
@@ -162,20 +162,20 @@
                             <li>
                                 <a class="block hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-zink-500 dark:focus:bg-zink-500 px-4 py-1.5 text-slate-600 hover:text-slate-500 focus:text-slate-500 dark:hover:text-zink-200 dark:focus:text-zink-200 dark:text-zink-100 text-base transition-all duration-200 ease-linear dropdown-item"
                                     href="#!"
-                                    onclick="showDocument('{{ Storage::url($diploma) }}', {{ $diplomaId }}, '{{ 'DIPLOMA' }}', {{ $candidat->id }}, '{{ $candidat->first_name . ' ' . $candidat->last_name }}', '{{ $diplomaIsPdf }}')"><i
+                                    onclick="showDocument(event, '{{ $candidat->documents->diploma['url'] }}', {{ $candidat->documents->diploma['id'] }}, '{{ 'DIPLOMA' }}', {{ $candidat->id }}, '{{ $candidat->full_name }}', '{{ $candidat->documents->diploma['is_pdf'] }}')"><i
                                         data-lucide="eye" class="inline-block ltr:mr-1 rtl:ml-1 size-3"></i> <span
                                         class="align-middle">Attestation de reussite</span></a>
                             </li>
                             <li>
                                 <a href="#!"
-                                    onclick="showDocument('{{ Storage::url($id) }}', {{ $idId }}, '{{ 'DIPLOMA' }}', {{ $candidat->id }}, '{{ $candidat->first_name . ' ' . $candidat->last_name }}', '{{ $idIsPdf }}')"
+                                    onclick="showDocument(event, '{{ $candidat->documents->id['url'] }}', {{ $candidat->documents->id['id'] }}, '{{ 'ID' }}', {{ $candidat->id }}, '{{ $candidat->full_name }}', '{{ $candidat->documents->id['is_pdf'] }}')"
                                     class="block hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-zink-500 dark:focus:bg-zink-500 px-4 py-1.5 text-slate-600 hover:text-slate-500 focus:text-slate-500 dark:hover:text-zink-200 dark:focus:text-zink-200 dark:text-zink-100 text-base transition-all duration-200 ease-linear dropdown-item"
                                     href="#!"><i data-lucide="file-edit"
                                         class="inline-block ltr:mr-1 rtl:ml-1 size-3"></i> <span
                                         class="align-middle">Piece d'identite</span></a>
                             </li>
                             <li>
-                                <a href="#!"
+                                <a href="{{ route('admin.applicants.show', ['applicant' => $candidat->id, 'locale' => app()->getLocale()]) }}"
                                     class="block hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-zink-500 dark:focus:bg-zink-500 px-4 py-1.5 text-slate-600 hover:text-slate-500 focus:text-slate-500 dark:hover:text-zink-200 dark:focus:text-zink-200 dark:text-zink-100 text-base transition-all duration-200 ease-linear dropdown-item"
                                     href="#!"><i data-lucide="trash-2"
                                         class="inline-block ltr:mr-1 rtl:ml-1 size-3"></i> <span

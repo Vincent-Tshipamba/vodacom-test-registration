@@ -28,6 +28,15 @@ class ApplicantFactory extends Factory
             'ADMITTED'
         ];
 
+        $vulnerability_types = [
+            'disabled',
+            'albinos',
+            'pygmee',
+            'refugee',
+            'orphan',
+            'none',
+        ];
+
         $studied_options = [
             'Aides-Soignantes',
             'Arts et métiers',
@@ -93,7 +102,7 @@ class ApplicantFactory extends Factory
             'gender' => $this->faker->randomElement(['male', 'female']),
             'date_of_birth' => $this->faker->dateTimeBetween('-21 years', '-15 years'),
             'phone_number' => $this->faker->phoneNumber,
-            'vulnerability_type' => $this->faker->randomElement($application_status),
+            'vulnerability_type' => $this->faker->randomElement($vulnerability_types),
             'diploma_city' => $this->faker->city,
             'current_city' => $this->faker->city,
             'full_address' => $this->faker->address,

@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Applicant extends Model
 {
@@ -36,10 +37,44 @@ class Applicant extends Model
         'application_status',
     ];
 
+    protected $appends = ['full_name', 'documents'];
+
     protected $casts = [
         'date_of_birth' => 'date',
         'percentage' => 'decimal:2',
     ];
+
+    public function getAge(): int
+    {
+        $today = now();
+        $age = $today->year - $this->date_of_birth->year;
+
+        if ($today->month < $this->date_of_birth->month || ($today->month == $this->date_of_birth->month && $today->day < $this->date_of_birth->day)) {
+            $age--;
+        }
+
+        return $age;
+    }
+
+
+    public function getFullNameAttribute()
+    {
+        return "{$this->first_name} {$this->last_name}";
+    }
+
+    public function getDocumentsAttribute()
+    {
+        return (object) $this->application_documents
+            ->mapWithKeys(fn($doc) => [
+                strtolower($doc->document_type) => [
+                    'id' => $doc->id,
+                    'type' => $doc->document_type,
+                    'url' => Storage::url($doc->file_url),
+                    'ext' => $doc->file_type,
+                    'is_pdf' => $doc->file_type === 'pdf',
+                ]
+            ])->toArray();
+    }
 
     public function user()
     {

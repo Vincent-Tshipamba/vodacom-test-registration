@@ -42,6 +42,7 @@
     <div id="loadingPlaceholders" class="hidden">
         @include('admin.applicants.partials.loading-placeholders')
     </div>
+
     <!-- Search Modal -->
     @include('admin.applicants.partials.search-modal')
 @endsection
@@ -227,14 +228,16 @@
 
             results.forEach(applicant => {
                 const li = document.createElement('li');
+                let url = '{{ route('admin.applicants.show', ['applicant' => ':id', 'locale' => app()->getLocale()]) }}';
+                url = url.replace(':id', applicant.id);
                 li.className = 'p-3 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer';
                 li.innerHTML = `
-                <a href="/admin/applicants/${applicant.id}" class="block">
+                <a href="${url}" class="block">
                     <div class="font-medium text-gray-900 dark:text-white">
                         ${applicant.first_name} ${applicant.last_name}
                     </div>
                     <div class="text-gray-500 dark:text-gray-400 text-sm">
-                        ${applicant.province} ${applicant.coupon_code ? '• ' + applicant.coupon_code : ''}
+                        ${applicant.diploma_city} ${applicant.registration_code ? '• ' + applicant.registration_code : ''}
                     </div>
                 </a>
             `;
@@ -327,7 +330,9 @@
             }
         }
 
-        function showDocument(fileUrl, fileId, fileType, candidateId, name, isPdf) {
+        function showDocument(event, fileUrl, fileId, fileType, candidateId, name, isPdf) {
+            event.preventDefault();
+
             let contentHtml;
             let title;
             if (fileType === 'DIPLOMA') {
@@ -462,7 +467,6 @@
                 }
             })
         }
-
 
         function extractTextFromImage(certificateUrl, candidatId) {
             const pourcentageMessage = document.getElementById('pourcentageMessage' + candidatId);
