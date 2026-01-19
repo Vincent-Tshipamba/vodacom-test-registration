@@ -14,13 +14,9 @@ class ApplicantController extends Controller
      */
     public function index()
     {
-        $listApplicants = Applicant::with(['application_documents' => function ($query) {
-            $query->whereIn('document_type', ['PHOTO', 'ID', 'DIPLOMA', 'RECO_LETTER']);
-        }])->latest()->get();
+        $listApplicants = Applicant::latest()->get();
 
-        $gridApplicants = Applicant::with(['application_documents' => function ($query) {
-            $query->whereIn('document_type', ['PHOTO', 'ID', 'DIPLOMA', 'RECO_LETTER']);
-        }])->latest()->paginate(16);
+        $gridApplicants = Applicant::latest()->paginate(16);
 
         if (request()->has('ajax')) {
             return response()->json([
@@ -44,17 +40,11 @@ class ApplicantController extends Controller
                 ->orWhere('last_name', 'like', "%$query%")
                 ->orWhere('diploma_city', 'like', "%$query%")
                 ->orWhere('registration_code', 'like', "%$query%");
-        })->take(5)->get(['id', 'first_name', 'last_name', 'diploma_city', 'registration_code']);
+        })->with(['application_documents' => function ($query) {
+            $query->whereIn('document_type', ['PHOTO', 'ID', 'DIPLOMA', 'RECO_LETTER']);
+        }])->take(5)->get(['id', 'first_name', 'last_name', 'date_of_birth', 'phone_number', 'percentage', 'full_address', 'diploma_city', 'career_goals', 'registration_code']);
 
         return response()->json($applicants);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -68,11 +58,8 @@ class ApplicantController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function show(String $locale, Applicant $applicant)
     {
-        $applicant = Applicant::with(['application_documents' => function ($query) {
-            $query->whereIn('document_type', ['PHOTO', 'ID', 'DIPLOMA']);
-        }])->findOrFail($id);
         return view('admin.applicants.show', compact('applicant'));
     }
 

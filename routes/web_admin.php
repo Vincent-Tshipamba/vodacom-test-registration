@@ -31,7 +31,7 @@ Route::group(['prefix' => '{locale}/admin', 'middleware' => ['setLocale', 'auth'
 
     // Web resources for scholarship management
     Route::get('applicants', [AdminApplicantController::class, 'index'])->name('admin.applicants.index');
-    Route::get('applicants/{applicant}', [AdminApplicantController::class, 'index'])->name('admin.applicants.show');
+    Route::get('applicants/{applicant}', [AdminApplicantController::class, 'show'])->name('admin.applicants.show');
     Route::post('applicants/search', [AdminApplicantController::class, 'search'])->name('admin.applicants.search');
     Route::put('application-documents/change-status', [ApplicationDocumentController::class, 'change_status'])->name('application-documents.change-status');
     Route::resource('application-documents', ApplicationDocumentController::class);
