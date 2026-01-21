@@ -7,6 +7,9 @@ use App\Http\Controllers\ApplicantController;
 Route::group(['prefix' => '{locale}', 'middleware' => 'setLocale'], function () {
     Route::get('/', [ApplicantController::class, 'home'])->name('index');
 
+    Route::get('/scholarship/test', [ApplicantController::class, 'test'])->name('scholarship.test');
+    Route::post('/scholarship/test', [ApplicantController::class, 'authenticateApplicants'])->name('scholarship.authenticate');
+
     Route::get('/scholarship/register', [ApplicantController::class, 'register'])->name('scholarship.register');
     // ->middleware('checkSubmission');
 
