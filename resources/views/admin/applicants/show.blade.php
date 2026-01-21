@@ -358,7 +358,7 @@
                                 </div>
                                 <div class="flex flex-col py-3">
                                     <dt class="mb-1 text-gray-500 dark:text-gray-400 md:text-lg">
-                                        {{ __('admin.additional_infos') }} %
+                                        {{ __('admin.additional_infos') }}
                                     </dt>
                                     <dd class="font-semibold text-lg">{{ $applicant->additional_infos }}</dd>
                                 </div>
