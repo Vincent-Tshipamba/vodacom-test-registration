@@ -19,6 +19,37 @@ class ApplicantController extends Controller
         return view('index');
     }
 
+    public function test()
+    {
+        return view('applicants.authenticate');
+    }
+
+    public function authenticateApplicants(Request $request)
+    {
+        $request->validate([
+            'national_exam_code' => 'required|string|max:14|regex:/^\d{14}$/',
+        ]);
+
+        $nationalExamCode = $request->input('national_exam_code');
+
+
+        $applicant = Applicant::where('national_exam_code', $nationalExamCode)
+        ->where('registration_code', $request->input('coupon'))
+        ->where('edition_id', ScholarshipEdition::getCurrentEdition()->id)
+        ->where('application_status', 'SHORTLISTED')
+        ->first();
+
+        if ($applicant) {
+            Log::info('Applicant authenticated for test : ' . $applicant->first_name . ' ' . $applicant->last_name);
+
+            session(['authenticated_applicant_id' => $applicant->id]);
+            return redirect()->route('scholarship.test', app()->getLocale())->with('success', __('messages.authenticated'));
+        } else {
+            return redirect()->back()
+                ->with('error', 'Desolé, les informations fournies ne correspondent à aucun candidat éligible.');
+        }
+    }
+
     public function register()
     {
         return view('applicants.registration-form');
