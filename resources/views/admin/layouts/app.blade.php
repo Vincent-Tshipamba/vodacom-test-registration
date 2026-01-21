@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="light scroll-smooth group" data-layout="vertical"
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="group scroll-smooth light" data-layout="vertical"
     data-sidebar="light" data-sidebar-size="lg" data-mode="light" data-topbar="light" data-skin="default" data-navbar="sticky"
     data-content="fluid" dir="ltr">
 
@@ -28,8 +28,8 @@
 </head>
 
 <body
-    class="text-base bg-body-bg text-body font-public dark:text-zink-100 dark:bg-zink-800 group-data-[skin=bordered]:bg-body-bordered group-data-[skin=bordered]:dark:bg-zink-700">
-    <div class="group-data-[sidebar-size=sm]:min-h-sm group-data-[sidebar-size=sm]:relative">
+    class="bg-body-bg dark:bg-zink-800 group-data-[skin=bordered]:bg-body-bordered group-data-[skin=bordered]:dark:bg-zink-700 font-public text-body dark:text-zink-100 text-base">
+    <div class="group-data-[sidebar-size=sm]:relative group-data-[sidebar-size=sm]:min-h-sm">
 
         @php
             $locale = app()->getLocale();
@@ -65,7 +65,7 @@ $current = $languages[$locale] ?? $languages['fr'];
 
         <div class="relative min-h-screen group-data-[sidebar-size=sm]:min-h-sm">
             <div
-                class="group-data-[sidebar-size=lg]:ltr:md:ml-vertical-menu group-data-[sidebar-size=lg]:rtl:md:mr-vertical-menu group-data-[sidebar-size=md]:ltr:ml-vertical-menu-md group-data-[sidebar-size=md]:rtl:mr-vertical-menu-md group-data-[sidebar-size=sm]:ltr:ml-vertical-menu-sm group-data-[sidebar-size=sm]:rtl:mr-vertical-menu-sm pt-[calc(theme('spacing.header')_*_1)] pb-[calc(theme('spacing.header')_*_0.8)] px-4 group-data-[navbar=bordered]:pt-[calc(theme('spacing.header')_*_1.3)] group-data-[navbar=hidden]:pt-0 group-data-[layout=horizontal]:mx-auto group-data-[layout=horizontal]:max-w-screen-2xl group-data-[layout=horizontal]:px-0 group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:ltr:md:ml-auto group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:rtl:md:mr-auto group-data-[layout=horizontal]:md:pt-[calc(theme('spacing.header')_*_1.6)] group-data-[layout=horizontal]:px-3 group-data-[layout=horizontal]:group-data-[navbar=hidden]:pt-[calc(theme('spacing.header')_*_0.9)]">
+                class="group-data-[layout=horizontal]:mx-auto group-data-[sidebar-size=sm]:rtl:mr-vertical-menu-sm group-data-[sidebar-size=lg]:rtl:md:mr-vertical-menu group-data-[sidebar-size=md]:rtl:mr-vertical-menu-md group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:rtl:md:mr-auto group-data-[sidebar-size=sm]:ltr:ml-vertical-menu-sm group-data-[sidebar-size=lg]:ltr:md:ml-vertical-menu group-data-[sidebar-size=md]:ltr:ml-vertical-menu-md group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:ltr:md:ml-auto px-4 group-data-[layout=horizontal]:px-0 group-data-[layout=horizontal]:px-3 pt-[calc(theme('spacing.header')_*_1)] group-data-[layout=horizontal]:md:pt-[calc(theme('spacing.header')_*_1.6)] group-data-[layout=horizontal]:group-data-[navbar=hidden]:pt-[calc(theme('spacing.header')_*_0.9)] group-data-[navbar=bordered]:pt-[calc(theme('spacing.header')_*_1.3)] group-data-[navbar=hidden]:pt-0 pb-[calc(theme('spacing.header')_*_0.8)] group-data-[layout=horizontal]:max-w-screen-2xl">
                 <!-- Page Content -->
                 @yield('content')
             </div>
@@ -80,19 +80,15 @@ $current = $languages[$locale] ?? $languages['fr'];
     <script src="{{ Vite::asset('node_modules/flowbite/dist/flowbite.min.js') }}"></script>
     <script src="{{ Vite::asset('node_modules/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
 
-    <script src="{{ asset('assets/libs/choices.js/public/assets/scripts/choices.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/@popperjs/core/umd/popper.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/tippy.js/tippy-bundle.umd.min.js') }}"></script>
     <script src="{{ asset('assets/libs/simplebar/simplebar.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/prismjs/prism.js') }}"></script>
-    <script src="{{ asset('assets/libs/lucide/umd/lucide.js') }}"></script>
-    <script src="{{ asset('assets/js/tailwick.bundle.js') }}"></script>
     <!--apexchart js-->
     <script src="{{ asset('assets/libs/apexcharts/apexcharts.min.js') }}"></script>
 
     <script src="{{ asset('assets/libs/vanilla-calendar-pro/build/vanilla-calendar.min.js') }}"></script>
 
-    <script src="{{ asset('assets/js/pages/dashboards-hr.init.js') }}"></script>
+    @if (request()->routeIs('admin.dashboard'))
+        <script src="{{ asset('assets/js/pages/dashboards-hr.init.js') }}"></script>
+    @endif
 
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <!-- Dans la section head -->
@@ -100,7 +96,7 @@ $current = $languages[$locale] ?? $languages['fr'];
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@9.0.3"></script>
 
     <script src="https://cdn.datatables.net/2.3.6/js/dataTables.min.js"></script>
-
+    <script src="{{ asset('js/applyTheme.js') }}"></script>
     <!-- App js -->
     <script src="{{ asset('assets/js/app.js') }}"></script>
     @yield('script')
