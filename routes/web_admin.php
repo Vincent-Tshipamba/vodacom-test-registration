@@ -1,26 +1,28 @@
 <?php
 
+use App\Models\Applicant;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ScholarController;
 use App\Http\Controllers\CandidatController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\ApplicantController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Admin\TestController;
 use App\Http\Controllers\UniversityController;
 use App\Http\Controllers\TestSessionController;
 use App\Http\Controllers\AnswerOptionController;
-use App\Http\Controllers\StaffProfileController;
+use App\Http\Controllers\AgentController;
+use App\Http\Controllers\ScholarDocumentController;
 use App\Http\Controllers\InterviewSessionController;
 use App\Http\Controllers\CandidateResponseController;
 use App\Http\Controllers\AcademicYearRecordController;
-use App\Http\Controllers\Admin\ApplicantController as AdminApplicantController;
 use App\Http\Controllers\EvaluationCriteriaController;
 use App\Http\Controllers\InterviewEvaluatorController;
 use App\Http\Controllers\ScholarshipEditionController;
 use App\Http\Controllers\ApplicationDocumentController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ScholarshipDocumentController;
-use App\Models\Applicant;
+use App\Http\Controllers\Admin\ApplicantController as AdminApplicantController;
 
 Route::group(['prefix' => '{locale}/admin', 'middleware' => ['setLocale', 'auth']], function () {
     Route::post('/check-code-exetat', [CandidatController::class, 'checkCodeExetat'])->name('check.code.exetat');
@@ -33,19 +35,21 @@ Route::group(['prefix' => '{locale}/admin', 'middleware' => ['setLocale', 'auth'
     Route::get('applicants', [AdminApplicantController::class, 'index'])->name('admin.applicants.index');
     Route::get('applicants/{applicant}', [AdminApplicantController::class, 'show'])->name('admin.applicants.show');
     Route::post('applicants/search', [AdminApplicantController::class, 'search'])->name('admin.applicants.search');
+
     Route::put('application-documents/change-status', [ApplicationDocumentController::class, 'change_status'])->name('application-documents.change-status');
+
     Route::resource('application-documents', ApplicationDocumentController::class);
-    Route::resource('scholarship-documents', ScholarshipDocumentController::class);
+    Route::resource('scholar-documents', ScholarDocumentController::class);
     Route::resource('payments', PaymentController::class);
     Route::resource('interview-evaluators', InterviewEvaluatorController::class);
 
+    Route::get('tests', [TestController::class, 'index'])->name('admin.tests.index');
     // Other resources
     Route::resource('universities', UniversityController::class);
-    Route::resource('staff-profiles', StaffProfileController::class);
+    Route::resource('agents', AgentController::class);
     Route::resource('scholarship-editions', ScholarshipEditionController::class);
     Route::resource('questions', QuestionController::class);
     Route::resource('answer-options', AnswerOptionController::class);
-    Route::resource('test-sessions', TestSessionController::class);
     Route::resource('candidate-responses', CandidateResponseController::class);
     Route::resource('evaluation-criteria', EvaluationCriteriaController::class);
     Route::resource('scholars', ScholarController::class);
