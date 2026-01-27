@@ -5,14 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Department extends Model
+class CategoryQuestion extends Model
 {
     use HasFactory;
 
     protected $fillable = ['name', 'description'];
 
-    public function agents()
+    public function questions()
     {
-        return $this->hasMany(Agent::class);
+        return $this->hasMany(Question::class);
     }
 }

@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\User;
 use Illuminate\Support\Str;
+use App\Models\EducationalCity;
 use App\Models\ScholarshipEdition;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -94,7 +95,6 @@ class ApplicantFactory extends Factory
         ];
 
         return [
-            'user_id' => $this->faker->randomElement(User::pluck('id')),
             'edition_id' => $this->faker->randomElement(ScholarshipEdition::pluck('id')),
             'registration_code' => Str::random(6),
             'first_name' => $this->faker->firstName,
@@ -103,8 +103,8 @@ class ApplicantFactory extends Factory
             'date_of_birth' => $this->faker->dateTimeBetween('-21 years', '-15 years'),
             'phone_number' => $this->faker->phoneNumber,
             'vulnerability_type' => $this->faker->randomElement($vulnerability_types),
-            'diploma_city' => $this->faker->city,
-            'current_city' => $this->faker->city,
+            'educational_city_id' => fake()->randomElement(EducationalCity::pluck('id'))    ,
+            'current_city_id' => fake()->randomElement(EducationalCity::pluck('id')),
             'full_address' => $this->faker->address,
             'school_name' => $this->faker->word,
             'national_exam_code' => $this->faker->numerify('##############'),

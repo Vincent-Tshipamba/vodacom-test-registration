@@ -18,9 +18,15 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'first_name',
+        'last_name',
         'name',
+        'gender',
         'email',
+        'phone_number',
         'password',
+        'is_active',
+        'last_login',
     ];
 
     /**
@@ -49,18 +55,13 @@ class User extends Authenticatable
     }
 
     // Relations
-    public function staffProfile()
+    public function agent()
     {
-        return $this->hasOne(StaffProfile::class);
+        return $this->hasOne(Agent::class);
     }
 
-    public function applicant()
+    public function scholar()
     {
-        return $this->hasOne(Applicant::class);
-    }
-
-    public function staff_profile()
-    {
-        return $this->hasOne(StaffProfile::class);
+        return $this->hasOne(Scholar::class);
     }
 }

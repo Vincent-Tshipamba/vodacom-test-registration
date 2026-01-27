@@ -16,6 +16,7 @@ class Payment extends Model
         'transaction_reference',
         'payment_status',
         'processed_at',
+        'processed_by',
     ];
 
     protected $casts = [
@@ -26,5 +27,10 @@ class Payment extends Model
     public function acadmic_year_record()
     {
         return $this->belongsTo(AcademicYearRecord::class, 'academic_year_record_id');
+    }
+
+    public function processor()
+    {
+        return $this->belongsTo(Agent::class, 'processed_by');
     }
 }

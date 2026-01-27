@@ -11,7 +11,6 @@ class Applicant extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
         'edition_id',
         'registration_code',
         'first_name',
@@ -20,8 +19,8 @@ class Applicant extends Model
         'date_of_birth',
         'phone_number',
         'vulnerability_type',
-        'diploma_city',
-        'current_city',
+        'educational_city_id',
+        'current_city_id',
         'full_address',
         'school_name',
         'national_exam_code',
@@ -76,9 +75,14 @@ class Applicant extends Model
             ])->toArray();
     }
 
-    public function user()
+    public function educational_city()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(EducationalCity::class, 'educational_city_id');
+    }
+
+    public function current_city()
+    {
+        return $this->belongsTo(EducationalCity::class, 'current_city_id');
     }
 
     public function edition()

@@ -33,4 +33,9 @@ class TestSession extends Model
     {
         return $this->hasMany(CandidateResponse::class);
     }
+
+    public function phase_test()
+    {
+        return $this->belongsTo(PhaseTest::class);
+    }
 }

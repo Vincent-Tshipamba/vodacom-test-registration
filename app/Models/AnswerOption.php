@@ -10,17 +10,18 @@ class AnswerOption extends Model
     use HasFactory;
 
     protected $fillable = [
-        'question_id',
         'option_text',
-        'is_correct',
     ];
 
-    protected $casts = [
-        'is_correct' => 'boolean',
-    ];
-
-    public function question()
+    public function questions()
     {
-        return $this->belongsTo(Question::class);
+        return $this->belongsToMany(Question::class, 'question_answer_options', 'answer_option_id', 'question_id')
+            ->withPivot('is_correct')
+            ->withTimestamps();
+    }
+
+    public function candidate_responses()
+    {
+        return $this->hasMany(CandidateResponse::class, 'selected_option_id');
     }
 }

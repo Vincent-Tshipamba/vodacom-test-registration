@@ -7,9 +7,9 @@ use App\Models\Department;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\StaffProfile>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Agent>
  */
-class StaffProfileFactory extends Factory
+class AgentFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -20,8 +20,6 @@ class StaffProfileFactory extends Factory
     {
         return [
             'user_id' => $this->faker->randomElement(User::pluck('id')),
-            'first_name' => $this->faker->firstName,
-            'last_name' => $this->faker->lastName,
             'department_id' => $this->faker->randomElement(Department::pluck('id')),
             'job_title' => $this->faker->jobTitle,
         ];
