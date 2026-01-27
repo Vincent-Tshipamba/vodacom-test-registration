@@ -50,6 +50,11 @@ class ApplicantController extends Controller
         }
     }
 
+    public function instructions()
+    {
+        return view('tests.instructions');
+    }
+
     public function register()
     {
         return view('applicants.registration-form');
