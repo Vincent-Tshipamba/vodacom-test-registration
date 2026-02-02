@@ -39,7 +39,7 @@ class ApplicantSeeder extends Seeder
 
                 $newPath = str_replace(
                     'applicants/1/',
-                    "applicants/{$applicant->id}/",
+                    'applicants/' . $applicant->id . '/',
                     $filePath
                 );
 
