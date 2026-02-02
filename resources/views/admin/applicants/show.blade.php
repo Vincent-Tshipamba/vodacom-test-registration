@@ -4,7 +4,7 @@
         <ol class="inline-flex items-center space-x-1 md:space-x-3">
             <li class="inline-flex items-center">
                 <a href="{{ route('admin.dashboard', app()->getLocale()) }}"
-                    class="inline-flex items-center font-medium text-gray-900 hover:text-indigo-800 text-base"> Dashboard
+                    class="inline-flex items-center font-medium text-gray-700 hover:text-indigo-800 dark:text-gray-300 text-base"> Dashboard
                 </a>
             </li>
             <li>
@@ -15,7 +15,7 @@
                             stroke="#E5E7EB" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                     <a href="{{ route('admin.applicants.index', app()->getLocale()) }}"
-                        class="ml-1 md:ml-2 font-medium text-gray-900 hover:text-indigo-800 text-base">
+                        class="ml-1 md:ml-2 font-medium text-gray-700 hover:text-indigo-800 dark:text-gray-300 text-base">
                         Applicants</a>
                 </div>
             </li>
@@ -183,7 +183,7 @@
                             </div>
                             <div class="flex flex-col py-3">
                                 <dt class="mb-1 text-gray-500 dark:text-gray-400 md:text-lg">{{ __('admin.gender') }}</dt>
-                                <dd class="font-semibold text-lg">{{ __("admin.genders.$applicant->gender") }}</dd>
+                                <dd class="font-semibold text-lg">{{ __("db_values.gender.$applicant->gender") }}</dd>
                             </div>
                         </dl>
                     </div>
@@ -201,15 +201,11 @@
                                 </dt>
                                 <dd class="font-semibold text-lg">{{ $applicant->phone_number }}</dd>
                             </div>
-                            <div class="flex flex-col py-3">
-                                <dt class="mb-1 text-gray-500 dark:text-gray-400 md:text-lg">Email</dt>
-                                <dd class="font-semibold text-lg">{{ $applicant->user->email }}</dd>
-                            </div>
 
                             <div class="flex flex-col py-3">
                                 <dt class="mb-1 text-gray-500 dark:text-gray-400 md:text-lg">
                                     {{ __('admin.specific_condition') }}</dt>
-                                <dd class="font-semibold hover:text-blue-500 text-lg">{{ $applicant->vulnerability_type }}
+                                <dd class="font-semibold hover:text-blue-500 text-lg">{{ __("db_values.identification_type.$applicant->vulnerability_type") }}
                                 </dd>
                             </div>
                         </dl>
@@ -228,7 +224,7 @@
                                 <div class="flex flex-col py-3">
                                     <dt class="mb-1 text-gray-500 dark:text-gray-400 md:text-lg">
                                         {{ __('admin.diploma_city') }}</dt>
-                                    <dd class="font-semibold text-lg">{{ $applicant->diploma_city }}</dd>
+                                    <dd class="font-semibold text-lg">{{ $applicant->educational_city?->name }}</dd>
                                 </div>
                             </dl>
                         </div>
@@ -238,7 +234,7 @@
                                     <dt class="mb-1 text-gray-500 dark:text-gray-400 md:text-lg">
                                         {{ __('admin.current_city') }}
                                     </dt>
-                                    <dd class="font-semibold text-lg">{{ $applicant->current_city }}</dd>
+                                    <dd class="font-semibold text-lg">{{ $applicant->current_city->name }}</dd>
                                 </div>
                             </dl>
                         </div>
@@ -261,7 +257,7 @@
                                 <div class="flex flex-col py-3">
                                     <dt class="mb-1 text-gray-500 dark:text-gray-400 md:text-lg">
                                         {{ __('admin.option_studied') }}</dt>
-                                    <dd class="font-semibold text-lg">{{ $applicant->option_studied }}</dd>
+                                    <dd class="font-semibold text-lg">{{ __("db_values.study_option.$applicant->option_studied") }}</dd>
                                 </div>
                             </dl>
                         </div>
@@ -339,7 +335,7 @@
                                 <div class="flex flex-col py-3">
                                     <dt class="mb-1 text-gray-500 dark:text-gray-400 md:text-lg">
                                         {{ __('admin.intended_field') }}</dt>
-                                    <dd class="font-semibold text-lg">{{ $applicant->intended_field }}</dd>
+                                    <dd class="font-semibold text-lg">{{ __("db_values.university_field.$applicant->intended_field") }}</dd>
                                 </div>
                                 <div class="flex flex-col py-3">
                                     <dt class="mb-1 text-gray-500 dark:text-gray-400 md:text-lg">
