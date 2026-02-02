@@ -47,9 +47,8 @@
     @include('admin.applicants.partials.search-modal')
 @endsection
 @section('script')
-    <script src="https://cdn.datatables.net/2.3.6/js/dataTables.min.js"></script>
 
-    <script>
+    <script defer>
         document.addEventListener('DOMContentLoaded', () => {
             // Initialiser DataTable avec les options de pagination
             const dataTable = $('#applicants-table').DataTable({
