@@ -6,9 +6,13 @@ use App\Models\Applicant;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreApplicantRequest;
 use App\Http\Requests\UpdateApplicantRequest;
 use App\Models\ApplicationDocument;
+use App\Models\DocumentType;
+use App\Models\EducationalCity;
 use App\Models\ScholarshipEdition;
 use App\Models\User;
 
@@ -34,10 +38,10 @@ class ApplicantController extends Controller
 
 
         $applicant = Applicant::where('national_exam_code', $nationalExamCode)
-        ->where('registration_code', $request->input('coupon'))
-        ->where('edition_id', ScholarshipEdition::getCurrentEdition()->id)
-        ->where('application_status', 'SHORTLISTED')
-        ->first();
+            ->where('registration_code', $request->input('coupon'))
+            ->where('edition_id', ScholarshipEdition::getCurrentEdition()->id)
+            ->where('application_status', 'SHORTLISTED')
+            ->first();
 
         if ($applicant) {
             Log::info('Applicant authenticated for test : ' . $applicant->first_name . ' ' . $applicant->last_name);
@@ -57,18 +61,98 @@ class ApplicantController extends Controller
 
     public function register()
     {
-        return view('applicants.registration-form');
+        $educational_cities = EducationalCity::orderBy('name')->get();
+        $document_types = DocumentType::where('is_for_candidats', true)
+            ->where('name', '!=', 'PHOTO')
+            ->get();
+
+        // pass document_types to the view (was using wrong variable name)
+        return view('applicants.registration-form', compact('educational_cities', 'document_types'));
     }
 
     public function store(StoreApplicantRequest $request)
     {
         try {
+            // Validate input first so we can perform idempotency checks that depend on form values
             $validatedData = $request->validated();
 
-            $edition = ScholarshipEdition::getActiveEdition();
+            // Idempotency: use a client-supplied token to prevent duplicate processing.
+            // Reserve the token immediately so a second concurrent request will be short-circuited.
+            $submissionToken = $request->input('submission_token');
+            $cacheKey = null;
+            if ($submissionToken) {
+                $cacheKey = 'app_submission_' . $submissionToken;
+
+                // Use Cache::add to atomically reserve the token only if it doesn't exist.
+                // Cache::add returns true if the key was successfully set, false if it already exists.
+                $reserved = Cache::add($cacheKey, 'processing', now()->addMinutes(15));
+                if (!$reserved) {
+                    // Another request is already processing this submission token (or a token collision).
+                    // Try polling briefly to see if the applicant record has been created by the other
+                    // process (helps avoid duplicate inserts when the first transaction hasn't committed yet).
+                    $existingApplicant = null;
+                    if (!empty($validatedData['national_exam_code'])) {
+                        $editionId = optional(ScholarshipEdition::getCurrentEdition())->id;
+                        // Poll up to ~2 seconds (10 * 200ms)
+                        for ($i = 0; $i < 10; $i++) {
+                            $existingApplicant = Applicant::where('national_exam_code', $validatedData['national_exam_code'])
+                                ->where('edition_id', $editionId)
+                                ->first();
+                            if ($existingApplicant) break;
+                            // If the other process marked the cache as processed, stop waiting
+                            if (Cache::has($cacheKey) && Cache::get($cacheKey) === true) break;
+                            usleep(200000);
+                        }
+                    }
+
+                    if ($existingApplicant) {
+                        return response()->json([
+                            'success' => true,
+                            'confirmation_message' => __('registration.confirmation_message'),
+                            'confirmation_details' => __('registration.confirmation_details', ['firstname' => $existingApplicant->first_name ?? '']),
+                            'confirmation_coupon' => $existingApplicant->registration_code,
+                        ]);
+                    }
+
+                    // If still nothing after polling, return a processing response so the client can
+                    // either wait or show a friendly message. We choose to respond with success=true
+                    // so the UI flows to the confirmation, but without personalized details.
+                    return response()->json([
+                        'success' => true,
+                        'confirmation_message' => __('registration.confirmation_message'),
+                        'confirmation_details' => __('registration.confirmation_details'),
+                        'confirmation_coupon' => null,
+                        'status' => 'processing'
+                    ]);
+                }
+            }
+
+            $edition = ScholarshipEdition::getCurrentEdition();
 
             if (!$edition) {
                 throw new \Exception("Aucune édition en cours n'est disponible.");
+            }
+
+            // Defensive: if an applicant for this national_exam_code already exists for this edition,
+            // return a success response pointing to the confirmation so we never create a duplicate.
+            if (!empty($validatedData['national_exam_code'])) {
+                $existingApplicant = Applicant::where('national_exam_code', $validatedData['national_exam_code'])
+                    ->where('edition_id', optional($edition)->id)
+                    ->first();
+
+                if ($existingApplicant) {
+                    // If the client provided a submission token, mark it processed to avoid reprocessing
+                    if (!empty($submissionToken)) {
+                        Cache::put('app_submission_' . $submissionToken, true, now()->addMinutes(15));
+                    }
+
+                    return response()->json([
+                        'success' => true,
+                        'confirmation_message' => __('registration.confirmation_message'),
+                        'confirmation_details' => __('registration.confirmation_details', ['firstname' => $existingApplicant->first_name ?? '']),
+                        'confirmation_coupon' => $existingApplicant->registration_code,
+                    ]);
+                }
             }
 
             // Vérifier le code exétat dans le fichier Excel
@@ -93,21 +177,14 @@ class ApplicantController extends Controller
             //     throw new \Exception("Le code d'exetat n'a pas été trouvé dans notre base de données.");
             // }
 
-
-            // Creation du user
-            $password = $this->genererPassword();
-            $user = User::create([
-                'name' => $validatedData['first_name'] . ' ' . $validatedData['last_name'],
-                'email' => null,
-                'password' => $password,
-            ]);
+            // Begin transaction for atomic create + file storage
+            DB::beginTransaction();
 
             // Générer un coupon unique de 5 caractères
             do {
                 $coupon = strtoupper(Str::random(5));
             } while (Applicant::where('registration_code', $coupon)->exists());
 
-            // Remplacer les valeurs 'other' par les valeurs personnalisées saisies (depuis la requête brute)
             if (($validatedData['option_studied'] ?? null) === 'other') {
                 $otherStudy = trim((string) $request->input('other_study_option', ''));
                 if ($otherStudy !== '') {
@@ -121,6 +198,27 @@ class ApplicantController extends Controller
                 }
             }
 
+            // Let's ensure that cities exist
+            $diplomaCity = EducationalCity::find($validatedData['educational_city_id']);
+            if (!$diplomaCity) {
+                Log::error('Invalid diploma city ID: ' . $validatedData['educational_city_id']);
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'message' => 'Validation error',
+                        'errors' => ['educational_city_id' => [__("La ville d'obtention du diplôme n'existe pas.")]],
+                    ], 422);
+                }
+                return redirect()->back()
+                    ->withErrors(['educational_city_id' => __("La ville d'obtention du diplôme n'existe pas.")])
+                    ->withInput();
+            }
+
+            $currentCity = EducationalCity::find($validatedData['current_city_id']);
+            if (!$diplomaCity || !$currentCity) {
+                Log::error('Invalid city IDs: diploma_city_id=' . $validatedData['educational_city_id'] . ', current_city_id=' . $validatedData['current_city_id']);
+                throw new \Exception("La ville d'obtention du diplôme ou la ville actuelle n'existe pas.");
+            }
+
             // Créer le candidat avec toutes les données validées
             $applicant = Applicant::create([
                 // Informations personnelles
@@ -132,8 +230,8 @@ class ApplicantController extends Controller
                 'vulnerability_type' => $validatedData['vulnerability_type'],
 
                 // Adresse
-                'current_city' => $validatedData['current_city'],
-                'diploma_city' => $validatedData['diploma_city'],
+                'current_city_id' => $currentCity->id,
+                'educational_city_id' => $diplomaCity->id,
                 'full_address' => $validatedData['full_address'],
 
                 // Informations scolaires
@@ -153,61 +251,128 @@ class ApplicantController extends Controller
                 'additional_infos_locale' => $validatedData['additional_infos_locale'] ?? null,
 
                 'registration_code' => $coupon,
-                'edition_id' => optional($edition)->id,
-                'user_id' => $user->id,
+                'edition_id' => $edition->id,
             ]);
 
-            // Stocker les fichiers
-            $this->storeApplicationDocument($request, $applicant, 'photo', 'applicants/' . $applicant->id . '/photos', 'photo');
-            $this->storeApplicationDocument($request, $applicant, 'id_document', 'applicants/' . $applicant->id . '/ids', 'id');
-            $this->storeApplicationDocument($request, $applicant, 'recommendation', 'applicants/' . $applicant->id . '/reco_letters', 'reco_letter');
-            $this->storeApplicationDocument($request, $applicant, 'diploma', 'applicants/' . $applicant->id . '/diplomas', 'diploma');
+            // Stocker les fichiers dynamiquement selon les types de documents demandés aux candidats
+            $documentTypes = DocumentType::where('is_for_candidats', true)->get();
+            foreach ($documentTypes as $docType) {
+                // Stocker les fichiers
+                $fileId = strtolower($docType->name);
+                $fileTypeName = strtolower($docType->name);
+                $fileTypeNameInPlural = strtolower($docType->name) . 's';
 
+                $path = "applicants/$applicant->id/$fileTypeNameInPlural/";
+
+                try {
+                    $this->storeApplicationDocument($request, $applicant, $fileId, $path, $docType->id, $fileTypeName);
+                } catch (\Exception $e) {
+                    Log::error("Erreur lors du stockage du document {$docType->name}: " . $e->getMessage());
+
+                    if ($request->expectsJson()) {
+                        return response()->json([
+                            'message' => 'Validation error',
+                            'errors' => ['general' => [__('errors.server_error')]],
+                        ], 422);
+                    }
+
+                    return redirect()->back()
+                        ->withErrors(['error' => __('errors.server_error')])
+                        ->withInput();
+                }
+            }
 
             // Sauvegarder les données de session et rediriger vers la page de succès
             session([
                 'confirmation_message' => __('registration.confirmation_message'),
                 'confirmation_name' => $validatedData['first_name'],
-                // 'confirmation_coupon' => $coupon
             ]);
-            // return redirect()->route('applicants.show', $applicant)->with('success', __('messages.saved'));
+
+            // mark this submission token as processed (short TTL)
+            if (!empty($submissionToken)) {
+                $cacheKey = 'app_submission_' . $submissionToken;
+                Cache::put($cacheKey, true, now()->addMinutes(15));
+            }
+
+            DB::commit();
 
             return response()->json([
-                'success' => __('messages.saved'),
-                'redirect' => route('scholarship.register', app()->getLocale()) . '#confirmation'
+                'success' => true,
+                'confirmation_message' => __('registration.confirmation_message'),
+                'confirmation_details' => __('registration.confirmation_details', ['firstname' => $validatedData['first_name'] ?? '']),
+                'confirmation_coupon' => $coupon,
             ]);
         } catch (\Exception $e) {
+            // Ensure transaction rollback if started
+            try { DB::rollBack(); } catch (\Exception $_) {}
+
+            // If this is a duplicate-key error (another concurrent request inserted the same
+            // national_exam_code), respond idempotently by returning the existing applicant's
+            // confirmation details instead of an error.
+            if ($e instanceof \Illuminate\Database\QueryException) {
+                $errorInfo = $e->errorInfo ?? null;
+                $isDuplicate = false;
+                if (is_array($errorInfo) && isset($errorInfo[1]) && in_array($errorInfo[1], [1062, 23505])) {
+                    // 1062 = MySQL duplicate entry, 23505 = Postgres unique_violation
+                    $isDuplicate = true;
+                }
+
+                if ($isDuplicate && !empty($validatedData['national_exam_code'])) {
+                    $existingApplicant = Applicant::where('national_exam_code', $validatedData['national_exam_code'])
+                        ->where('edition_id', optional(ScholarshipEdition::getCurrentEdition())->id)
+                        ->first();
+
+                    if ($existingApplicant) {
+                        // mark token processed to avoid future re-processing
+                        if (!empty($submissionToken)) {
+                            Cache::put('app_submission_' . $submissionToken, true, now()->addMinutes(15));
+                        }
+
+                        return response()->json([
+                            'success' => true,
+                            'confirmation_message' => __('registration.confirmation_message'),
+                            'confirmation_details' => __('registration.confirmation_details', ['firstname' => $existingApplicant->first_name ?? '']),
+                            'confirmation_coupon' => $existingApplicant->registration_code,
+                        ]);
+                    }
+                }
+            }
+
             Log::error('Error creating candidat: ' . $e->getMessage());
 
             if ($request->expectsJson()) {
                 return response()->json([
                     'message' => 'Validation error',
-                    'errors' => ['general' => [$e->getMessage()]],
+                    'errors' => ['general' => [__('errors.server_error')]],
                 ], 422);
             }
 
             return redirect()->back()
-                ->withErrors(['error' => $e->getMessage()])
+                ->withErrors(['error' => __('errors.server_error')])
                 ->withInput();
         }
     }
 
-    protected function storeApplicationDocument($request, $applicant, $fileId, $path, $docType)
+    protected function storeApplicationDocument($request, $applicant, $fileId, $path, $docTypeId, $docTypeName)
     {
         if ($request->hasFile($fileId)) {
-            $fileExt = $request->file($fileId)->getClientOriginalExtension();
+            $file = $request->file($fileId);
+            $fileExt = $file->getClientOriginalExtension();
+            ;
             $fileName = $this->generateDocumentFileName(
                 $applicant->first_name,
                 $applicant->last_name,
-                $docType,
+                $docTypeName,
                 $fileExt
             );
-            // Stocker le fichier avec le nom généré
-            $storedPath = $request->file($fileId)->storeAs($path, $fileName, 'public');
 
+            // Stocker le fichier avec le nom généré
+            $storedPath = $file->storeAs($path, $fileName, 'public');
+
+            // Créer l'enregistrement et lier au type de document (document_type_id)
             $applicantDoc = ApplicationDocument::create([
                 'applicant_id' => $applicant->id,
-                'document_type' => strtoupper($docType),
+                'document_type_id' => $docTypeId,
                 'file_url' => $storedPath,
                 'file_type' => $fileExt,
                 'file_name' => $fileName,
