@@ -64,15 +64,19 @@ class Applicant extends Model
     public function getDocumentsAttribute()
     {
         return (object) $this->application_documents
-            ->mapWithKeys(fn($doc) => [
-                strtolower($doc->document_type) => [
+            ->mapWithKeys(function ($doc) {
+                $type_name = strtolower($doc->document_type->name);
+
+                return [
+                    $type_name => [
                     'id' => $doc->id,
-                    'type' => $doc->document_type,
+                    'type' => $doc->document_type->name ?? $doc->document_type_id,
                     'url' => Storage::url($doc->file_url),
                     'ext' => $doc->file_type,
                     'is_pdf' => $doc->file_type === 'pdf',
-                ]
-            ])->toArray();
+                    ]
+                ];
+            })->toArray();
     }
 
     public function educational_city()
