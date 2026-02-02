@@ -30,6 +30,11 @@ class DocumentTypeSeeder extends Seeder
                 'is_for_candidats' => true,
             ],
             [
+                'name' => 'RECO_LETTER',
+                'description' => 'Letter of recommendation',
+                'is_for_candidats' => true,
+            ],
+            [
                 'name' => 'REGISTRATION_PROOF',
                 'description' => 'Proof of registration for the current academic year.',
                 'is_for_candidats' => false,
