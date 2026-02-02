@@ -167,8 +167,6 @@
         </footer>
     @endif
 
-
-    <script src="{{ asset('node_modules/flowbite/dist/flowbite.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.js" defer></script>
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
         crossorigin="anonymous"></script>
@@ -207,11 +205,6 @@
 
             requestAnimationFrame(animation);
         }
-
-        document.querySelector('a[href="#what-is-it"]').addEventListener('click', function(e) {
-            e.preventDefault();
-            smoothScrollTo('#what-is-it', 500);
-        });
     </script>
 
 
