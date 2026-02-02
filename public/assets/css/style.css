@@ -1,9 +1,12 @@
-#loginUser {
+#loginUser,
+#evaluationUser {
     background-image: url('/img/OR68WQ0.jpg');
 }
 
 @media (max-width: 870px) {
-    #loginUser {
+
+    #loginUser,
+    #evaluationUser {
         background-image: url('/img/OR68WQ0.jpg');
         background-size: cover;
         background-position: center;
@@ -306,6 +309,7 @@ form.sign-in-form {
     .forms-container {
         margin-top: -10px;
     }
+
     .panels-container {
         margin-top: 20px;
     }
