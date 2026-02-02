@@ -76,10 +76,6 @@ $current = $languages[$locale] ?? $languages['fr'];
     @include('admin.partials.customizer')
 
 
-    <script src="{{ Vite::asset('node_modules/jquery/dist/jquery.min.js') }}"></script>
-    <script src="{{ Vite::asset('node_modules/flowbite/dist/flowbite.min.js') }}"></script>
-    <script src="{{ Vite::asset('node_modules/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
-
     <script src="{{ asset('assets/libs/simplebar/simplebar.min.js') }}"></script>
     <!--apexchart js-->
     <script src="{{ asset('assets/libs/apexcharts/apexcharts.min.js') }}"></script>
@@ -95,7 +91,7 @@ $current = $languages[$locale] ?? $languages['fr'];
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@9.0.3"></script>
 
-    <script src="https://cdn.datatables.net/2.3.6/js/dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.6/js/dataTables.min.js" defer></script>
     <script src="{{ asset('js/applyTheme.js') }}"></script>
     <!-- App js -->
     <script src="{{ asset('assets/js/app.js') }}"></script>
