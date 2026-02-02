@@ -31,9 +31,7 @@ class ScholarshipEdition extends Model
 
     public static function getCurrentEdition(): ?self
     {
-        $currentYear = Carbon::now()->format('Y');
-        $active = static::where('year', $currentYear)
-            ->whereIn('status', ['SELECTION_PHASE', 'INTERVIEW_PHASE', 'TEST_PHASE'])
+        $active = static::where('is_current', true)
             ->first();
         return $active;
     }
