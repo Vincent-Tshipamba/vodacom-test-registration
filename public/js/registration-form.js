@@ -112,7 +112,7 @@ function app() {
                 // Appliquer une valeur par défaut AVANT la validation required
                 if (field.useADefaultValue) {
                     if (!this.formData[field.name] && this.formData[field.defaultValueField]) {
-                        this.formData[field.name] = this.formData[field.defaultValueField];
+                        this.formData[field.name] = String(this.formData[field.defaultValueField]);
                         // Nettoyer une éventuelle erreur existante liée au champ
                         if (this.errors[field.name]) {
                             delete this.errors[field.name];
@@ -120,6 +120,7 @@ function app() {
                         // Répercuter la valeur dans le champ pour cohérence UI
                         if (fieldElement && typeof fieldElement.value !== 'undefined') {
                             fieldElement.value = this.formData[field.name];
+                            fieldElement.dispatchEvent(new Event('change', { bubbles: true }));
                         }
                     }
                 }
