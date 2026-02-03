@@ -2,17 +2,18 @@
 
 use App\Models\Applicant;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AgentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ScholarController;
 use App\Http\Controllers\CandidatController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\ApplicantController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Admin\PhaseTestController;
 use App\Http\Controllers\Admin\TestController;
 use App\Http\Controllers\UniversityController;
 use App\Http\Controllers\TestSessionController;
 use App\Http\Controllers\AnswerOptionController;
-use App\Http\Controllers\AgentController;
 use App\Http\Controllers\ScholarDocumentController;
 use App\Http\Controllers\InterviewSessionController;
 use App\Http\Controllers\CandidateResponseController;
@@ -44,6 +45,8 @@ Route::group(['prefix' => '{locale}/admin', 'middleware' => ['setLocale', 'auth'
     Route::resource('interview-evaluators', InterviewEvaluatorController::class);
 
     Route::get('tests', [TestController::class, 'index'])->name('admin.tests.index');
+    Route::post('phase-test', [PhaseTestController::class, 'store'])->name('admin.phase-test.store');
+    Route::patch('phase-test/{phaseTest}', [PhaseTestController::class, 'update'])->name('admin.phase-test.update');
     // Other resources
     Route::resource('universities', UniversityController::class);
     Route::resource('agents', AgentController::class);
