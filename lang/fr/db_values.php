@@ -68,4 +68,11 @@ return [
         'development_sciences' => 'Sciences et Techniques de Développement',
         'other' => 'Autre (veuillez préciser)',
     ],
+
+    'phase_status' => [
+        'IN_PROGRESS' => 'En cours',
+        'AWAITING' => 'À venir',
+        'CANCELLED' => 'Annulée',
+        'COMPLETED' => 'Terminée',
+    ],
 ];
