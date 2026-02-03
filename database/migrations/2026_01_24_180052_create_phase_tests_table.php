@@ -21,7 +21,7 @@ return new class extends Migration
             $table->dateTime('end_time')->nullable();
             $table->integer('total_questions')->default(0);
             $table->integer('passing_score')->default(50);
-            $table->string('status')->default('AWAITING'); //PENDING, AWAITING, CANCELLED, COMPLETED
+            $table->string('status')->default('AWAITING'); //IN_PROGRESS, AWAITING, CANCELLED, COMPLETED
             $table->timestamps();
         });
     }
