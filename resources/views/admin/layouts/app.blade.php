@@ -21,9 +21,11 @@
     <!-- Tailwind CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/tailwind2.css') }}">
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.6/css/dataTables.dataTables.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.css" rel="stylesheet" />
 
     {{-- <link rel="stylesheet" href="{{ asset('assets/scss/tailwind.scss') }}"> --}}
     <!-- Scripts -->
+    @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -86,7 +88,8 @@ $current = $languages[$locale] ?? $languages['fr'];
         <script src="{{ asset('assets/js/pages/dashboards-hr.init.js') }}"></script>
     @endif
 
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"></script>
+
     <!-- Dans la section head -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@9.0.3"></script>
@@ -96,7 +99,9 @@ $current = $languages[$locale] ?? $languages['fr'];
     <!-- App js -->
     <script src="{{ asset('assets/js/app.js') }}"></script>
     @yield('script')
+    @stack('scripts')
     @yield('modal')
+    @livewireScripts
 </body>
 
 </html>
