@@ -11,7 +11,7 @@ class ApplicationDocument extends Model
 
     protected $fillable = [
         'applicant_id',
-        'document_type',
+        'document_type_id',
         'file_url',
         'file_type',
         'file_name',
@@ -28,6 +28,11 @@ class ApplicationDocument extends Model
         'uploaded_at' => 'datetime',
     ];
 
+    public function document_type()
+    {
+        return $this->belongsTo(DocumentType::class);
+    }
+
     public function applicant()
     {
         return $this->belongsTo(Applicant::class);
@@ -35,7 +40,7 @@ class ApplicationDocument extends Model
 
     public function reviewed_by_agent()
     {
-        return $this->belongsTo(StaffProfile::class, 'reviewed_by_agent');
+        return $this->belongsTo(Agent::class, 'reviewed_by_agent');
     }
 
     public function reviewed_by_scholar()

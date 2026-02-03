@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\PhaseTest;
 use Illuminate\Database\Eloquent\Model;
 
 use function Symfony\Component\Clock\now;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ScholarshipEdition extends Model
 {
@@ -16,21 +17,21 @@ class ScholarshipEdition extends Model
         'name',
         'year',
         'scholar_quota',
-        'start_date',
-        'end_date',
+        'application_start_date',
+        'application_end_date',
+        'is_current',
+        'is_mixed',
         'status',
     ];
 
     protected $casts = [
-        'start_date' => 'datetime',
-        'end_date' => 'datetime',
+        'application_start_date' => 'datetime',
+        'application_end_date' => 'datetime',
     ];
 
     public static function getCurrentEdition(): ?self
     {
-        $currentYear = Carbon::now()->format('Y');
-        $active = static::where('year', $currentYear)
-            ->whereIn('status', ['SELECTION_PHASE', 'INTERVIEW_PHASE', 'TEST_PHASE'])
+        $active = static::where('is_current', true)
             ->first();
         return $active;
     }
@@ -73,5 +74,10 @@ class ScholarshipEdition extends Model
     public function evaluationCriteria()
     {
         return $this->hasMany(EvaluationCriteria::class, 'edition_id');
+    }
+
+    public function phase_test()
+    {
+        return $this->hasOne(PhaseTest::class);
     }
 }

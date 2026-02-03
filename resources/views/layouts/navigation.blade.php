@@ -27,24 +27,24 @@
     // Si jamais une langue n'est pas connue, fallback FR
 $current = $languages[$locale] ?? $languages['fr'];
 @endphp
-<nav class="bg-white dark:bg-gray-900 fixed w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600">
-    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+<nav class="top-0 z-20 fixed bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-600 border-b w-full start-0">
+    <div class="flex flex-wrap justify-between items-center mx-auto p-4 max-w-screen-xl">
         <a href="{{ route('index', app()->getLocale()) }}" class="flex items-center space-x-3 rtl:space-x-reverse">
             <img src="{{ asset('img/vodacom-seeklogo.png') }}" Loading="lazy" class="h-6 sm:h-8" alt="Logo Vodacom">
             <img src="{{ asset('img/instant-school-logo.png') }}" Loading="lazy" class="h-6 sm:h-8" alt="Logo Vodacom">
-            <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white"></span>
+            <span class="self-center font-semibold dark:text-white text-2xl whitespace-nowrap"></span>
         </a>
 
-        <div class="flex items-center md:order-2 space-x-1 md:space-x-0 rtl:space-x-reverse">
+        <div class="flex items-center space-x-1 rtl:space-x-reverse md:space-x-0 md:order-2">
             <button type="button" data-dropdown-toggle="language-dropdown-menu"
-                class="flex items-center text-heading dark:text-slate-300 bg-transparent box-border border border-transparent hover:bg-neutral-secondary-medium focus:ring-4 focus:ring-neutral-tertiary font-medium leading-5 rounded-base text-sm px-3 py-2 focus:outline-none">
-                <img src="{{ $current['flag'] }}" alt="flag" class="w-6 h-6 xs:me-2">
+                class="box-border flex items-center bg-transparent hover:bg-neutral-secondary-medium px-3 py-2 border border-transparent rounded-base focus:outline-none focus:ring-4 focus:ring-neutral-tertiary font-medium text-heading dark:text-slate-300 text-sm leading-5">
+                <img src="{{ $current['flag'] }}" alt="flag" class="xs:me-2 w-6 h-6">
                 <span class="hidden xs:block">{{ $current['label'] }}</span>
             </button>
             <!-- Dropdown -->
-            <div class="z-50 hidden bg-neutral-primary-medium bg-slate-200 dark:bg-slate-900 border border-default-medium rounded-base shadow-lg w-44"
+            <div class="hidden z-50 bg-neutral-primary-medium bg-slate-200 dark:bg-slate-900 shadow-lg border border-default-medium rounded-base w-44"
                 id="language-dropdown-menu">
-                <ul class="p-2 text-sm text-body dark:text-slate-200 font-medium" role="none">
+                <ul class="p-2 font-medium text-body dark:text-slate-200 text-sm" role="none">
                     @foreach ($languages as $code => $language)
                         <li>
                             <a href="{{ url()->current() === url('/') ? '/' . $code : str_replace('/' . $locale, '/' . $code, url()->full()) }}"
@@ -52,7 +52,7 @@ $current = $languages[$locale] ?? $languages['fr'];
                                 role="menuitem">
                                 <div class="inline-flex items-center">
                                     <img src="{{ $language['flag'] }}" alt="{{ $language['label'] }}"
-                                        class="w-6 h-6 me-2">
+                                        class="me-2 w-6 h-6">
                                     <span class="text-sm">{{ $language['label'] }}</span>
                                 </div>
                             </a>
@@ -61,7 +61,7 @@ $current = $languages[$locale] ?? $languages['fr'];
                 </ul>
             </div>
             <button data-collapse-toggle="navbar-language" type="button"
-                class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-body rounded-base md:hidden hover:bg-neutral-secondary-soft hover:text-heading focus:outline-none focus:ring-2 focus:ring-neutral-tertiary"
+                class="md:hidden inline-flex justify-center items-center hover:bg-neutral-secondary-soft p-2 rounded-base focus:outline-none focus:ring-2 focus:ring-neutral-tertiary w-10 h-10 text-body hover:text-heading text-sm"
                 aria-controls="navbar-language" aria-expanded="false">
                 <span class="sr-only">Open main menu</span>
                 <svg class="w-6 h-6 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
@@ -69,21 +69,21 @@ $current = $languages[$locale] ?? $languages['fr'];
                     <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M5 7h14M5 12h14M5 17h14" />
                 </svg>
             </button>
-            <button onclick="(() => document.body.classList.toggle('dark'))()"
-                class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-700">
-                <svg class="fill-violet-700 block dark:hidden" fill="currentColor" viewBox="0 0 20 20">
+            <button type="button" class="justify-end bg-transparent p-0 w-4 transition-all duration-200 ease-linear"
+                id="light-dark-mode">
+                <svg class="dark:hidden block fill-[#1c004c] w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
                 </svg>
-                <svg class="fill-yellow-500 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
+                <svg class="hidden dark:block fill-yellow-500 w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                     <path
                         d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
                         fill-rule="evenodd" clip-rule="evenodd"></path>
                 </svg>
             </button>
         </div>
-        <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-language">
+        <div class="hidden md:flex justify-between items-center md:order-1 w-full md:w-auto" id="navbar-language">
             <ul
-                class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-default rounded-base bg-neutral-secondary-soft md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-neutral-primary dark:text-slate-300">
+                class="flex md:flex-row flex-col rtl:space-x-reverse md:space-x-8 bg-neutral-secondary-soft md:bg-neutral-primary mt-4 md:mt-0 p-4 md:p-0 border border-default md:border-0 rounded-base font-medium dark:text-slate-300">
                 <li>
                     <a href="{{ route('index', app()->getLocale()) }}#hero"
                         class="block py-2 px-3 text-heading rounded hover:bg-neutral-tertiary md:hover:bg-transparent md:border-0 md:hover:text-fg-brand md:p-0 md:dark:hover:bg-transparent {{ request()->routeIs('index') ? 'text-blue-600 font-medium' : '' }}">
@@ -92,13 +92,13 @@ $current = $languages[$locale] ?? $languages['fr'];
                 </li>
                 <li>
                     <a href="{{ route('index', app()->getLocale()) }}#what-is-it"
-                        class="block py-2 px-3 text-heading rounded hover:bg-neutral-tertiary md:hover:bg-transparent md:border-0 md:hover:text-fg-brand md:p-0 md:dark:hover:bg-transparent">
+                        class="block md:hover:bg-transparent md:dark:hover:bg-transparent hover:bg-neutral-tertiary md:p-0 px-3 py-2 md:border-0 rounded text-heading md:hover:text-fg-brand">
                         {{ __('messages.about') }}
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('index', app()->getLocale()) }}#contact"
-                        class="block py-2 px-3 text-heading rounded hover:bg-neutral-tertiary md:hover:bg-transparent md:border-0 md:hover:text-fg-brand md:p-0 md:dark:hover:bg-transparent">
+                        class="block md:hover:bg-transparent md:dark:hover:bg-transparent hover:bg-neutral-tertiary md:p-0 px-3 py-2 md:border-0 rounded text-heading md:hover:text-fg-brand">
                         {{ __('messages.contact') }}
                     </a>
                 </li>

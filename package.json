@@ -23,6 +23,6 @@
         "pdfjs-dist": "^4.7.76",
         "preline": "^2.5.0",
         "simple-datatables": "^10.2.0",
-        "sweetalert2": "^11.14.3"
+        "sweetalert2": "^11.26.17"
     }
 }

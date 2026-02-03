@@ -11,22 +11,6 @@ return [
     'email' => 'Email',
     'years_old' => 'ans',
 
-    // genders
-    'genders' => [
-        'male' => 'Masculin',
-        'female' => 'Féminin',
-        'other' => 'Autre',
-    ],
-
-    // Vulnerability types
-    'vulnerability_types' => [
-        'disabled' => 'Personne handicapée',
-        'albinos' => 'Albinos',
-        'pygmee' => 'Pygmée',
-        'refugee' => 'Réfugié',
-        'orphan' => 'Orphelin',
-        'none' => 'Aucun',
-    ],
 
     'cities_info' => 'Informations sur les villes',
     'diploma_city' => 'Ville d\'obtention du diplôme',

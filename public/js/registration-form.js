@@ -3,6 +3,8 @@ const translations = JSON.parse(document.querySelector('meta[name="translations"
 
 function app() {
     return {
+        // idempotency token to prevent duplicate submissions
+        submissionToken: null,
         step: 1,
         totalSteps: 5,
         isSubmitting: false,
@@ -20,8 +22,8 @@ function app() {
             vulnerability_type: 'none',
 
             // Étape 2: Adresse
-            current_city: '',
-            diploma_city: '',
+            educational_city_id: '',
+            current_city_id: '',
             full_address: '',
 
             // Étape 3: Informations scolaires
@@ -32,9 +34,9 @@ function app() {
             percentage: '',
 
             // Étape 4: Pièces jointes
-            id_document: null,
+            id: null,
             diploma: null,
-            recommendation: null,
+            reco_letter: null,
 
             // Étape 5: Ambitions personnelles
             intended_field: '',
@@ -81,7 +83,7 @@ function app() {
 
         nextStep() {
             if (this.isSubmitting) return;
-            // existing logic (if any) is handled in the template via @click
+
             if (this.step < this.totalSteps) {
                 if (this.validateStep(this.step)) {
                     this.step++;
@@ -110,7 +112,7 @@ function app() {
                 // Appliquer une valeur par défaut AVANT la validation required
                 if (field.useADefaultValue) {
                     if (!this.formData[field.name] && this.formData[field.defaultValueField]) {
-                        this.formData[field.name] = this.formData[field.defaultValueField];
+                        this.formData[field.name] = String(this.formData[field.defaultValueField]);
                         // Nettoyer une éventuelle erreur existante liée au champ
                         if (this.errors[field.name]) {
                             delete this.errors[field.name];
@@ -118,6 +120,7 @@ function app() {
                         // Répercuter la valeur dans le champ pour cohérence UI
                         if (fieldElement && typeof fieldElement.value !== 'undefined') {
                             fieldElement.value = this.formData[field.name];
+                            fieldElement.dispatchEvent(new Event('change', { bubbles: true }));
                         }
                     }
                 }
@@ -156,8 +159,6 @@ function app() {
                         return;
                     }
                 }
-
-                // (déplacé plus haut, avant required)
 
                 if (field.hasPersonalizedOption) {
                     const isOtherOptionSelected = this.formData[field.name] === field.personalizedOptionValue;
@@ -209,7 +210,8 @@ function app() {
                     {
                         'name': 'photo',
                         'validateFile': true,
-                        'id': 'fileInput',
+                        'id': 'photo',
+                        'required': true,
                     },
                     {
                         'name': 'first_name',
@@ -232,11 +234,6 @@ function app() {
                         'id': 'date_of_birth',
                         'validateAge': true,
                     },
-                    {
-                        'name': 'vulnerability_type',
-                        'id': 'vulnerability_type',
-                        'required': true
-                    }
                 ];
 
                 isValid = this.validateFields(stepOnefieldsToValidate);
@@ -244,15 +241,15 @@ function app() {
             } else if (step === 2) { // Validation de l'etape 2
                 const stepTwoFieldsToValidate = [
                     {
-                        'name': 'current_city',
-                        'id': 'current_city',
+                        'name': 'current_city_id',
+                        'id': 'current_city_id',
                         'required': true,
                     },
                     {
-                        'name': 'diploma_city',
-                        'id': 'diploma_city',
+                        'name': 'educational_city_id',
+                        'id': 'educational_city_id',
                         'useADefaultValue': true,
-                        'defaultValueField': 'current_city',
+                        'defaultValueField': 'current_city_id',
                         'required': true,
                     },
                     {
@@ -296,26 +293,18 @@ function app() {
                 isValid = this.validateFields(stepThreeFieldsToValidate);
                 console.log("isValid 3: ", isValid);
             } else if (step === 4) {
-                const stepFourFieldsToValidate = [
-                    {
-                        'name': 'id_document',
-                        'id': 'id_document',
-                        'validateFile': true,
-                        'required': true,
-                    },
-                    {
-                        'name': 'diploma',
-                        'id': 'diploma',
-                        'validateFile': true,
-                        'required': true,
-                    },
-                    {
-                        'name': 'recommendation',
-                        'id': 'recommendation',
-                        'validateFile': true,
-                        'required': false,
-                    }
-                ]
+                // Dynamically collect file inputs rendered by the server-side document types
+                const fileInputs = document.querySelectorAll('.document-upload');
+                const stepFourFieldsToValidate = Array.from(fileInputs).map((el) => {
+                    return {
+                        name: el.name,
+                        id: el.id,
+                        validateFile: true,
+                        // consider required if the input has the required attribute or a data-error-required message
+                        required: el.hasAttribute('required') || typeof el.dataset.errorRequired !== 'undefined'
+                    };
+                });
+
                 isValid = this.validateFields(stepFourFieldsToValidate);
                 console.log("isValid 4: ", isValid);
             } else if (step === 5) {
@@ -379,7 +368,10 @@ function app() {
         },
 
         // Soumission du formulaire
-        submitForm() {
+        submitForm(e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+
             if (this.isSubmitting) {
                 return;
             }
@@ -398,6 +390,22 @@ function app() {
                 const form = document.getElementById('registrationForm');
                 const formData = new FormData(form);
 
+                // Ensure a submission token exists and include it - helps server deduplicate
+                if (!this.submissionToken) {
+                    if (window.crypto && window.crypto.randomUUID) {
+                        this.submissionToken = window.crypto.randomUUID();
+                    } else {
+                        this.submissionToken = 'sub_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+                    }
+                }
+                formData.append('submission_token', this.submissionToken);
+
+                // Disable submit buttons to avoid accidental double-clicks
+                const submitButtons = Array.from(document.querySelectorAll('button[type="submit"]'));
+                submitButtons.forEach(b => b.setAttribute('disabled', 'disabled'));
+
+                let submissionSucceeded = false;
+
                 fetch(form.action, {
                     method: 'POST',
                     body: formData,
@@ -412,10 +420,41 @@ function app() {
                             const data = await response.json();
                             console.log('data : ', data);
                             if (data && data.success) {
-                                this.step = 'complete';
-                                if (data.redirect) {
-                                    window.location.href = data.redirect;
+                                // Inject server-provided confirmation strings (rendered with translations)
+                                try {
+                                    if (data.confirmation_message) {
+                                        const msgEl = document.getElementById('confirmation_message');
+                                        if (msgEl) msgEl.textContent = data.confirmation_message;
+                                    }
+                                    if (data.confirmation_details) {
+                                        const detailsEl = document.getElementById('confirmation_details');
+                                        if (detailsEl) detailsEl.textContent = data.confirmation_details;
+                                    }
+                                    if (data.confirmation_coupon) {
+                                        const couponBlock = document.getElementById('confirmation_coupon_block');
+                                        const couponEl = document.getElementById('confirmation_coupon');
+                                        const couponInput = document.getElementById('confirmation_coupon_input');
+                                        if (couponEl) couponEl.textContent = data.confirmation_coupon;
+                                        if (couponInput) couponInput.value = data.confirmation_coupon;
+                                        if (couponBlock) couponBlock.style.display = '';
+                                    }
+                                } catch (err) {
+                                    console.warn('Could not inject confirmation details:', err);
                                 }
+
+                                this.step = 'complete';
+                                submissionSucceeded = true;
+
+                                // Focus the confirmation container for accessibility and to ensure
+                                // the user sees the success panel (small timeout to allow Alpine to
+                                // apply the x-show transition).
+                                setTimeout(() => {
+                                    const conf = document.getElementById('confirmation');
+                                    if (conf) {
+                                        try { conf.focus(); } catch (e) { /* ignore */ }
+                                        conf.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    }
+                                }, 80);
                             } else {
                                 // Réponse OK mais pas de success flag
                                 console.warn('Réponse OK sans success:true');
@@ -438,8 +477,8 @@ function app() {
                                 birthdate: 'date_of_birth',
                                 identification_type: 'vulnerability_type',
 
-                                current_city: 'current_city',
-                                diploma_city: 'diploma_city',
+                                current_city_id: 'current_city_id',
+                                educational_city_id: 'educational_city_id',
                                 full_address: 'full_address',
 
                                 school_name: 'school_name',
@@ -448,9 +487,9 @@ function app() {
                                 diploma_score: 'percentage',
                                 student_code: 'national_exam_code',
 
-                                id_document: 'id_document',
+                                id: 'id',
                                 diploma: 'diploma',
-                                recommendation: 'recommendation',
+                                reco_letter: 'reco_letter',
 
                                 university_field: 'intended_field',
                                 other_university_field: 'other_university_field',
@@ -462,9 +501,9 @@ function app() {
                             // Mapping champ -> étape pour focus
                             const fieldStepMap = {
                                 first_name: 1, last_name: 1, phone_number: 1, gender: 1, date_of_birth: 1, vulnerability_type: 1,
-                                current_city: 2, diploma_city: 2, full_address: 2,
+                                current_city_id: 2, educational_city_id: 2, full_address: 2,
                                 school_name: 3, option_studied: 3, other_study_option: 3, percentage: 3, national_exam_code: 3,
-                                id_document: 4, diploma: 4, recommendation: 4,
+                                id: 4, diploma: 4, reco_letter: 4,
                                 intended_field: 5, other_university_field: 5, intended_field_motivation: 5, career_goals: 5, additional_infos: 5
                             };
 
@@ -525,6 +564,11 @@ function app() {
                         console.error('Erreur réseau lors de la soumission du formulaire:', error);
                     })
                     .finally(() => {
+                        // Re-enable the submit buttons only if submission did not succeed
+                        if (!submissionSucceeded) {
+                            submitButtons.forEach(b => b.removeAttribute('disabled'));
+                        }
+
                         this.isSubmitting = false;
                     });
             }

@@ -11,8 +11,8 @@ class Department extends Model
 
     protected $fillable = ['name', 'description'];
 
-    public function staff_profiles()
+    public function agents()
     {
-        return $this->hasMany(StaffProfile::class, 'department_id');
+        return $this->hasMany(Agent::class);
     }
 }

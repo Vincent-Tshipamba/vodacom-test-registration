@@ -8,6 +8,7 @@
 
     <title>{{ config('app.name', 'Laravel') }}</title>
 
+    <link rel="shortcut icon" href="{{ asset('img/instant-school-logo.png') }}" type="image/x-icon">
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -130,16 +131,16 @@
 
     <div class="bg-gray-200 dark:bg-gray-700 mt-[75px] max-w-full min-h-screen">
         @if (session('success'))
-            <div class="mx-auto max-w-5xl p-4">
-                <div class="bg-green-100 border border-green-300 text-green-800 px-4 py-3 rounded">
+            <div class="mx-auto p-4 max-w-5xl">
+                <div class="bg-green-100 px-4 py-3 border border-green-300 rounded text-green-800">
                     {{ session('success') }}
                 </div>
             </div>
         @endif
 
         @if ($errors->any())
-            <div class="mx-auto max-w-5xl p-4">
-                <div class="bg-red-100 border border-red-300 text-red-800 px-4 py-3 rounded">
+            <div class="mx-auto p-4 max-w-5xl">
+                <div class="bg-red-100 px-4 py-3 border border-red-300 rounded text-red-800">
                     <ul class="list-disc list-inside">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -166,11 +167,10 @@
         </footer>
     @endif
 
-
-    <script src="{{ asset('node_modules/flowbite/dist/flowbite.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.js" defer></script>
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
         crossorigin="anonymous"></script>
+    <script src="{{ asset('js/applyTheme.js') }}"></script>
     <!-- Script pour la navigation vers les ancres de la page d'accueil -->
     <script>
         function smoothScrollTo(targetId, duration = 1200) {
@@ -205,11 +205,6 @@
 
             requestAnimationFrame(animation);
         }
-
-        document.querySelector('a[href="#what-is-it"]').addEventListener('click', function(e) {
-            e.preventDefault();
-            smoothScrollTo('#what-is-it', 500);
-        });
     </script>
 
 

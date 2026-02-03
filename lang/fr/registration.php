@@ -86,6 +86,9 @@ return [
     'additional_info_placeholder' => 'Toute autre information que vous jugez utile...',
 
     'submitting' => 'Envoi en cours',
+    'upload_file' => 'Télécharger un fichier',
+    'or_drag_drop' => 'ou glisser-déposer',
+
     // Validation
     'validation' => [
         'pattern' => 'Le code doit contenir exactement 14 chiffres',
@@ -96,7 +99,7 @@ return [
         'file_size' => 'Le fichier ne doit pas dépasser :size MB',
         'file_type' => 'Type de fichier non autorisé',
         'phone' => 'Numéro de téléphone invalide',
-        'percentage' => 'Vous devez avoir au moins 70% pour vous inscrire au programme',
+        'percentage' => 'Vous devez avoir entre 70 et 100% pour vous inscrire au programme',
         'birthdate' => 'Date de naissance invalide',
         'age_requirement' => 'Vous devez avoir au moins 16 ans et au plus 20 ans pour vous inscrire',
         'diploma_city_help' => 'Laissez vide si identique à la ville de résidence actuelle',
@@ -126,9 +129,11 @@ return [
 
         // Adresse
         'current_city_required' => 'La ville actuelle est obligatoire.',
-        'current_city_max' => 'La ville actuelle ne doit pas dépasser 30 caractères.',
-        'diploma_city_required' => 'La ville du diplôme est obligatoire.',
-        'diploma_city_max' => 'La ville du diplôme ne doit pas dépasser 30 caractères.',
+        'current_city_exists' => 'La ville actuelle sélectionnée n\'est pas valide.',
+        'educational_city_required' => 'La ville du diplôme est obligatoire.',
+        'educational_city_exists' => 'La ville du diplôme sélectionnée n\'est pas valide.',
+
+
         'full_address_required' => 'L\'adresse complète est obligatoire.',
         'full_address_max' => 'L\'adresse complète ne doit pas dépasser 500 caractères.',
 
@@ -185,10 +190,38 @@ return [
         'status_max' => 'Le statut ne doit pas dépasser 50 caractères.',
     ],
 
+    // Descriptions et labels personnalisés pour les types de documents
+    'documents' => [
+        // slug generated from document name using Str::slug()
+        'diploma' => [
+            'label' => 'Attestation de réussite / Diplôme',
+            'description' => 'Veuillez télécharger un scan clair de votre diplôme ou attestation. Formats acceptés : PDF, JPG, PNG, DOC, DOCX. Taille maximale : 5MB.',
+            'hint' => 'Scan lisible du diplôme ou attestation (PDF/JPG/PNG/DOC/DOCX, max 5MB)'
+        ],
+        'id' => [
+            'label' => 'Pièce d\'identité',
+            'description' => 'Carte d\'identité nationale, passeport ou extrait d\'acte de naissance. Formats acceptés : PDF, JPG, PNG. Taille maximale : 5MB.',
+            'hint' => 'Carte d\'identité, passeport ou acte (PDF/JPG/PNG, max 5MB)'
+        ],
+        'photo' => [
+            'label' => 'Photo d\'identité',
+            'description' => 'Photo récente format portrait. Formats acceptés : JPG, PNG. Taille maximale : 2MB. Assurez-vous que le visage soit bien visible.',
+            'hint' => 'Photo portrait récente (JPG/PNG, max 2MB)'
+        ],
+        'reco_letter' => [
+            'label' => 'Lettre de recommandation',
+            'description' => 'Lettre de recommandation d\'un enseignant ou encadrant (optionnelle). Formats acceptés : PDF, DOC, DOCX. Taille maximale : 5MB.',
+            'hint' => 'Lettre de recommandation (PDF/DOC/DOCX, max 5MB)'
+        ],
+    ],
+
     // Messages de confirmation
     'confirmation_title' => 'Confirmation d\'inscription',
     'confirmation_message' => 'Votre inscription a été enregistrée avec succès !',
     'confirmation_details' => 'Nous vous contacterons très bientôt, une fois vos informations examinées. A bientôt :firstname !',
+    'copy_label' => 'Copier le code au presse-papiers',
+    'copy' => 'Copier',
+    'copied' => 'Copié !',
     'return_home' => 'Retour à l\'accueil',
 
     // Options scolaires

@@ -3,8 +3,11 @@
 namespace App\Http\Requests;
 
 use App\Models\Applicant;
+use App\Models\DocumentType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class StoreApplicantRequest extends FormRequest
 {
@@ -74,7 +77,7 @@ class StoreApplicantRequest extends FormRequest
         ];
         $vulnerabilityTypes = ['disabled', 'albinos', 'pygmee', 'refugee', 'orphan', 'none'];
 
-        return [
+        $rules = [
             // 'user_id' => ['required', 'exists:users,id'],
             // 'edition_id' => ['required', 'exists:scholarship_editions,id'],
             // 'registration_code' => ['required', 'string', 'max:50', 'unique:applicants,registration_code'],
@@ -82,10 +85,17 @@ class StoreApplicantRequest extends FormRequest
             'last_name' => ['required', 'string', 'max:100'],
             'gender' => ['required', Rule::in(['male', 'female'])],
             'date_of_birth' => ['required', 'date', 'before:today'],
-            'phone_number' => ['required', 'string', 'max:20'],
+            // phone_number: normalized to 9 digits (leading 0 dropped). Must start with 80-83 (Vodacom RDC).
+            'phone_number' => [
+                'required',
+                'string',
+                'size:9',
+                'regex:/^(8[0-3][0-9]{7})$/',
+                Rule::unique(Applicant::class, 'phone_number'),
+            ],
             'vulnerability_type' => ['required', Rule::in($vulnerabilityTypes)],
-            'diploma_city' => ['required', 'string', 'max:100'],
-            'current_city' => ['required', 'string', 'max:100'],
+            'educational_city_id' => ['required', 'exists:educational_cities,id'],
+            'current_city_id' => ['required', 'exists:educational_cities,id'],
             'full_address' => ['required', 'string'],
             'school_name' => ['required', 'string', 'max:150'],
             'national_exam_code' => ['required', 'string', 'size:14', 'regex:/^[0-9]{14}$/', Rule::unique(Applicant::class, 'national_exam_code')],
@@ -100,6 +110,25 @@ class StoreApplicantRequest extends FormRequest
             'additional_infos_locale' => ['nullable', 'string', Rule::in($supportedLocales)],
             'application_status' => ['nullable', 'string', Rule::in(['PENDING', 'REJECTED', 'SHORTLISTED', 'TEST_PASSED', 'INTERVIEW_PASSED', 'ADMITTED'])],
         ];
+
+        // Add dynamic file rules based on DocumentType entries
+        $documentTypes = DocumentType::where('is_for_candidats', true)->get();
+        $mimeList = 'pdf,jpeg,png,jpg,doc,docx';
+        $maxKb = 5 * 1024; // 5 MB in kilobytes
+
+        foreach ($documentTypes as $doc) {
+            $field = Str::lower($doc->name);
+
+            $isRequired = !Str::contains(Str::lower($doc->name), 'reco');
+
+            if ($isRequired) {
+                $rules[$field] = ['required', 'file', 'mimes:' . $mimeList, 'max:' . $maxKb];
+            } else {
+                $rules[$field] = ['nullable', 'file', 'mimes:' . $mimeList, 'max:' . $maxKb];
+            }
+        }
+
+        return $rules;
     }
 
     public function attributes(): array
@@ -160,7 +189,9 @@ class StoreApplicantRequest extends FormRequest
             'date_of_birth.before' => __('validation.before'),
 
             'phone_number.required' => __('validation.required'),
-            'phone_number.max' => __('validation.max.string'),
+            'phone_number.size' => __('validation.size.string'),
+            'phone_number.unique' => __('validation.unique'),
+            'phone_number.regex' => __('validation.phone_number_regex'),
 
             'diploma_city.required' => __('validation.required'),
             'diploma_city.max' => __('validation.max.string'),
@@ -204,8 +235,10 @@ class StoreApplicantRequest extends FormRequest
         ];
     }
 
-    protected function prepareForValidation()
+    // Dynamically provide attribute labels and messages for document file inputs
+    public function prepareForValidation()
     {
+        // existing normalize logic
         if ($this->has('national_exam_code')) {
             $normalized = preg_replace('/\D+/', '', (string) $this->input('national_exam_code'));
             $this->merge([
@@ -213,10 +246,55 @@ class StoreApplicantRequest extends FormRequest
             ]);
         }
 
+        // Normalize phone number: keep digits only, drop leading zero if present
+        if ($this->has('phone_number')) {
+            $phone = preg_replace('/\D+/', '', (string) $this->input('phone_number'));
+            if (Str::startsWith($phone, '0')) {
+                $phone = substr($phone, 1);
+            }
+            $this->merge(['phone_number' => $phone]);
+        }
+
         $this->merge([
             'intended_field_motivation_locale' => $this->get('intended_field_motivation_locale', app()->getLocale()),
             'career_goals_locale' => $this->get('career_goals_locale', app()->getLocale()),
             'additional_infos_locale' => $this->get('additional_infos_locale', app()->getLocale()),
         ]);
+
+        // Attach dynamic messages/attributes for documents so validation errors are readable
+        $documentTypes = DocumentType::where('is_for_candidats', true)->get();
+        foreach ($documentTypes as $doc) {
+            $field = Str::lower($doc->name);
+            // Add attribute name if not already set
+            $attributes = $this->attributes();
+            if (!isset($attributes[$field])) {
+                // use translation if available
+                $labelKey = 'registration.documents.' . Str::slug($doc->name) . '.label';
+                $attributes[$field] = trans($labelKey) !== $labelKey ? trans($labelKey) : $doc->name;
+            }
+        }
+        // Note: we don't overwrite the class attributes() method; this is informational only.
     }
+
+    /**
+     * Add an after-validation hook to enforce age constraints server-side.
+     * The client-side age check can be bypassed, so we must validate on the server.
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $dob = $this->input('date_of_birth');
+            if ($dob) {
+                try {
+                    $age = Carbon::parse($dob)->age;
+                    if ($age < 16 || $age > 20) {
+                        $validator->errors()->add('date_of_birth', __('registration.validation.age_requirement'));
+                    }
+                } catch (\Exception $e) {
+                    // If parsing fails, the existing 'date' rule will cover it.
+                }
+            }
+        });
+    }
+
 }

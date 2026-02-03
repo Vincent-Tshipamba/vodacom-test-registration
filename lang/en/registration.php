@@ -64,12 +64,6 @@ return [
     'diploma_year_placeholder' => 'Year of graduation...',
 
     // Step 4: Attachments
-    'id_document_label' => 'ID Document',
-    'id_document_hint' => 'Voter card, passport, or birth certificate (PDF, JPG, PNG, max 2MB)',
-    'diploma_label' => 'Certificate of Success',
-    'diploma_hint' => 'Scan of your diploma or certificate (PDF, JPG, PNG, max 2MB)',
-    'recommendation_label' => 'Recommendation Letter (optional)',
-    'recommendation_hint' => 'Recommendation letter (PDF, DOC, DOCX, max 2MB)',
 
     // Step 5: Personal Ambitions
     'university_field_label' => 'Desired University Field',
@@ -95,7 +89,7 @@ return [
         'file_size' => 'The file must not exceed :size MB',
         'file_type' => 'File type not allowed',
         'phone' => 'Invalid phone number',
-        'percentage' => 'You must have at least 70% to register for the program',
+        'percentage' => 'You must have between 70 and 100% to register for the program',
         'birthdate' => 'Invalid birth date',
         'age_requirement' => 'You must be at least 16 years old and at most 20 years old to register',
         'diploma_city_help' => 'Leave blank if same as current residence city',
@@ -182,6 +176,33 @@ return [
         'certificate_max' => 'The certificate must not exceed 255 characters.',
         'coupon_max' => 'The coupon must not exceed 5 characters.',
         'status_max' => 'The status must not exceed 50 characters.',
+    ],
+
+    'upload_file' => 'Upload a file',
+    'or_drag_drop' => 'or drag & drop',
+
+    // Per-document labels and descriptions (slug = Str::slug(document name))
+    'documents' => [
+        'diploma' => [
+            'label' => 'Diploma / Certificate',
+            'description' => 'Please upload a clear scan of your diploma or certificate. Accepted formats: PDF, JPG, PNG, DOC, DOCX. Max size: 5MB.',
+            'hint' => 'Scan of diploma or certificate (PDF/JPG/PNG/DOC/DOCX, max 5MB)'
+        ],
+        'id' => [
+            'label' => 'Identification Document',
+            'description' => 'National ID, passport or birth certificate. Accepted formats: PDF, JPG, PNG. Max size: 5MB.',
+            'hint' => 'ID card, passport, or birth certificate (PDF/JPG/PNG, max 5MB)'
+        ],
+        'photo' => [
+            'label' => 'ID Photo',
+            'description' => 'Recent portrait photo. Accepted formats: JPG, PNG. Max size: 2MB. Ensure the face is clearly visible.',
+            'hint' => 'Recent portrait photo (JPG/PNG, max 2MB)'
+        ],
+        'reco_letter' => [
+            'label' => 'Recommendation Letter',
+            'description' => 'Recommendation letter from a teacher or supervisor (optional). Accepted formats: PDF, DOC, DOCX. Max size: 5MB.',
+            'hint' => 'Recommendation letter (PDF/DOC/DOCX, max 5MB)'
+        ],
     ],
 
     // Confirmation messages

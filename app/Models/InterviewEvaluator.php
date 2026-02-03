@@ -21,7 +21,7 @@ class InterviewEvaluator extends Model
 
     public function evaluator()
     {
-        return $this->belongsTo(StaffProfile::class, 'evaluator_id');
+        return $this->belongsTo(Agent::class, 'evaluator_id');
     }
 
     public function scores()

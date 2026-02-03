@@ -11,22 +11,22 @@ class CandidateResponse extends Model
 
     protected $fillable = [
         'test_session_id',
-        'question_id',
+        'question_phase_test_id',
         'selected_option_id',
         'text_answer',
     ];
 
-    public function session()
+    public function test_session()
     {
-        return $this->belongsTo(TestSession::class, 'test_session_id');
+        return $this->belongsTo(TestSession::class);
     }
 
-    public function question()
+    public function question_phase_test()
     {
-        return $this->belongsTo(Question::class);
+        return $this->belongsTo(QuestionPhaseTest::class);
     }
 
-    public function selectedOption()
+    public function selected_option()
     {
         return $this->belongsTo(AnswerOption::class, 'selected_option_id');
     }

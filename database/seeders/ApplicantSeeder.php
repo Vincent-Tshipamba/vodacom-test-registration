@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Applicant;
 use Illuminate\Support\Str;
+use App\Models\DocumentType;
 use Illuminate\Database\Seeder;
 use App\Models\ApplicationDocument;
 use Illuminate\Support\Facades\File;
@@ -28,9 +29,17 @@ class ApplicantSeeder extends Seeder
         $applicants->each(function ($applicant) use ($testFiles) {
             $storagePath = storage_path('app/public/');
             foreach ($testFiles as $type => $filePath) {
+                $typeDoc = DocumentType::where('name', $type)
+                    ->where('is_for_candidats', true)
+                    ->first();
+
+                if (!$typeDoc) {
+                    continue;
+                }
+
                 $newPath = str_replace(
                     'applicants/1/',
-                    "applicants/{$applicant->id}/",
+                    'applicants/' . $applicant->id . '/',
                     $filePath
                 );
 
@@ -47,7 +56,7 @@ class ApplicantSeeder extends Seeder
                 }
                 ApplicationDocument::create([
                     'applicant_id' => $applicant->id,
-                    'document_type' => $type,
+                    'document_type_id' => $typeDoc->id,
                     'file_type' => pathinfo($newPath, PATHINFO_EXTENSION),
                     'file_url' => $newPath,
                     'file_name' => basename($newPath),

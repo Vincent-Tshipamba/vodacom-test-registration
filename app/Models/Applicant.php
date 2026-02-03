@@ -11,7 +11,6 @@ class Applicant extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
         'edition_id',
         'registration_code',
         'first_name',
@@ -20,8 +19,8 @@ class Applicant extends Model
         'date_of_birth',
         'phone_number',
         'vulnerability_type',
-        'diploma_city',
-        'current_city',
+        'educational_city_id',
+        'current_city_id',
         'full_address',
         'school_name',
         'national_exam_code',
@@ -65,20 +64,29 @@ class Applicant extends Model
     public function getDocumentsAttribute()
     {
         return (object) $this->application_documents
-            ->mapWithKeys(fn($doc) => [
-                strtolower($doc->document_type) => [
+            ->mapWithKeys(function ($doc) {
+                $type_name = strtolower($doc->document_type->name);
+
+                return [
+                    $type_name => [
                     'id' => $doc->id,
-                    'type' => $doc->document_type,
+                    'type' => $doc->document_type->name ?? $doc->document_type_id,
                     'url' => Storage::url($doc->file_url),
                     'ext' => $doc->file_type,
                     'is_pdf' => $doc->file_type === 'pdf',
-                ]
-            ])->toArray();
+                    ]
+                ];
+            })->toArray();
     }
 
-    public function user()
+    public function educational_city()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(EducationalCity::class, 'educational_city_id');
+    }
+
+    public function current_city()
+    {
+        return $this->belongsTo(EducationalCity::class, 'current_city_id');
     }
 
     public function edition()

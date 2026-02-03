@@ -11,7 +11,7 @@ class University extends Model
 
     protected $fillable = [
         'name',
-        'city',
+        'educational_city_id',
         'website_url',
         'contact_person_name',
         'contact_person_phone',
@@ -22,6 +22,13 @@ class University extends Model
 
     public function scholars()
     {
-        return $this->hasMany(Scholar::class);
+        return $this->belongsToMany(Scholar::class, 'historique_university_scholars', 'university_id', 'scholar_id')
+            ->withPivot('is_current', 'joined_at', 'left_at')
+            ->withTimestamps();
+    }
+
+    public function educational_city()
+    {
+        return $this->belongsTo(EducationalCity::class, 'educational_city_id');
     }
 }

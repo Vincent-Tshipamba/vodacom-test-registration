@@ -3,7 +3,7 @@
         <div class="card-body">
             <div
                 class="relative flex justify-center items-center bg-slate-100 dark:bg-zink-600 mx-auto rounded-full size-16 text-lg">
-                @if ($candidat->documents->photo)
+                @if (isset($candidat->documents->photo))
                     <img src="{{ $candidat->documents->photo['url'] }}" alt="{{ 'Diplome de ' . $candidat->first_name }}"
                         class="rounded-full size-16">
                     <span
@@ -157,18 +157,28 @@
                     <div id="dropdown-{{ $candidat->id }}"
                         style="position: absolute; top: 40px; right: 0px; z-index: 1000;"
                         class="hidden right-0 z-50 absolute bg-white dark:bg-zink-600 shadow-md mt-1 py-2 rounded-md min-w-[10rem] ltr:text-left rtl:text-right list-none dropdown-menu">
+                        @php
+                            $id = $candidat->documents->id ?? '';
+                            $id_id = $id ? $id['id'] : '';
+                            $id_url = $id ? $id['url'] : '';
+                            $id_is_pdf = $id ? $id['is_pdf'] : '';
+                            $diploma = $candidat->documents->diploma ?? '';
+                            $diploma_id = $diploma ? $diploma['id'] : '';
+                            $diploma_url = $diploma ? $diploma['url'] : '';
+                            $diploma_is_pdf = $diploma ? $diploma['is_pdf'] : '';
+                        @endphp
                         <ul class="py-2 text-gray-700 dark:text-gray-200 text-sm"
                             aria-labelledby="userGridDropdown12-{{ $candidat->id }}">
                             <li>
                                 <a class="block hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-zink-500 dark:focus:bg-zink-500 px-4 py-1.5 text-slate-600 hover:text-slate-500 focus:text-slate-500 dark:hover:text-zink-200 dark:focus:text-zink-200 dark:text-zink-100 text-base transition-all duration-200 ease-linear dropdown-item"
                                     href="#!"
-                                    onclick="showDocument(event, '{{ $candidat->documents->diploma['url'] }}', {{ $candidat->documents->diploma['id'] }}, '{{ 'DIPLOMA' }}', {{ $candidat->id }}, '{{ $candidat->full_name }}', '{{ $candidat->documents->diploma['is_pdf'] }}')"><i
+                                    onclick="showDocument(event, '{{ $diploma_url }}', {{ $diploma_id }}, '{{ 'DIPLOMA' }}', {{ $candidat->id }}, '{{ $candidat->full_name }}', '{{ $diploma_is_pdf }}')"><i
                                         data-lucide="eye" class="inline-block ltr:mr-1 rtl:ml-1 size-3"></i> <span
                                         class="align-middle">Attestation de reussite</span></a>
                             </li>
                             <li>
                                 <a href="#!"
-                                    onclick="showDocument(event, '{{ $candidat->documents->id['url'] }}', {{ $candidat->documents->id['id'] }}, '{{ 'ID' }}', {{ $candidat->id }}, '{{ $candidat->full_name }}', '{{ $candidat->documents->id['is_pdf'] }}')"
+                                    onclick="showDocument(event, '{{ $id_url }}', {{ $id_id }}, '{{ 'ID' }}', {{ $candidat->id }}, '{{ $candidat->full_name }}', '{{ $id_is_pdf }}')"
                                     class="block hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-zink-500 dark:focus:bg-zink-500 px-4 py-1.5 text-slate-600 hover:text-slate-500 focus:text-slate-500 dark:hover:text-zink-200 dark:focus:text-zink-200 dark:text-zink-100 text-base transition-all duration-200 ease-linear dropdown-item"
                                     href="#!"><i data-lucide="file-edit"
                                         class="inline-block ltr:mr-1 rtl:ml-1 size-3"></i> <span

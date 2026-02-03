@@ -117,6 +117,7 @@ return [
         'symbols'       => 'Le champ :attribute doit contenir au moins un symbole.',
         'uncompromised' => 'La valeur du champ :attribute est apparue dans une fuite de données. Veuillez choisir une valeur différente.',
     ],
+    'phone_number_regex'    => 'Veuillez fournir uniquement un numéro Vodacom valide commençant par 80, 81, 82 ou 83.',
     'present'                => 'Le champ :attribute doit être présent.',
     'present_if'             => 'Le champ :attribute doit être présent lorsque :other est :value.',
     'present_unless'         => 'Le champ :attribute doit être présent sauf si :other vaut :value.',
