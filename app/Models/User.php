@@ -54,6 +54,15 @@ class User extends Authenticatable
         ];
     }
 
+    protected $appends = ['full_name'];
+
+    // TODO: Creer une fonction to call when creating a new user pour concatener le first et lastname afin de former le name
+
+    public function getFullNameAttribute()
+    {
+        return "{$this->first_name} {$this->last_name}";
+    }
+
     // Relations
     public function agent()
     {

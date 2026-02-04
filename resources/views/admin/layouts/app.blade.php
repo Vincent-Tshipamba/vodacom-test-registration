@@ -21,7 +21,6 @@
     <!-- Tailwind CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/tailwind2.css') }}">
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.6/css/dataTables.dataTables.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.css" rel="stylesheet" />
 
     {{-- <link rel="stylesheet" href="{{ asset('assets/scss/tailwind.scss') }}"> --}}
     <!-- Scripts -->
@@ -87,8 +86,6 @@ $current = $languages[$locale] ?? $languages['fr'];
     @if (request()->routeIs('admin.dashboard'))
         <script src="{{ asset('assets/js/pages/dashboards-hr.init.js') }}"></script>
     @endif
-
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"></script>
 
     <!-- Dans la section head -->
     <script src="https://unpkg.com/lucide@latest"></script>
