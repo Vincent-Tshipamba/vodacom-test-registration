@@ -521,7 +521,7 @@
                 @endif
             </div>
         </div>
-        <div class="hidden bg-neutral-700 p-4 rounded-base" id="styled-questions" role="tabpanel"
+        <div class="hidden bg-gray-300 dark:bg-neutral-900 p-4 rounded-base" id="styled-questions" role="tabpanel"
             aria-labelledby="questions-tab">
             @if (session('success'))
                 <div id="alert-3"
@@ -573,46 +573,12 @@
                     </button>
                 </div>
             @endif
-            <div class="flex justify-between items-center pt-3">
-                <a href="#" data-modal-target="create-modal-question" data-modal-toggle="create-modal-question"
-                    class="inline-flex items-center bg-[#ff1453] hover:bg-[#ff1453]/80 dark:hover:bg-[#ff1453]/80 px-3 py-2 rounded-lg focus:outline-none focus:ring-[#ff1453]/50 focus:ring-4 dark:focus:ring-[#ff1453]/40 font-medium text-white text-sm text-center">
-                    Ajouter Question(s)
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="pl-2 w-8 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-                </a>
-                @if (0 > 10)
-                    <div class="flex justify-between items-center gap-96 py-4 pb-4">
-                        <div class="flex items-center">
-                            <label for="ligneParPage-question"
-                                class="pr-2 text-gray-900 dark:text-gray-200 text-sm">Lignes</label>
-                            <select id="ligneParPage-question"
-                                class="block bg-gray-50 dark:bg-gray-700 p-2.5 border border-gray-300 focus:border-blue-500 dark:border-gray-600 dark:focus:border-blue-500 rounded-lg focus:ring-blue-500 dark:focus:ring-blue-500 w-full text-gray-900 dark:text-white text-sm dark:placeholder-gray-400">
-                                <option selected value="10">10</option>
-                                <option value="25">25</option>
-                                <option value="50">50</option>
-                                <option value="100">100</option>
-                            </select>
-                        </div>
-                    </div>
-                @endif
-            </div>
-            <div class="relative shadow-md sm:rounded-lg overflow-x-auto" style="padding-top: 10px;">
-
-                <div id="questions-list" class="">
-
-                </div>
-
-            </div>
+            <livewire:admin::questions.create />
         </div>
     </div>
     <x-delete :message="__('Voulez-vous vraiment supprimer?')" />
     <x-passation-rules-modal />
     <x-change-phase-status />
-    {{-- TODO: Revoir la vue de creation de questions --}}
-    <x-create-question-modal />
 @endsection
 
 @push('scripts')
