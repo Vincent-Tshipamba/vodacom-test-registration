@@ -12,7 +12,7 @@ class PhaseTest extends Model
         'duration',
         'start_time',
         'end_time',
-        'number_questions',
+        'total_questions',
         'passing_score',
         'status',
     ];
