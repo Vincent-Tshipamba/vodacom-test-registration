@@ -33,32 +33,32 @@
     <div class="group-data-[sidebar-size=sm]:relative group-data-[sidebar-size=sm]:min-h-sm">
 
         @php
-            $locale = app()->getLocale();
+$locale = app()->getLocale();
 
-            $languages = [
-                'fr' => [
-                    'label' => __('messages.language_fr'),
-                    'flag' => asset('img/flag-for-france-svgrepo-com.svg'),
-                    'code' => 'fr',
-                ],
-                'en' => [
-                    'label' => __('messages.language_en'),
-                    'flag' => asset('img/flag-for-flag-usa.svg'),
-                    'code' => 'en',
-                ],
-                'ln' => [
-                    'label' => __('messages.language_ln'),
-                    'flag' => asset('img/flag-for-flag-congo-kinshasa-svgrepo-com.svg'),
-                    'code' => 'ln',
-                ],
-                'sw' => [
-                    'label' => __('messages.language_sw'),
-                    'flag' => asset('img/flag-for-flag-congo-kinshasa-svgrepo-com.svg'),
-                    'code' => 'sw',
-                ],
-            ];
+$languages = [
+    'fr' => [
+        'label' => __('messages.language_fr'),
+        'flag' => asset('img/flag-for-france-svgrepo-com.svg'),
+        'code' => 'fr',
+    ],
+    'en' => [
+        'label' => __('messages.language_en'),
+        'flag' => asset('img/flag-for-flag-usa.svg'),
+        'code' => 'en',
+    ],
+    'ln' => [
+        'label' => __('messages.language_ln'),
+        'flag' => asset('img/flag-for-flag-congo-kinshasa-svgrepo-com.svg'),
+        'code' => 'ln',
+    ],
+    'sw' => [
+        'label' => __('messages.language_sw'),
+        'flag' => asset('img/flag-for-flag-congo-kinshasa-svgrepo-com.svg'),
+        'code' => 'sw',
+    ],
+];
 
-            // Si jamais une langue n'est pas connue, fallback FR
+// Si jamais une langue n'est pas connue, fallback FR
 $current = $languages[$locale] ?? $languages['fr'];
         @endphp
         @include('admin.partials.sidebar')
@@ -95,6 +95,33 @@ $current = $languages[$locale] ?? $languages['fr'];
     <script src="{{ asset('js/applyTheme.js') }}"></script>
     <!-- App js -->
     <script src="{{ asset('assets/js/app.js') }}"></script>
+
+    <script>
+        function insertMathToken(token, questionUuid) {
+            const card = document.querySelector(`[data-question-uuid="${questionUuid}"]`);
+            if (!card) return;
+
+            let field = document.activeElement;
+            const isInsideCard = field && card.contains(field);
+            const isTextField = isInsideCard && (field.tagName === 'TEXTAREA' || (field.tagName === 'INPUT' && field.type === 'text'));
+
+            if (!isTextField) {
+                field = card.querySelector('textarea, input[type="text"]');
+            }
+            if (!field) return;
+
+            const start = field.selectionStart ?? field.value.length;
+            const end = field.selectionEnd ?? start;
+            const before = field.value.slice(0, start);
+            const after = field.value.slice(end);
+            field.value = before + token + after;
+
+            const caret = start + token.length;
+            field.focus();
+            field.setSelectionRange(caret, caret);
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    </script>
     @yield('script')
     @stack('scripts')
     @yield('modal')
