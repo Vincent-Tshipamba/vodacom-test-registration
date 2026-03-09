@@ -24,10 +24,7 @@ new class extends Component {
         $this->currentEdition = ScholarshipEdition::getCurrentEdition();
         abort_unless($this->currentEdition, 404);
 
-        $this->currentPhaseTest = PhaseTest::firstOrCreate(
-            ['scholarship_edition_id' => $this->currentEdition->id],
-            ['duration' => 60, 'total_questions' => 0, 'passing_score' => 50, 'status' => 'AWAITING']
-        );
+        $this->currentPhaseTest = PhaseTest::where('scholarship_edition_id', $this->currentEdition->id)->where('status', 'AWAITING')->first();
 
         $this->categories = CategoryQuestion::orderBy('name')->get(['id', 'name'])->toArray();
         $this->questions = $this->loadExistingQuestions();
@@ -550,6 +547,11 @@ new class extends Component {
         return $this->builderStateHash($this->questions) !== $this->savedStateHash;
     }
 
+    public function phaseQuestionsCount(): int
+    {
+        return count(array_filter($this->questions, fn($q) => !empty($q['is_validated'])));
+    }
+
     private function validateBuilder(array $questions): void
     {
         $errors = [];
@@ -777,6 +779,9 @@ new class extends Component {
         <div>
             <h1 class="font-semibold text-gray-900 dark:text-gray-100 text-xl">{{ __('Gestion des questions') }}</h1>
             <p class="text-gray-500 dark:text-gray-400 text-sm">{{ $currentEdition->name }}</p>
+            <p class="mt-1 text-gray-600 dark:text-gray-300 text-sm">
+                {{ __('Total questions de la phase') }}: <span class="font-semibold">{{ $this->phaseQuestionsCount() }}</span>
+            </p>
         </div>
         <div class="flex sm:flex-row flex-col items-stretch sm:items-center gap-2">
             <select wire:model.live="filterCategoryId"

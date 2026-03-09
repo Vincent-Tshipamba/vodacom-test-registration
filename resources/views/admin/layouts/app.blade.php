@@ -21,7 +21,7 @@
     <!-- Tailwind CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/tailwind2.css') }}">
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.6/css/dataTables.dataTables.min.css">
-
+    @stack('css')
     {{-- <link rel="stylesheet" href="{{ asset('assets/scss/tailwind.scss') }}"> --}}
     <!-- Scripts -->
     @livewireStyles
@@ -122,6 +122,21 @@ $current = $languages[$locale] ?? $languages['fr'];
             field.dispatchEvent(new Event('input', { bubbles: true }));
         }
     </script>
+
+    <script src="https://cdn.datatables.net/2.3.6/js/dataTables.min.js" defer></script>
+    <script src="https://cdn.datatables.net/select/3.1.3/js/dataTables.select.js" defer></script>
+    <script src="https://cdn.datatables.net/select/3.1.3/js/select.dataTables.js" defer></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/dataTables.buttons.js" defer></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.dataTables.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" defer></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.html5.min.js" defer></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.print.min.js" defer></script>
+    <script src="https://cdn.datatables.net/2.3.7/js/dataTables.tailwindcss.js" defer></script>
+    <script src="https://unpkg.com/jszip/dist/jszip.min.js"></script>
+
+    <script src="{{ asset('js/script-applicants.js') }}" defer></script>
     @yield('script')
     @stack('scripts')
     @yield('modal')

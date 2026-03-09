@@ -1,4 +1,4 @@
-@extends('admin.layouts.app')
+﻿@extends('admin.layouts.app')
 @section('content')
     <nav class="flex justify-between items-center my-3" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-3">
@@ -67,7 +67,7 @@
                 class="hidden z-10 bg-white dark:bg-gray-700 shadow rounded-lg divide-y divide-gray-100 dark:divide-gray-600 w-15">
 
                 <ul class="py-1 text-gray-700 dark:text-gray-200 text-xs" aria-labelledby="dropdownLeftButtonStatus">
-                    <li id = "enCours" style="margin-right: 0.2rem; margin-left: 0.2rem;">
+                    <li id="enCours" style="margin-right: 0.2rem; margin-left: 0.2rem;">
                         <?php $message = 'Voulez-vous lancer cette phase?'; ?>
                         <a href="#" data-modal-target="status-modal" data-modal-toggle="status-modal"
                             class="inline-flex items-center hover:bg-blue-100 dark:hover:bg-blue-600 px-3 py-1 rounded-md dark:hover:text-white text-center">
@@ -115,10 +115,10 @@
                 </button>
             </li>
             <li class="me-2" role="presentation">
-                <button class="flex space-x-1 p-4 hover:border-brand border-b-2 rounded-t-base hover:text-fg-brand"
+                <button class="flex space-x-1 p-4 hover:border-brand border-b-2 rounded-medium hover:text-fg-brand"
                     id="candidats-styled-tab" data-tabs-target="#styled-candidats" type="button" role="tab"
                     aria-controls="candidats" aria-selected="false">
-                    <x-icon name="profile-icon" class="w-5 h-5" />
+                    <x-icon name="grid-icon" class="w-5 h-5" />
                     <span>Candidats</span>
                 </button>
             </li>
@@ -133,8 +133,8 @@
         </ul>
     </div>
     <div id="default-styled-tab-content">
-        <div class="hidden bg-neutral-700 p-4 rounded-base" id="styled-dashboard" role="tabpanel"
-            aria-labelledby="dashboard-tab">
+        <div class="hidden bg-gray-300 dark:bg-neutral-800 p-4 rounded-base" id="styled-dashboard" role="tabpanel"
+            aria-labelledby="list-tab">
             <div class="gap-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4">
                 <div class="bg-white dark:bg-gray-800 shadow mr-2 p-4 md:p-6 rounded-lg w-full max-w-sm">
                     <div class="flex justify-between">
@@ -182,7 +182,7 @@
                                 class="flex flex-col justify-center items-center bg-orange-50 dark:bg-gray-600 rounded-lg h-[78px]">
                                 <dt
                                     class="flex justify-center items-center bg-orange-100 dark:bg-gray-500 mb-1 rounded-full w-8 h-8 font-medium text-[#ff1453] dark:text-[#ff1453] text-sm">
-                                    {{ count($candidats) }}
+                                    {{ $candidatsTotal }}
                                 </dt>
                                 <dd class="font-medium text-[#ff1453] dark:text-[#ff1453] text-sm">
                                     Total
@@ -192,7 +192,7 @@
                                 class="flex flex-col justify-center items-center bg-teal-50 dark:bg-gray-600 rounded-lg h-[78px]">
                                 <dt
                                     class="flex justify-center items-center bg-teal-100 dark:bg-gray-500 mb-1 rounded-full w-8 h-8 font-medium text-teal-600 dark:text-teal-300 text-sm">
-                                    {{ count($candidatsFemale) ?? 0 }}
+                                    {{ $candidatsFemale ?? 0 }}
                                 </dt>
                                 <dd class="font-medium text-teal-600 dark:text-teal-300 text-sm">
                                     {{ __('test.female') }}
@@ -202,7 +202,7 @@
                                 class="flex flex-col justify-center items-center bg-blue-50 dark:bg-gray-600 rounded-lg h-[78px]">
                                 <dt
                                     class="flex justify-center items-center bg-blue-100 dark:bg-gray-500 mb-1 rounded-full w-8 h-8 font-medium text-blue-600 dark:text-blue-300 text-sm">
-                                    {{ count($candidatsMale) ?? 0 }}
+                                    {{ $candidatsMale ?? 0 }}
                                 </dt>
                                 <dd class="font-medium text-blue-600 dark:text-blue-300 text-sm">
                                     {{ __('test.male') }}
@@ -213,7 +213,8 @@
                                 class="flex flex-col justify-center items-center bg-blue-50 dark:bg-gray-600 rounded-lg h-[78px]">
                                 <dt
                                     class="flex justify-center items-center bg-blue-100 dark:bg-gray-500 mb-1 rounded-full w-8 h-8 font-medium text-blue-600 dark:text-blue-300 text-sm">
-                                    {{ count($candidats) }}</dt>
+                                    {{ $candidatsTotal }}
+                                </dt>
                                 <dd class="font-medium text-blue-600 dark:text-blue-300 text-sm">Start</dd>
                             </dl>
                         </div>
@@ -263,7 +264,7 @@
                                 {{-- TODO: Afficher le total des reussites --}}
                                 <dt
                                     class="flex justify-center items-center bg-blue-100 dark:bg-gray-500 mb-1 rounded-full w-8 h-8 font-medium text-blue-600 dark:text-blue-300 text-sm">
-                                    {{ count($candidats) ?? 'ND' }}
+                                    {{ $candidatsTotal ?? 'ND' }}
                                 </dt>
 
                                 <dd class="font-medium text-blue-600 dark:text-blue-300 text-sm">{{ __('test.success') }}
@@ -274,7 +275,7 @@
                                 {{-- TODO: Afficher le total des garcons ayant reussi --}}
                                 <dt
                                     class="flex justify-center items-center bg-blue-100 dark:bg-gray-500 mb-1 rounded-full w-8 h-8 font-medium text-blue-600 dark:text-blue-300 text-sm">
-                                    {{ count($candidatsMale) ?? 0 }}
+                                    {{ $candidatsMale ?? 0 }}
                                 </dt>
 
                                 <dd class="font-medium text-blue-600 dark:text-blue-300 text-sm">{{ __('test.male') }}
@@ -285,7 +286,7 @@
                                 {{-- TODO: Afficher le total des filles ayant reussi --}}
                                 <dt
                                     class="flex justify-center items-center bg-blue-100 dark:bg-gray-500 mb-1 rounded-full w-8 h-8 font-medium text-blue-600 dark:text-blue-300 text-sm">
-                                    {{ count($candidatsFemale) ?? 0 }}
+                                    {{ $candidatsFemale ?? 0 }}
                                 </dt>
 
                                 <dd class="font-medium text-blue-600 dark:text-blue-300 text-sm">{{ __('test.female') }}
@@ -313,7 +314,8 @@
                                     class="invisible inline-block z-10 absolute bg-white dark:bg-gray-800 opacity-0 shadow-sm border border-gray-200 dark:border-gray-600 rounded-lg w-72 text-gray-500 dark:text-gray-400 text-sm transition-opacity duration-300">
                                     <div class="space-y-2 p-3">
                                         <h3 class="font-semibold text-gray-900 dark:text-white">
-                                            {{ __('test.stats_questions') }}</h3>
+                                            {{ __('test.stats_questions') }}
+                                        </h3>
                                         <p>{{ __('test.stats_questions_explaination') }}</p>
                                     </div>
                                 </div>
@@ -325,10 +327,9 @@
                         <div class="mb-2">
                             <dl
                                 class="flex flex-col justify-center items-center bg-blue-50 dark:bg-gray-600 rounded-lg h-[78px]">
-                                {{-- TODO: Afficher le total des questions de la phase --}}
                                 <dt
                                     class="flex justify-center items-center bg-blue-100 dark:bg-gray-500 mb-1 rounded-full w-8 h-8 font-medium text-blue-600 dark:text-blue-300 text-sm">
-                                    {{ count($candidats) ?? 'ND' }}
+                                    {{ $phaseQuestionsCount }}
                                 </dt>
                                 <dd class="font-medium text-blue-600 dark:text-blue-300 text-sm">Total</dd>
                             </dl>
@@ -337,7 +338,7 @@
                 </div>
             </div>
         </div>
-        <div class="hidden bg-neutral-700 p-4 rounded-sm" id="styled-candidats" role="tabpanel"
+        <div class="hidden bg-gray-300 dark:bg-gray-800 p-4 rounded-sm" id="styled-candidats" role="tabpanel"
             aria-labelledby="candidats-tab">
             <div class="relative shadow-md sm:rounded-lg overflow-x-auto" style="padding-top: 10px;">
                 @if (session('successCand'))
@@ -359,8 +360,8 @@
                             <span class="sr-only">Close</span>
                             <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                                 viewBox="0 0 14 14">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
                             </svg>
                         </button>
                     </div>
@@ -369,7 +370,7 @@
                     class="flex sm:flex-row flex-col sm:justify-end sm:items-center sm:space-x-2 space-y-2 sm:space-y-0 py-2">
                     <a href="#" data-modal-target="pass-modal" data-modal-toggle="pass-modal"
                         class="inline-flex items-center bg-[#ff1453] hover:bg-[#ff1453]/80 dark:hover:bg-[#ff1453]/80 px-3 py-2 rounded-lg focus:outline-none focus:ring-[#ff1453]/50 focus:ring-4 dark:focus:ring-[#ff1453]/40 font-medium text-white text-sm text-center">
-                        Règle de passation
+                        Règles de passation
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="pl-2 w-8 h-5">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -399,126 +400,146 @@
                         </svg>
                     </a>
                 </div>
-                {{-- TODO: Ameliorer cette recherche, pourquoi pas avec un datatable --}}
-                @if (count($candidats) > 10)
-                    <div class="flex justify-between items-center md:gap-96 py-4 pb-4">
-                        <div class="flex-1 items-center pr-8">
-                            <input type="text" id="search" placeholder="Rechercher par prenom, nom..."
-                                class="dark:bg-gray-800 px-3 py-2 border dark:border-gray-700 rounded-md w-full dark:text-white"
-                                autocomplete="off" />
 
-                        </div>
-                        <div class="flex items-center">
-                            <label for="ligneParPage" class="pr-2 text-gray-900 dark:text-gray-200 text-sm">Lignes</label>
-                            <select id="ligneParPage"
-                                class="block bg-gray-50 dark:bg-gray-700 p-2.5 border border-gray-300 focus:border-blue-500 dark:border-gray-600 dark:focus:border-blue-500 rounded-lg focus:ring-blue-500 dark:focus:ring-blue-500 w-full text-gray-900 dark:text-white text-sm dark:placeholder-gray-400">
-                                <option selected value="10">10</option>
-                                <option value="25">25</option>
-                                <option value="50">50</option>
-                                <option value="100">100</option>
-                            </select>
-                        </div>
-                    </div>
-                @endif
+                <div class="mb-4 border-default border-b">
+                    <ul class="flex flex-wrap -mb-px font-medium text-sm text-center" id="default-tab"
+                        data-tabs-toggle="#default-tab-content" role="tablist">
+                        <li class="me-2" role="presentation">
+                            <button class="flex items-center space-x-2 p-4 hover:border-brand border-b-2 rounded-full hover:text-fg-brand"
+                                id="list-candidats-tab" data-tabs-target="#listCandidats" type="button" role="tab" aria-controls="listCandidats"
+                                aria-selected="true">
+                                <svg class="w-6 h-6 text-gray-900 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                    width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-width="2"
+                                        d="M3 11h18M3 15h18m-9-4v8m-8 0h16a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1Z" />
+                                </svg>
+                                Liste
+                            </button>
+                        </li>
+                        <li class="me-2" role="presentation">
+                            <button class="flex items-center space-x-2 p-4 border-b-2 rounded-full text-gray-900 dark:text-gray-300" id="grid-tab"
+                                data-tabs-target="#grid" type="button" role="tab" aria-controls="grid"
+                                aria-selected="false">
+                                <svg class="w-6 h-6 text-gray-900 dark:text-white" aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                                    viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M9.143 4H4.857A.857.857 0 0 0 4 4.857v4.286c0 .473.384.857.857.857h4.286A.857.857 0 0 0 10 9.143V4.857A.857.857 0 0 0 9.143 4Zm10 0h-4.286a.857.857 0 0 0-.857.857v4.286c0 .473.384.857.857.857h4.286A.857.857 0 0 0 20 9.143V4.857A.857.857 0 0 0 19.143 4Zm-10 10H4.857a.857.857 0 0 0-.857.857v4.286c0 .473.384.857.857.857h4.286a.857.857 0 0 0 .857-.857v-4.286A.857.857 0 0 0 9.143 14Zm10 0h-4.286a.857.857 0 0 0-.857.857v4.286c0 .473.384.857.857.857h4.286a.857.857 0 0 0 .857-.857v-4.286a.857.857 0 0 0-.857-.857Z" />
+                                </svg>
+                                Grid
+                            </button>
+                        </li>
 
-                <div id="intervenants-list" class="gap-2 grid grid-cols-1 md:grid-cols-2">
-                    {{-- TODO: Travailler l'affichage des candidats pour le test, sachant qu'il peut y avoir de millieux de candidats... so, pagination ou infiniteScroll ? We'll see --}}
-                    @foreach ($candidats as $i => $item)
-                        <div class="w-full intervenant-item">
-                            <div
-                                class="flex items-center bg-white dark:bg-gray-800 drop-shadow-xl mb-3 py-3 border dark:border-gray-800 rounded-md">
-                                <!-- Première div (Image) -->
-                                <div class="pr-5 pl-2">
-                                    <img class="border-2 rounded-md w-16 h-16 object-cover"
-                                        src="{{ $item->documents->photo['url'] && file_exists(public_path($item->documents->photo['url'])) ? asset($item->documents->photo['url']) : asset('img/profil.jpg') }}"
-                                        alt="Image de {{ $item->full_name }}">
-                                </div>
-
-                                <!-- Deuxième div (Contenu) -->
-                                <div class="flex flex-1 justify-between items-center">
-                                    <div>
-                                        <div class="flex items-center">
-                                            <h3 class="text-gray-900 dark:text-white text-xl capitalize whitespace-nowrap">
-                                                {{ $item->full_name }}
-                                            </h3>
-                                            @if ($item->mail_send == 0)
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
-                                                    fill="currentColor" class="pl-2 size-7 text-red-500">
-                                                    <path
-                                                        d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z" />
-                                                    <path
-                                                        d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
-                                                </svg>
-                                            @else
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
-                                                    fill="currentColor" class="pl-2 size-7 text-green-500">
-                                                    <path
-                                                        d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z" />
-                                                    <path
-                                                        d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
-                                                </svg>
-                                            @endif
-                                        </div>
-                                        <div class="flex items-center space-x-4">
-                                            <h3 id='genre-{{ $i }}'
-                                                class="text-gray-900 dark:text-white text-sm whitespace-nowrap"
-                                                data-genre="{{ $item->genre }}">
-                                            </h3>
-                                            <h3 class="text-gray-900 dark:text-white text-sm">
-                                                @if ($item->phone_number)
-                                                    +243{{ substr($item->phone_number, -9) }}
-                                                @endif
-                                            </h3>
-                                        </div>
-                                    </div>
-                                    <div class="space-y-2 pr-2">
-                                        <a href="#" data-modal-target="intervEdit-modal"
-                                            data-modal-toggle="intervEdit-modal"
-                                            class="flex items-center bg-gray-700 hover:bg-blue-800 dark:bg-gray-600 dark:hover:bg-blue-700 px-2 py-1 rounded-md focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 font-medium text-white text-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
-                                                fill="currentColor" class="size-4">
-                                                <path
-                                                    d="M13.488 2.513a1.75 1.75 0 0 0-2.475 0L6.75 6.774a2.75 2.75 0 0 0-.596.892l-.848 2.047a.75.75 0 0 0 .98.98l2.047-.848a2.75 2.75 0 0 0 .892-.596l4.261-4.262a1.75 1.75 0 0 0 0-2.474Z" />
-                                                <path
-                                                    d="M4.75 3.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h6.5c.69 0 1.25-.56 1.25-1.25V9A.75.75 0 0 1 14 9v2.25A2.75 2.75 0 0 1 11.25 14h-6.5A2.75 2.75 0 0 1 2 11.25v-6.5A2.75 2.75 0 0 1 4.75 2H7a.75.75 0 0 1 0 1.5H4.75Z" />
-                                            </svg>
-                                        </a>
-                                        <a href="#" data-modal-target="delete-modal"
-                                            data-modal-toggle="delete-modal"
-                                            class="flex items-center bg-gray-700 hover:bg-red-800 dark:bg-gray-600 dark:hover:bg-red-700 px-2 py-1 rounded-md focus:outline-none focus:ring-4 focus:ring-red-300 dark:focus:ring-red-800 font-medium text-white text-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
-                                                fill="currentColor" class="size-4">
-                                                <path fill-rule="evenodd"
-                                                    d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5a.75.75 0 0 1 .786-.711Z"
-                                                    clip-rule="evenodd" />
-                                            </svg>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
+                    </ul>
                 </div>
-                @if (count($candidats) > 10)
-                    <div id="pagination-container"
-                        class="flex md:flex-row flex-col justify-between items-center mb-5 pt-5">
-                        <!-- Affichage des éléments de pagination -->
-                        <span
-                            class="mb-2 md:mb-0 w-full md:w-auto text-gray-700 dark:text-gray-400 text-sm md:text-left text-center">
-                            Showing <span class="font-semibold text-gray-900 dark:text-white" id="from"></span>
-                            to <span class="font-semibold text-gray-900 dark:text-white" id="to"></span> of
-                            <span class="font-semibold text-gray-900 dark:text-white" id="total"></span>
-                            Entries
-                        </span>
-
-                        <nav aria-label="Page navigation example" class="w-full md:w-auto">
-                            <ul id="pagination"
-                                class="flex justify-center md:justify-start items-center -space-x-px h-8 text-sm">
-                                <!-- Pagination générée dynamiquement par JavaScript -->
-                            </ul>
-                        </nav>
+                <div id="default-tab-content">
+                    <div class="hidden bg-gray-300 dark:bg-gray-800 p-4 rounded-base text-gray-900 dark:text-gray-300" id="grid" role="tabpanel"
+                        aria-labelledby="grid-tab">
+                        <div id="intervenants-list" class="gap-3 grid grid-cols-1 xl:grid-cols-2">
+                            @forelse ($candidats as $item)
+                                <div class="w-full intervenant-item">
+                                    <div
+                                        class="flex items-center bg-white dark:bg-gray-800 mb-3 py-3 border border-gray-200 dark:border-gray-700 rounded-md">
+                                        <div class="pr-5 pl-2">
+                                            <img class="border-2 border-gray-200 dark:border-gray-700 rounded-md w-16 h-16 object-cover"
+                                                src="{{ $item->documents->photo['url'] && file_exists(public_path($item->documents->photo['url'])) ? asset($item->documents->photo['url']) : asset('img/profil.jpg') }}"
+                                                alt="Image de {{ $item->full_name }}">
+                                        </div>
+                                        <div class="flex flex-1 justify-between items-center pr-3">
+                                            <div>
+                                                <div class="flex items-center">
+                                                    <h3
+                                                        class="text-gray-900 dark:text-white text-xl capitalize whitespace-nowrap">
+                                                        {{ $item->full_name }}
+                                                    </h3>
+                                                    @if ((int) $item->mail_send === 0)
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+                                                            fill="currentColor" class="pl-2 size-7 text-red-500">
+                                                            <path
+                                                                d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z" />
+                                                            <path
+                                                                d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
+                                                        </svg>
+                                                    @else
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+                                                            fill="currentColor" class="pl-2 size-7 text-green-500">
+                                                            <path
+                                                                d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z" />
+                                                            <path
+                                                                d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
+                                                        </svg>
+                                                    @endif
+                                                </div>
+                                                <div class="flex items-center space-x-4">
+                                                    <h3
+                                                        class="text-gray-900 dark:text-white text-sm capitalize whitespace-nowrap">
+                                                        {{ $item->gender ?? '-' }}
+                                                    </h3>
+                                                    <h3 class="text-gray-900 dark:text-white text-sm">
+                                                        {{ $item->phone_number ? '+243' . substr($item->phone_number, -9) : '-' }}
+                                                    </h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="col-span-full py-8 text-gray-500 dark:text-gray-400 text-center">
+                                    {{ __('Aucun candidat trouve.') }}
+                                </div>
+                            @endforelse
+                        </div>
                     </div>
-                @endif
+                    <div class="hidden bg-neutral-secondary-soft p-4 rounded-base" id="listCandidats" role="tabpanel"
+                        aria-labelledby="list-candidats-tab">
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-x-auto">
+                            <table class="w-full text-sm text-left display" id="candidats-table">
+                                <thead class="bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300">
+                                    <tr>
+                                        <th class="px-4 py-3">#</th>
+                                        <th class="px-4 py-3">{{ __('Candidat') }}</th>
+                                        <th class="px-4 py-3">{{ __('Genre') }}</th>
+                                        <th class="px-4 py-3">{{ __('Telephone') }}</th>
+                                        <th class="px-4 py-3">{{ __('SMS') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody
+                                    class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 text-gray-900 dark:text-gray-100">
+                                    @forelse ($candidats as $i => $item)
+                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/60">
+                                            <td class="px-4 py-3">{{ $i + 1 }}</td>
+                                            <td class="px-4 py-3">
+                                                <div class="flex items-center gap-3">
+                                                    <img class="border border-gray-200 dark:border-gray-700 rounded-md w-10 h-10 object-cover"
+                                                        src="{{ $item->documents->photo['url'] && file_exists(public_path($item->documents->photo['url'])) ? asset($item->documents->photo['url']) : asset('img/profil.jpg') }}"
+                                                        alt="Image de {{ $item->full_name }}">
+                                                    <span class="font-medium">{{ $item->full_name }}</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3 capitalize">{{ $item->gender ?? '-' }}</td>
+                                            <td class="px-4 py-3">
+                                                {{ $item->phone_number ? '+243' . substr($item->phone_number, -9) : '-' }}
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <span
+                                                    class="inline-flex items-center px-2 py-1 rounded text-xs {{ (int) $item->mail_send === 1 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' }}">
+                                                    {{ (int) $item->mail_send === 1 ? __('Envoye') : __('Non envoye') }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="px-4 py-6 text-gray-500 dark:text-gray-400 text-center">
+                                                {{ __('Aucun candidat trouve.') }}
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="hidden bg-gray-300 dark:bg-neutral-900 p-4 rounded-base" id="styled-questions" role="tabpanel"
@@ -527,8 +548,8 @@
                 <div id="alert-3"
                     class="flex items-center bg-green-50 dark:bg-gray-800 mb-4 p-4 rounded-lg text-green-800 dark:text-green-400"
                     role="alert">
-                    <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                        fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                        viewBox="0 0 20 20">
                         <path
                             d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
                     </svg>
@@ -552,8 +573,8 @@
                 <div id="alert-2"
                     class="flex items-center bg-red-50 dark:bg-gray-800 mb-4 p-4 rounded-lg text-red-800 dark:text-red-400"
                     role="alert">
-                    <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                        fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                        viewBox="0 0 20 20">
                         <path
                             d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
                     </svg>
@@ -581,6 +602,9 @@
     <x-change-phase-status />
 @endsection
 
-@push('scripts')
-    <script></script>
+@push('css')
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.6/css/dataTables.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.tailwindcss.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/3.1.3/css/select.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.2.6/css/buttons.dataTables.css">
 @endpush

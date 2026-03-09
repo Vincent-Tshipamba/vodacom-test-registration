@@ -10,27 +10,38 @@ use App\Models\PhaseTest;
 
 class TestController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $currentEdition = ScholarshipEdition::getCurrentEdition();
 
-        $candidats = Applicant::where('edition_id', $currentEdition->id)
-            ->where('application_status', 'SHORTLISTED')
+        $baseQuery = Applicant::query()
+            ->where('edition_id', $currentEdition->id)
+            ->where('application_status', 'SHORTLISTED');
+
+        $candidatsTotal = (clone $baseQuery)->count();
+        $candidatsFemale = (clone $baseQuery)->where('gender', 'female')->count();
+        $candidatsMale = (clone $baseQuery)->where('gender', 'male')->count();
+
+        $candidats = (clone $baseQuery)
+            ->with('application_documents')
+            ->orderBy('last_name')
+            ->orderBy('first_name')
             ->get();
 
-        $candidatsFemale = Applicant::where('edition_id', $currentEdition->id)
-            ->where('application_status', 'SHORTLISTED')
-            ->where('gender', 'female')
-            ->get();
-
-        $candidatsMale = Applicant::where('edition_id', $currentEdition->id)
-            ->where('application_status', 'SHORTLISTED')
-            ->where('gender', 'male')
-            ->get();
-
-        $phaseTest = PhaseTest::where('scholarship_edition_id', $currentEdition->id)
+        $phaseTest = PhaseTest::withCount('questions')
+            ->where('scholarship_edition_id', $currentEdition->id)
             ->first();
 
-        return view('admin.tests.index', compact('currentEdition', 'candidats', 'candidatsFemale', 'candidatsMale', 'phaseTest'));
+        $phaseQuestionsCount = (int) ($phaseTest?->questions_count ?? 0);
+
+        return view('admin.tests.index', compact(
+            'currentEdition',
+            'candidats',
+            'candidatsTotal',
+            'candidatsFemale',
+            'candidatsMale',
+            'phaseTest',
+            'phaseQuestionsCount'
+        ));
     }
 }
