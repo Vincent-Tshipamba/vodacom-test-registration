@@ -1,4 +1,12 @@
 ﻿@extends('admin.layouts.app')
+
+@push('css')
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.6/css/dataTables.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.tailwindcss.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/3.1.3/css/select.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.2.6/css/buttons.dataTables.css">
+@endpush
+
 @section('content')
     <nav class="flex justify-between items-center my-3" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-3">
@@ -497,19 +505,19 @@
                             <table class="w-full text-sm text-left display" id="candidats-table">
                                 <thead class="bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300">
                                     <tr>
-                                        <th class="px-4 py-3">#</th>
-                                        <th class="px-4 py-3">{{ __('Candidat') }}</th>
-                                        <th class="px-4 py-3">{{ __('Genre') }}</th>
-                                        <th class="px-4 py-3">{{ __('Telephone') }}</th>
-                                        <th class="px-4 py-3">{{ __('SMS') }}</th>
+                                        <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-300 text-xs text-left uppercase tracking-wider">#</th>
+                                        <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-300 text-xs text-left uppercase tracking-wider">{{ __('Candidat') }}</th>
+                                        <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-300 text-xs text-left uppercase tracking-wider">{{ __('Genre') }}</th>
+                                        <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-300 text-xs text-left uppercase tracking-wider">{{ __('Telephone') }}</th>
+                                        <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-300 text-xs text-left uppercase tracking-wider">{{ __('SMS') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody
                                     class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 text-gray-900 dark:text-gray-100">
                                     @forelse ($candidats as $i => $item)
                                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/60">
-                                            <td class="px-4 py-3">{{ $i + 1 }}</td>
-                                            <td class="px-4 py-3">
+                                            <td class="px-6 py-4 text-gray-900 dark:text-white text-sm whitespace-nowrap">{{ $i + 1 }}</td>
+                                            <td class="px-6 py-4 text-gray-900 dark:text-white text-sm whitespace-nowrap">
                                                 <div class="flex items-center gap-3">
                                                     <img class="border border-gray-200 dark:border-gray-700 rounded-md w-10 h-10 object-cover"
                                                         src="{{ $item->documents->photo['url'] && file_exists(public_path($item->documents->photo['url'])) ? asset($item->documents->photo['url']) : asset('img/profil.jpg') }}"
@@ -517,11 +525,11 @@
                                                     <span class="font-medium">{{ $item->full_name }}</span>
                                                 </div>
                                             </td>
-                                            <td class="px-4 py-3 capitalize">{{ $item->gender ?? '-' }}</td>
-                                            <td class="px-4 py-3">
+                                            <td class="px-6 py-4 text-gray-900 dark:text-white text-sm capitalize whitespace-nowrap">{{ $item->gender ?? '-' }}</td>
+                                            <td class="px-6 py-4 text-gray-900 dark:text-white text-sm whitespace-nowrap">
                                                 {{ $item->phone_number ? '+243' . substr($item->phone_number, -9) : '-' }}
                                             </td>
-                                            <td class="px-4 py-3">
+                                            <td class="px-6 py-4 text-gray-900 dark:text-white text-sm whitespace-nowrap">
                                                 <span
                                                     class="inline-flex items-center px-2 py-1 rounded text-xs {{ (int) $item->mail_send === 1 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' }}">
                                                     {{ (int) $item->mail_send === 1 ? __('Envoye') : __('Non envoye') }}
@@ -530,7 +538,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="5" class="px-4 py-6 text-gray-500 dark:text-gray-400 text-center">
+                                            <td colspan="5" class="px-6 py-4 text-gray-900 dark:text-white text-sm whitespace-nowrap">
                                                 {{ __('Aucun candidat trouve.') }}
                                             </td>
                                         </tr>
@@ -602,9 +610,19 @@
     <x-change-phase-status />
 @endsection
 
-@push('css')
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.6/css/dataTables.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.tailwindcss.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/select/3.1.3/css/select.dataTables.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.2.6/css/buttons.dataTables.css">
-@endpush
+@section('script')
+    <script src="https://cdn.datatables.net/select/3.1.3/js/dataTables.select.js" defer></script>
+    <script src="https://cdn.datatables.net/select/3.1.3/js/select.dataTables.js" defer></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/dataTables.buttons.js" defer></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.dataTables.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" defer></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.html5.min.js" defer></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.print.min.js" defer></script>
+    <script src="https://cdn.datatables.net/2.3.7/js/dataTables.tailwindcss.js" defer></script>
+    <script src="https://unpkg.com/jszip/dist/jszip.min.js" defer></script>
+
+    <script src="{{ asset('js/script-applicants.js') }}" defer></script>
+
+@endsection
