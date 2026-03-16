@@ -27,8 +27,10 @@ function initializeDataTable() {
         },
         layout: {
             topStart: {
-                buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
-            },
+                buttons: [
+                    'copy', 'excel', 'pdf', 'print',
+                ]
+            }
         },
         columnDefs: [
             {

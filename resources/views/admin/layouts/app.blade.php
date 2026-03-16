@@ -21,6 +21,7 @@
     <!-- Tailwind CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/tailwind2.css') }}">
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.6/css/dataTables.dataTables.min.css">
+
     @stack('css')
     {{-- <link rel="stylesheet" href="{{ asset('assets/scss/tailwind.scss') }}"> --}}
     <!-- Scripts -->
@@ -66,7 +67,7 @@ $current = $languages[$locale] ?? $languages['fr'];
 
         <div class="relative min-h-screen group-data-[sidebar-size=sm]:min-h-sm">
             <div
-                class="group-data-[layout=horizontal]:mx-auto group-data-[sidebar-size=sm]:rtl:mr-vertical-menu-sm group-data-[sidebar-size=lg]:rtl:md:mr-vertical-menu group-data-[sidebar-size=md]:rtl:mr-vertical-menu-md group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:rtl:md:mr-auto group-data-[sidebar-size=sm]:ltr:ml-vertical-menu-sm group-data-[sidebar-size=lg]:ltr:md:ml-vertical-menu group-data-[sidebar-size=md]:ltr:ml-vertical-menu-md group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:ltr:md:ml-auto px-4 group-data-[layout=horizontal]:px-0 group-data-[layout=horizontal]:px-3 pt-[calc(theme('spacing.header')_*_1)] group-data-[layout=horizontal]:md:pt-[calc(theme('spacing.header')_*_1.6)] group-data-[layout=horizontal]:group-data-[navbar=hidden]:pt-[calc(theme('spacing.header')_*_0.9)] group-data-[navbar=bordered]:pt-[calc(theme('spacing.header')_*_1.3)] group-data-[navbar=hidden]:pt-0 pb-[calc(theme('spacing.header')_*_0.8)] group-data-[layout=horizontal]:max-w-screen-2xl">
+                class="group-data-[layout=horizontal]:mx-auto group-data-[sidebar-size=sm]:rtl:mr-vertical-menu-sm group-data-[sidebar-size=lg]:rtl:md:mr-vertical-menu group-data-[sidebar-size=md]:rtl:mr-vertical-menu-md group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:rtl:md:mr-auto group-data-[sidebar-size=sm]:ltr:ml-vertical-menu-sm group-data-[sidebar-size=lg]:ltr:md:ml-vertical-menu group-data-[sidebar-size=md]:ltr:ml-vertical-menu-md group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:ltr:md:ml-auto px-4 pt-[calc(theme('spacing.header')_*_1)] group-data-[layout=horizontal]:md:pt-[calc(theme('spacing.header')_*_1.6)] group-data-[layout=horizontal]:group-data-[navbar=hidden]:pt-[calc(theme('spacing.header')_*_0.9)] group-data-[navbar=bordered]:pt-[calc(theme('spacing.header')_*_1.3)] group-data-[navbar=hidden]:pt-0 pb-[calc(theme('spacing.header')_*_0.8)] group-data-[layout=horizontal]:max-w-screen-2xl">
                 <!-- Page Content -->
                 @yield('content')
             </div>
@@ -124,19 +125,7 @@ $current = $languages[$locale] ?? $languages['fr'];
     </script>
 
     <script src="https://cdn.datatables.net/2.3.6/js/dataTables.min.js" defer></script>
-    <script src="https://cdn.datatables.net/select/3.1.3/js/dataTables.select.js" defer></script>
-    <script src="https://cdn.datatables.net/select/3.1.3/js/select.dataTables.js" defer></script>
-    <script src="https://cdn.datatables.net/buttons/3.2.6/js/dataTables.buttons.js" defer></script>
-    <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.dataTables.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" defer></script>
-    <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.html5.min.js" defer></script>
-    <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.print.min.js" defer></script>
-    <script src="https://cdn.datatables.net/2.3.7/js/dataTables.tailwindcss.js" defer></script>
-    <script src="https://unpkg.com/jszip/dist/jszip.min.js"></script>
 
-    <script src="{{ asset('js/script-applicants.js') }}" defer></script>
     @yield('script')
     @stack('scripts')
     @yield('modal')
