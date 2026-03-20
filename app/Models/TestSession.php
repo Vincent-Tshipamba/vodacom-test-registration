@@ -15,6 +15,8 @@ class TestSession extends Model
         'finished_at',
         'total_score',
         'is_passed',
+        'cheating_attempts',
+        'auto_submitted',
     ];
 
     protected $casts = [
@@ -22,6 +24,7 @@ class TestSession extends Model
         'finished_at' => 'datetime',
         'total_score' => 'decimal:2',
         'is_passed' => 'boolean',
+        'auto_submitted' => 'boolean',
     ];
 
     public function applicant()
