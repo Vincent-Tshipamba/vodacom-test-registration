@@ -17,6 +17,11 @@ class PhaseTest extends Model
         'status',
     ];
 
+    protected $casts = [
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
+    ];
+
     public function scholarship_edition()
     {
         return $this->belongsTo(ScholarshipEdition::class, 'scholarship_edition_id');
