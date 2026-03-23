@@ -5,6 +5,25 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.tailwindcss.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/select/3.1.3/css/select.dataTables.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.2.6/css/buttons.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/searchpanes/2.3.5/css/searchPanes.dataTables.css">
+    <style>
+        .rich-result-text {
+            white-space: break-spaces;
+            word-break: break-word;
+        }
+
+        .rich-result-text ul {
+            margin: 0.5rem 0 0.5rem 1.25rem;
+            padding: 0;
+            list-style: disc;
+        }
+
+        .rich-result-text ol {
+            margin: 0.5rem 0 0.5rem 1.25rem;
+            padding: 0;
+            list-style: decimal;
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -49,6 +68,9 @@
 
         <div class="float-right flex items-center space-x-2">
             <a id="closeVote" href="#" data-modal-target="status-modal" data-modal-toggle="status-modal"
+                data-phase-status="COMPLETED"
+                data-phase-message="Voulez-vous cloturer cette phase ?"
+                data-phase-route="{{ $phaseTest ? route('admin.phase-test.update', ['locale' => app()->getLocale(), 'phaseTest' => $phaseTest]) : '' }}"
                 class="inline-flex items-center bg-[#fe042c] hover:bg-[#fe042c]/80 dark:hover:bg-[#fe042c]/80 px-3 py-2 rounded-lg focus:outline-none focus:ring-[#fe042c]/50 focus:ring-4 dark:focus:ring-[#fe042c]/40 font-medium text-white text-sm text-center">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4"
                     style="margin-right: 0.5rem; display:none">
@@ -78,6 +100,9 @@
                     <li id="enCours" style="margin-right: 0.2rem; margin-left: 0.2rem;">
                         <?php $message = 'Voulez-vous lancer cette phase?'; ?>
                         <a href="#" data-modal-target="status-modal" data-modal-toggle="status-modal"
+                            data-phase-status="IN_PROGRESS"
+                            data-phase-message="Voulez-vous lancer cette phase ?"
+                            data-phase-route="{{ $phaseTest ? route('admin.phase-test.update', ['locale' => app()->getLocale(), 'phaseTest' => $phaseTest]) : '' }}"
                             class="inline-flex items-center hover:bg-blue-100 dark:hover:bg-blue-600 px-3 py-1 rounded-md dark:hover:text-white text-center">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-5">
                                 <path fill-rule="evenodd"
@@ -92,6 +117,9 @@
                     <li id="fermer" style="margin-right: 0.2rem; margin-left: 0.2rem;">
                         <?php $message = 'Voulez-vous fermer cette phase?'; ?>
                         <a href="#" data-modal-target="status-modal" data-modal-toggle="status-modal"
+                            data-phase-status="CANCELLED"
+                            data-phase-message="Voulez-vous fermer cette phase ?"
+                            data-phase-route="{{ $phaseTest ? route('admin.phase-test.update', ['locale' => app()->getLocale(), 'phaseTest' => $phaseTest]) : '' }}"
                             class="inline-flex items-center hover:bg-red-100 dark:hover:bg-red-600 px-3 py-1 rounded-md dark:hover:text-white text-center">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-5">
                                 <path
@@ -105,6 +133,12 @@
             </div>
         </div>
     </nav>
+
+    @if ($errors->has('status'))
+        <div class="bg-red-50 dark:bg-red-900/20 mb-4 p-4 rounded-lg text-red-800 dark:text-red-300 text-sm">
+            {{ $errors->first('status') }}
+        </div>
+    @endif
 
     <livewire:admin.phase-test :currentEdition="$currentEdition" />
 
@@ -128,6 +162,14 @@
                     aria-controls="candidats" aria-selected="false">
                     <x-icon name="grid-icon" class="w-5 h-5" />
                     <span>Candidats</span>
+                </button>
+            </li>
+            <li class="me-2" role="presentation">
+                <button class="flex space-x-1 p-4 hover:border-brand border-b-2 rounded-t-base hover:text-fg-brand"
+                    id="results-styled-tab" data-tabs-target="#styled-results" type="button" role="tab"
+                    aria-controls="results" aria-selected="false">
+                    <x-icon name="dashboard-icon" class="w-5 h-5" />
+                    <span>Résultats</span>
                 </button>
             </li>
             <li class="me-2" role="presentation">
@@ -216,12 +258,11 @@
                                     {{ __('test.male') }}
                                 </dd>
                             </dl>
-                            {{-- TODO: afficher le nombre de candidats ayant deja started the test --}}
                             <dl
                                 class="flex flex-col justify-center items-center bg-blue-50 dark:bg-gray-600 rounded-lg h-[78px]">
                                 <dt
                                     class="flex justify-center items-center bg-blue-100 dark:bg-gray-500 mb-1 rounded-full w-8 h-8 font-medium text-blue-600 dark:text-blue-300 text-sm">
-                                    {{ $candidatsTotal }}
+                                    {{ $startedCount }}
                                 </dt>
                                 <dd class="font-medium text-blue-600 dark:text-blue-300 text-sm">Start</dd>
                             </dl>
@@ -269,10 +310,9 @@
                         <div class="gap-4 grid grid-cols-3 mb-2">
                             <dl
                                 class="flex flex-col justify-center items-center bg-blue-50 dark:bg-gray-600 rounded-lg h-[78px]">
-                                {{-- TODO: Afficher le total des reussites --}}
                                 <dt
                                     class="flex justify-center items-center bg-blue-100 dark:bg-gray-500 mb-1 rounded-full w-8 h-8 font-medium text-blue-600 dark:text-blue-300 text-sm">
-                                    {{ $candidatsTotal ?? 'ND' }}
+                                    {{ $passedCount }}
                                 </dt>
 
                                 <dd class="font-medium text-blue-600 dark:text-blue-300 text-sm">{{ __('test.success') }}
@@ -280,10 +320,9 @@
                             </dl>
                             <dl
                                 class="flex flex-col justify-center items-center bg-blue-50 dark:bg-gray-600 rounded-lg h-[78px]">
-                                {{-- TODO: Afficher le total des garcons ayant reussi --}}
                                 <dt
                                     class="flex justify-center items-center bg-blue-100 dark:bg-gray-500 mb-1 rounded-full w-8 h-8 font-medium text-blue-600 dark:text-blue-300 text-sm">
-                                    {{ $candidatsMale ?? 0 }}
+                                    {{ $passedMaleCount }}
                                 </dt>
 
                                 <dd class="font-medium text-blue-600 dark:text-blue-300 text-sm">{{ __('test.male') }}
@@ -291,10 +330,9 @@
                             </dl>
                             <dl
                                 class="flex flex-col justify-center items-center bg-blue-50 dark:bg-gray-600 rounded-lg h-[78px]">
-                                {{-- TODO: Afficher le total des filles ayant reussi --}}
                                 <dt
                                     class="flex justify-center items-center bg-blue-100 dark:bg-gray-500 mb-1 rounded-full w-8 h-8 font-medium text-blue-600 dark:text-blue-300 text-sm">
-                                    {{ $candidatsFemale ?? 0 }}
+                                    {{ $passedFemaleCount }}
                                 </dt>
 
                                 <dd class="font-medium text-blue-600 dark:text-blue-300 text-sm">{{ __('test.female') }}
@@ -398,7 +436,7 @@
                         </svg>
                     </a>
 
-                    <a href="#"
+                    <button type="button" data-open-results-tab="true"
                         class="inline-flex items-center bg-[#ff1453] hover:bg-[#ff1453]/80 dark:hover:bg-[#ff1453]/80 px-3 py-2 rounded-lg focus:outline-none focus:ring-[#ff1453]/50 focus:ring-4 dark:focus:ring-[#ff1453]/40 font-medium text-white text-sm text-center">
                         Résultats
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
@@ -406,7 +444,7 @@
                             <path
                                 d="M2.995 1a.625.625 0 1 0 0 1.25h.38v2.125a.625.625 0 1 0 1.25 0v-2.75A.625.625 0 0 0 4 1H2.995ZM3.208 7.385a2.37 2.37 0 0 1 1.027-.124L2.573 8.923a.625.625 0 0 0 .439 1.067l1.987.011a.625.625 0 0 0 .006-1.25l-.49-.003.777-.776c.215-.215.335-.506.335-.809 0-.465-.297-.957-.842-1.078a3.636 3.636 0 0 0-1.993.121.625.625 0 1 0 .416 1.179ZM2.625 11a.625.625 0 1 0 0 1.25H4.25a.125.125 0 0 1 0 .25H3.5a.625.625 0 1 0 0 1.25h.75a.125.125 0 0 1 0 .25H2.625a.625.625 0 1 0 0 1.25H4.25a1.375 1.375 0 0 0 1.153-2.125A1.375 1.375 0 0 0 4.25 11H2.625ZM7.25 2a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5h-6ZM7.25 7.25a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5h-6ZM6.5 13.25a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5h-6a.75.75 0 0 1-.75-.75Z" />
                         </svg>
-                    </a>
+                    </button>
                 </div>
 
                 <div class="mb-4 border-default border-b">
@@ -494,7 +532,7 @@
                                 </div>
                             @empty
                                 <div class="col-span-full py-8 text-gray-500 dark:text-gray-400 text-center">
-                                    {{ __('Aucun candidat trouve.') }}
+                                    {{ __('Aucun candidat trouvé.') }}
                                 </div>
                             @endforelse
                         </div>
@@ -546,6 +584,120 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hidden bg-gray-300 dark:bg-neutral-900 p-4 rounded-base" id="styled-results" role="tabpanel"
+            aria-labelledby="results-tab">
+            <div class="space-y-5">
+                <div class="gap-4 grid md:grid-cols-2 xl:grid-cols-4">
+                    <div class="bg-white dark:bg-gray-800 shadow p-4 rounded-lg">
+                        <p class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-[0.2em]">Complétés</p>
+                        <p class="mt-2 font-semibold text-gray-900 dark:text-white text-2xl">{{ $completedCount }}</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 shadow p-4 rounded-lg">
+                        <p class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-[0.2em]">Réussites</p>
+                        <p class="mt-2 font-semibold text-emerald-600 dark:text-emerald-300 text-2xl">{{ $passedCount }}</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 shadow p-4 rounded-lg">
+                        <p class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-[0.2em]">Échecs</p>
+                        <p class="mt-2 font-semibold text-rose-600 dark:text-rose-300 text-2xl">{{ $failedCount }}</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 shadow p-4 rounded-lg">
+                        <p class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-[0.2em]">Moyenne</p>
+                        <p class="mt-2 font-semibold text-gray-900 dark:text-white text-2xl">{{ number_format($averagePercentage, 2) }}%</p>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 shadow p-4 rounded-lg">
+                    <div class="flex md:flex-row flex-col md:justify-between md:items-center gap-3 mb-4">
+                        <div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white text-lg">{{ __('Résultats de la phase') }}</h3>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm">
+                                • {{ __('Auto-submitted') }}: <span class="font-medium">{{ $autoSubmittedCount }}</span>
+                            </p>
+                        </div>
+                        <div class="flex sm:flex-row flex-col gap-2">
+                            <select id="results-gender-filter"
+                                class="bg-white dark:bg-gray-900 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 text-sm">
+                                <option value="">{{ __('Tous les genres') }}</option>
+                                <option value="female">{{ __('Filles') }}</option>
+                                <option value="male">{{ __('Garçons') }}</option>
+                            </select>
+                            <select id="results-auto-filter"
+                                class="bg-white dark:bg-gray-900 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 text-sm">
+                                <option value="">{{ __('Toutes les soumissions') }}</option>
+                                <option value="Oui">{{ __('Auto-submitted') }}</option>
+                                <option value="Non">{{ __('Manuelles') }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-x-auto">
+                        <table class="w-full text-sm text-left display" id="results-table">
+                            <thead class="bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300">
+                                <tr>
+                                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-300 text-xs text-left uppercase tracking-wider">#</th>
+                                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-300 text-xs text-left uppercase tracking-wider">{{ __('Candidat') }}</th>
+                                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-300 text-xs text-left uppercase tracking-wider">{{ __('Genre') }}</th>
+                                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-300 text-xs text-left uppercase tracking-wider">{{ __('Téléphone') }}</th>
+                                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-300 text-xs text-left uppercase tracking-wider">{{ __('Score') }}</th>
+                                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-300 text-xs text-left uppercase tracking-wider">%</th>
+                                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-300 text-xs text-left uppercase tracking-wider">{{ __('Statut') }}</th>
+                                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-300 text-xs text-left uppercase tracking-wider">{{ __('Réponses') }}</th>
+                                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-300 text-xs text-left uppercase tracking-wider">{{ __('Triche') }}</th>
+                                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-300 text-xs text-left uppercase tracking-wider">{{ __('Auto') }}</th>
+                                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-300 text-xs text-left uppercase tracking-wider">{{ __('Fin') }}</th>
+                                    <th class="not-export">{{ __('Détail') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 text-gray-900 dark:text-gray-100">
+                                @forelse ($results as $index => $result)
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/60">
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>
+                                            <div class="flex items-center gap-3">
+                                                <img class="border border-gray-200 dark:border-gray-700 rounded-md w-10 h-10 object-cover"
+                                                    src="{{ $result['candidate_photo_url'] }}" alt="{{ $result['candidate_name'] }}">
+                                                <div>
+                                                    <p class="font-medium">{{ $result['candidate_name'] }}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="capitalize">{{ $result['candidate_gender'] ?: '-' }}</td>
+                                        <td>{{ $result['candidate_phone'] }}</td>
+                                        <td data-order="{{ $result['raw_score'] }}">{{ number_format($result['raw_score'], 2) }} / {{ number_format($phaseTotalPoints, 2) }}</td>
+                                        <td data-order="{{ $result['score_percentage'] }}">{{ number_format($result['score_percentage'], 2) }}%</td>
+                                        <td>
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $result['is_passed'] ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300' }}">
+                                                {{ $result['is_passed'] ? __('Réussi') : __('Échoué') }}
+                                            </span>
+                                        </td>
+                                        <td data-order="{{ $result['answered_count'] }}">{{ $result['answered_count'] }} / {{ $result['total_questions'] }}</td>
+                                        <td data-order="{{ $result['cheating_attempts'] }}">{{ $result['cheating_attempts'] }}</td>
+                                        <td>{{ $result['auto_submitted'] ? 'Oui' : 'Non' }}</td>
+                                        <td data-order="{{ strtotime($result['finished_at'] ?? '') }}">{{ $result['finished_at'] ?? '-' }}</td>
+                                        <td>
+                                            <button type="button"
+                                                class="inline-flex items-center bg-cyan-700 hover:bg-cyan-800 px-3 py-1.5 rounded-lg text-white text-xs result-detail-trigger"
+                                                data-session-id="{{ $result['session_id'] }}"
+                                                data-candidate-name="{{ $result['candidate_name'] }}"
+                                                data-score="{{ number_format($result['score_percentage'], 2) }}%"
+                                                data-status="{{ $result['is_passed'] ? __('Réussi') : __('Échoué') }}">
+                                                {{ __('Voir') }}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="12" class="px-6 py-8 text-gray-500 dark:text-gray-400 text-center">
+                                            {{ __('Aucun résultat disponible pour le moment.') }}
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -605,6 +757,23 @@
             <livewire:admin::questions.create />
         </div>
     </div>
+    <div id="result-detail-modal" class="hidden z-[5000] fixed inset-0 bg-gray-950/60 p-4 overflow-y-auto">
+        <div class="mx-auto mt-10 max-w-4xl">
+            <div class="bg-white dark:bg-gray-800 shadow-2xl rounded-2xl overflow-hidden">
+                <div class="flex justify-between items-center px-6 py-4 border-gray-200 dark:border-gray-700 border-b">
+                    <div>
+                        <h3 id="result-detail-title" class="font-semibold text-gray-900 dark:text-white text-lg"></h3>
+                        <p id="result-detail-meta" class="text-gray-500 dark:text-gray-400 text-sm"></p>
+                    </div>
+                    <button type="button" id="result-detail-close"
+                        class="inline-flex justify-center items-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg w-10 h-10 text-gray-500 dark:text-gray-300">
+                        ✕
+                    </button>
+                </div>
+                <div id="result-detail-body" class="space-y-4 bg-gray-100 dark:bg-gray-900 p-6"></div>
+            </div>
+        </div>
+    </div>
     <x-delete :message="__('Voulez-vous vraiment supprimer?')" />
     <x-passation-rules-modal />
     <x-change-phase-status />
@@ -615,6 +784,8 @@
     <script src="https://cdn.datatables.net/select/3.1.3/js/select.dataTables.js" defer></script>
     <script src="https://cdn.datatables.net/buttons/3.2.6/js/dataTables.buttons.js" defer></script>
     <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.dataTables.js" defer></script>
+        <script src="https://cdn.datatables.net/searchpanes/2.3.5/js/dataTables.searchPanes.js" defer></script>
+    <script src="https://cdn.datatables.net/searchpanes/2.3.5/js/searchPanes.dataTables.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" defer></script>
@@ -624,5 +795,148 @@
     <script src="https://unpkg.com/jszip/dist/jszip.min.js" defer></script>
 
     <script src="{{ asset('js/script-applicants.js') }}" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const resultDetails = @json($resultDetails);
+            const resultsTabButton = document.getElementById('results-styled-tab');
+            const openResultsTriggers = document.querySelectorAll('[data-open-results-tab="true"]');
+            const modal = document.getElementById('result-detail-modal');
+            const modalTitle = document.getElementById('result-detail-title');
+            const modalMeta = document.getElementById('result-detail-meta');
+            const modalBody = document.getElementById('result-detail-body');
+            const modalClose = document.getElementById('result-detail-close');
+
+            openResultsTriggers.forEach((button) => {
+                button.addEventListener('click', function () {
+                    resultsTabButton?.click();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            });
+
+            if (window.DataTable && document.getElementById('results-table')) {
+                const resultsTable = new DataTable('#results-table', {
+                    pageLength: 10,
+                    lengthMenu: [10, 25, 50, 100, { label: 'Tout', value: -1 }],
+                    order: [[5, 'desc']],
+                    layout: {
+                        topStart: {
+                            buttons: [
+                                { extend: 'copyHtml5', exportOptions: { columns: ':not(.not-export)' } },
+                                { extend: 'excelHtml5', exportOptions: { columns: ':not(.not-export)' } },
+                                { extend: 'pdfHtml5', exportOptions: { columns: ':not(.not-export)' }, orientation: 'landscape', pageSize: 'A4' },
+                                { extend: 'print', exportOptions: { columns: ':not(.not-export)' } },
+                            ],
+                        },
+                        top1: {
+                            searchPanes: {
+                                viewTotal: true,
+                            }
+                        }
+                    },
+                    language: {
+                        search: 'Rechercher :',
+                        lengthMenu: 'Afficher _MENU_ lignes',
+                        info: 'Affichage de _START_ à _END_ sur _TOTAL_',
+                        infoEmpty: 'Aucun résultat',
+                        zeroRecords: 'Aucun résultat trouvé',
+                        paginate: {
+                            first: 'Début',
+                            last: 'Fin',
+                            next: 'Suivant',
+                            previous: 'Précédent',
+                        },
+                    },
+                });
+
+                document.getElementById('results-gender-filter')?.addEventListener('change', function () {
+                    resultsTable.column(2).search(this.value ? '^' + this.value + '$' : '', true, false).draw();
+                });
+                document.getElementById('results-auto-filter')?.addEventListener('change', function () {
+                    resultsTable.column(9).search(this.value ? '^' + this.value + '$' : '', true, false).draw();
+                });
+            }
+
+            function closeResultModal() {
+                modal.classList.add('hidden');
+                modalBody.innerHTML = '';
+            }
+
+            function renderDetailCard(question, index) {
+                const statusClass = question.is_correct
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                    : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300';
+                const statusLabel = question.selected_option_id
+                    ? (question.is_correct ? 'Réponse correcte' : 'Réponse incorrecte')
+                    : 'Sans réponse';
+
+                const options = question.options.map((option) => `
+                    <li class="flex items-center gap-3 text-sm">
+                        <span class="inline-flex justify-center items-center rounded-full w-6 h-6 ${option.is_selected ? 'bg-cyan-700 text-white' : 'border border-gray-400 text-gray-500 dark:border-gray-500 dark:text-gray-300'}">
+                            ${option.is_selected ? '&#10003;' : '&#9675;'}
+                        </span>
+                        <span class="${option.is_selected ? 'font-medium text-cyan-700 dark:text-cyan-300' : 'text-gray-700 dark:text-gray-200'} rich-result-text">${option.option_text}</span>
+                    </li>
+                `).join('');
+
+                return `
+                    <article class="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                        <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 px-4 py-3 border-gray-200 dark:border-gray-700 border-b">
+                            <div>
+                                <p class="font-medium text-gray-900 dark:text-white text-sm">Question ${index + 1}</p>
+                                <p class="text-gray-500 dark:text-gray-400 text-xs">${question.category || 'Question'} • ${question.ponderation} pt(s)</p>
+                            </div>
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusClass}">${statusLabel}</span>
+                        </div>
+                        <div class="p-4">
+                            <div class="mb-3 text-gray-900 dark:text-gray-100 text-sm leading-6 rich-result-text">${question.question_text}</div>
+                            <ul class="space-y-2">${options}</ul>
+                        </div>
+                    </article>
+                `;
+            }
+
+            document.querySelectorAll('.result-detail-trigger').forEach((button) => {
+                button.addEventListener('click', function () {
+                    const sessionId = this.dataset.sessionId;
+                    const details = resultDetails[sessionId] || [];
+                    modalTitle.textContent = this.dataset.candidateName || 'Candidat';
+                    modalMeta.textContent = `${this.dataset.score || '-'} • ${this.dataset.status || '-'}`;
+                    modalBody.innerHTML = details.map(renderDetailCard).join('');
+                    modal.classList.remove('hidden');
+                });
+            });
+
+            modalClose?.addEventListener('click', closeResultModal);
+            modal?.addEventListener('click', function (event) {
+                if (event.target === modal) {
+                    closeResultModal();
+                }
+            });
+        });
+    </script>
 
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const triggers = document.querySelectorAll('[data-phase-status]');
+            const form = document.getElementById('phase-status-form');
+            const statusInput = document.getElementById('phase-status-value');
+            const message = document.getElementById('phase-status-message');
+
+            triggers.forEach((trigger) => {
+                trigger.addEventListener('click', function () {
+                    const route = this.dataset.phaseRoute || '';
+                    if (!route) {
+                        return;
+                    }
+
+                    form.action = route;
+                    statusInput.value = this.dataset.phaseStatus || '';
+                    message.textContent = this.dataset.phaseMessage || '';
+                });
+            });
+        });
+    </script>
+@endpush
