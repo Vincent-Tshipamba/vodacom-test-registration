@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
+use App\Models\PhaseTest;
 use App\Models\Applicant;
+use App\Models\TestSession;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Models\CandidateResponse;
+use App\Models\QuestionPhaseTest;
 use App\Http\Requests\StoreApplicantRequest;
 use App\Http\Requests\UpdateApplicantRequest;
 use App\Models\ApplicationDocument;
@@ -32,8 +37,10 @@ class ApplicantController extends Controller
     {
         $request->validate([
             'national_exam_code' => 'required|string|max:14|regex:/^\d{14}$/',
+            'coupon' => 'required|string|max:10',
         ]);
 
+        $coupon = $request->input('coupon');
         $nationalExamCode = $request->input('national_exam_code');
 
 
@@ -47,16 +54,360 @@ class ApplicantController extends Controller
             Log::info('Applicant authenticated for test : ' . $applicant->first_name . ' ' . $applicant->last_name);
 
             session(['authenticated_applicant_id' => $applicant->id]);
-            return redirect()->route('scholarship.test', app()->getLocale())->with('success', __('messages.authenticated'));
-        } else {
-            return redirect()->back()
-                ->with('error', 'Desolé, les informations fournies ne correspondent à aucun candidat éligible.');
+            Cache::put("used_coupon_{$coupon}", true, 3600);
+
+            $latestSession = $this->getLatestApplicantTestSession($applicant);
+            if ($latestSession && $latestSession->finished_at) {
+                session(['completed_test_session_id' => $latestSession->id]);
+                return redirect()->route('scholarship.exam.submitted', app()->getLocale());
+            }
+
+            return redirect()->route('scholarship.instructions', app()->getLocale())
+                ->with('success', __('messages.authenticated'));
         }
+
+        return redirect()->back()
+            ->with('error', 'Désolé, les informations fournies ne correspondent à aucun candidat éligible.');
     }
 
     public function instructions()
     {
-        return view('tests.instructions');
+        $applicant = $this->getAuthenticatedApplicant();
+
+        if (!$applicant) {
+            return redirect()->route('scholarship.test', app()->getLocale())
+                ->with('error', "Votre session d'examen a expiré. Veuillez vous reconnecter.");
+        }
+
+        $phaseTest = $this->getCurrentPhaseTest();
+        $latestSession = $this->getLatestApplicantTestSession($applicant);
+
+        if (!$phaseTest) {
+            return redirect()->route('scholarship.test', app()->getLocale())
+                ->with('error', "Aucune phase d'evaluation n'est actuellement disponible.");
+        }
+
+        if ($phaseTest->status !== 'IN_PROGRESS') {
+            return redirect()->route('scholarship.test', app()->getLocale())
+                ->with('error', "Cette phase n'est pas encore ouverte aux candidats.");
+        }
+
+        if ($windowMessage = $this->phaseWindowErrorMessage($phaseTest)) {
+            return redirect()->route('scholarship.test', app()->getLocale())
+                ->with('error', $windowMessage);
+        }
+
+        if ($latestSession && $latestSession->finished_at && !session('exam_started')) {
+            session()->forget($this->examSessionKeys());
+            session(['completed_test_session_id' => $latestSession->id]);
+
+            return redirect()->route('scholarship.exam.submitted', app()->getLocale());
+        }
+
+        if (!session('exam_started')) {
+            return view('tests.instructions', [
+                'examStarted' => false,
+                'phaseTest' => $phaseTest,
+                'applicant' => $applicant,
+            ]);
+        }
+
+        $state = $this->buildExamViewState($applicant, $phaseTest);
+
+        if (!$state) {
+            session()->forget($this->examSessionKeys());
+
+            return view('tests.instructions', [
+                'examStarted' => false,
+                'phaseTest' => $phaseTest,
+                'applicant' => $applicant,
+            ])->with('error', "Impossible de reprendre l'epreuve. Veuillez relancer l'examen.");
+        }
+
+        return view('tests.instructions', $state + [
+            'examStarted' => true,
+            'phaseTest' => $phaseTest,
+            'applicant' => $applicant,
+            'maxViolations' => 3,
+        ]);
+    }
+
+    public function submitted()
+    {
+        $applicant = $this->getAuthenticatedApplicant();
+
+        if (!$applicant) {
+            return redirect()->route('scholarship.test', app()->getLocale())
+                ->with('error', 'Votre session a expire. Veuillez vous reconnecter.');
+        }
+
+        $testSession = $this->resolveCompletedTestSession($applicant);
+
+        if (!$testSession || !$testSession->finished_at) {
+            return redirect()->route('scholarship.instructions', app()->getLocale());
+        }
+
+        return view('tests.submitted', [
+            'applicant' => $applicant,
+            'summary' => $this->buildSubmissionSummary($testSession),
+        ]);
+    }
+
+    public function startExam(Request $request)
+    {
+        $applicant = $this->getAuthenticatedApplicant();
+
+        if (!$applicant) {
+            return redirect()->route('scholarship.test', app()->getLocale())
+                ->with('error', "Votre session d'examen a expire. Veuillez vous reconnecter.");
+        }
+
+        $phaseTest = $this->getCurrentPhaseTest();
+
+        if (!$phaseTest) {
+            return redirect()->route('scholarship.test', app()->getLocale())
+                ->with('error', "Aucune phase d'evaluation n'est actuellement disponible.");
+        }
+
+        if ($phaseTest->status !== 'IN_PROGRESS') {
+            return redirect()->route('scholarship.test', app()->getLocale())
+                ->with('error', "Cette phase n'est pas encore ouverte aux candidats.");
+        }
+
+        if ($windowMessage = $this->phaseWindowErrorMessage($phaseTest)) {
+            return redirect()->route('scholarship.test', app()->getLocale())
+                ->with('error', $windowMessage);
+        }
+
+        $latestSession = $this->getLatestApplicantTestSession($applicant);
+        if ($latestSession && $latestSession->finished_at) {
+            session()->forget($this->examSessionKeys());
+            session(['completed_test_session_id' => $latestSession->id]);
+            return redirect()->route('scholarship.exam.submitted', app()->getLocale());
+        }
+
+        $questionPhaseTests = $this->loadPhaseQuestionPhaseTests($phaseTest);
+        if ($questionPhaseTests->isEmpty()) {
+            return redirect()->route('scholarship.test', app()->getLocale())
+                ->with('error', "Cette epreuve ne contient encore aucune question.");
+        }
+
+        $testSession = TestSession::query()
+            ->where('applicant_id', $applicant->id)
+            ->whereNull('finished_at')
+            ->latest('id')
+            ->first();
+
+        if (!$testSession) {
+            $testSession = TestSession::create([
+                'applicant_id' => $applicant->id,
+                'started_at' => now(),
+            ]);
+        } elseif (!$testSession->started_at) {
+            $testSession->started_at = now();
+            $testSession->save();
+        }
+
+        if (!$request->session()->has('exam_question_order')) {
+            $questionOrder = $questionPhaseTests->pluck('id')->shuffle()->values()->all();
+            $request->session()->put([
+                'exam_started' => true,
+                'exam_session_id' => $testSession->id,
+                'exam_phase_test_id' => $phaseTest->id,
+                'exam_question_order' => $questionOrder,
+                'exam_current_index' => 0,
+                'exam_started_at' => optional($testSession->started_at)->toIso8601String(),
+                'exam_violation_count' => 0,
+            ]);
+        } else {
+            $request->session()->put('exam_started', true);
+            $request->session()->put('exam_session_id', $testSession->id);
+            $request->session()->put('exam_phase_test_id', $phaseTest->id);
+            $request->session()->put('exam_started_at', optional($testSession->started_at)->toIso8601String());
+        }
+
+        return redirect()->route('scholarship.instructions', app()->getLocale());
+    }
+
+    public function saveExamProgress(Request $request)
+    {
+        $applicant = $this->getAuthenticatedApplicant();
+        $phaseTest = $this->getCurrentPhaseTest();
+        $testSession = $this->getActiveExamSession($applicant);
+
+        if (!$applicant || !$phaseTest || !$testSession) {
+            return response()->json(['message' => 'Session invalide.'], 419);
+        }
+
+        if ($phaseTest->status !== 'IN_PROGRESS' || $this->isPhaseClosed($phaseTest)) {
+            if (!$testSession->finished_at) {
+                $this->finalizeExam($testSession, $phaseTest, true, (int) $request->session()->get('exam_violation_count', 0));
+            }
+
+            return response()->json(['message' => "Cette phase n'est plus accessible."], 422);
+        }
+
+        if ($testSession->finished_at) {
+            return response()->json(['message' => "L'epreuve est deja terminee."], 422);
+        }
+
+        $data = $request->validate([
+            'question_phase_test_id' => ['required', 'integer', 'exists:question_phase_tests,id'],
+            'selected_option_id' => ['nullable', 'integer', 'exists:answer_options,id'],
+            'current_index' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        $questionPhaseTest = QuestionPhaseTest::query()
+            ->with('question.answer_options')
+            ->where('phase_test_id', $phaseTest->id)
+            ->findOrFail($data['question_phase_test_id']);
+
+        $selectedOptionId = $data['selected_option_id'] ?? null;
+
+        if ($selectedOptionId && !$questionPhaseTest->question->answer_options->contains('id', $selectedOptionId)) {
+            return response()->json(['message' => 'Assertion invalide pour cette question.'], 422);
+        }
+
+        $this->persistExamResponse(
+            $request,
+            $testSession,
+            $questionPhaseTest,
+            $selectedOptionId,
+            $data['current_index'] ?? null
+        );
+
+        $answeredCount = CandidateResponse::query()
+            ->where('test_session_id', $testSession->id)
+            ->whereNotNull('selected_option_id')
+            ->count();
+
+        return response()->json([
+            'saved' => true,
+            'answered_count' => $answeredCount,
+        ]);
+    }
+
+    public function registerExamViolation(Request $request)
+    {
+        $applicant = $this->getAuthenticatedApplicant();
+        $phaseTest = $this->getCurrentPhaseTest();
+        $testSession = $this->getActiveExamSession($applicant);
+
+        if (!$applicant || !$phaseTest || !$testSession) {
+            return response()->json(['message' => 'Session invalide.'], 419);
+        }
+
+        if ($phaseTest->status !== 'IN_PROGRESS' || $this->isPhaseClosed($phaseTest)) {
+            if (!$testSession->finished_at) {
+                $this->finalizeExam($testSession, $phaseTest, true, (int) $request->session()->get('exam_violation_count', 0));
+                $request->session()->forget($this->examSessionKeys());
+                $request->session()->put('completed_test_session_id', $testSession->id);
+            }
+
+            return response()->json([
+                'count' => (int) session('exam_violation_count', 0),
+                'remaining' => 0,
+                'auto_submitted' => true,
+                'redirect_url' => route('scholarship.exam.submitted', app()->getLocale()),
+            ]);
+        }
+
+        if ($testSession->finished_at) {
+            return response()->json([
+                'count' => (int) session('exam_violation_count', 0),
+                'remaining' => 0,
+                'auto_submitted' => true,
+                'redirect_url' => route('scholarship.exam.submitted', app()->getLocale()),
+            ]);
+        }
+
+        $maxViolations = 3;
+        $count = ((int) $request->session()->get('exam_violation_count', 0)) + 1;
+        $request->session()->put('exam_violation_count', $count);
+
+        if ($count >= $maxViolations) {
+            $this->finalizeExam($testSession, $phaseTest, true, $count);
+            $request->session()->forget($this->examSessionKeys());
+            $request->session()->put('completed_test_session_id', $testSession->id);
+
+            return response()->json([
+                'count' => $count,
+                'remaining' => 0,
+                'auto_submitted' => true,
+                'redirect_url' => route('scholarship.exam.submitted', app()->getLocale()),
+            ]);
+        }
+
+        return response()->json([
+            'count' => $count,
+            'remaining' => max(0, $maxViolations - $count),
+            'auto_submitted' => false,
+        ]);
+    }
+
+    public function submitExam(Request $request)
+    {
+        $applicant = $this->getAuthenticatedApplicant();
+        $phaseTest = $this->getCurrentPhaseTest();
+        $testSession = $this->getActiveExamSession($applicant);
+
+        if (!$applicant || !$phaseTest || !$testSession) {
+            return redirect()->route('scholarship.test', app()->getLocale())
+                ->with('error', "Votre session d'examen a expire. Veuillez vous reconnecter.");
+        }
+
+        if ($phaseTest->status !== 'IN_PROGRESS' || $this->isPhaseClosed($phaseTest)) {
+            if (!$testSession->finished_at) {
+                $this->finalizeExam($testSession, $phaseTest, true, (int) $request->session()->get('exam_violation_count', 0));
+            }
+
+            $request->session()->forget($this->examSessionKeys());
+            $request->session()->put('completed_test_session_id', $testSession->id);
+
+            return redirect()->route('scholarship.exam.submitted', app()->getLocale());
+        }
+
+        if (!$testSession->finished_at) {
+            $requestData = $request->validate([
+                'question_phase_test_id' => ['nullable', 'integer', 'exists:question_phase_tests,id'],
+                'selected_option_id' => ['nullable', 'integer', 'exists:answer_options,id'],
+                'current_index' => ['nullable', 'integer', 'min:0'],
+                'auto_submitted' => ['nullable', 'boolean'],
+            ]);
+
+            if (!empty($requestData['question_phase_test_id'])) {
+                $questionPhaseTest = QuestionPhaseTest::query()
+                    ->with('question.answer_options')
+                    ->where('phase_test_id', $phaseTest->id)
+                    ->find($requestData['question_phase_test_id']);
+
+                if ($questionPhaseTest) {
+                    $selectedOptionId = $requestData['selected_option_id'] ?? null;
+
+                    if (!$selectedOptionId || $questionPhaseTest->question->answer_options->contains('id', $selectedOptionId)) {
+                        $this->persistExamResponse(
+                            $request,
+                            $testSession,
+                            $questionPhaseTest,
+                            $selectedOptionId,
+                            $requestData['current_index'] ?? null
+                        );
+                    }
+                }
+            }
+
+            $this->finalizeExam(
+                $testSession,
+                $phaseTest,
+                (bool) ($requestData['auto_submitted'] ?? false),
+                (int) $request->session()->get('exam_violation_count', 0)
+            );
+        }
+
+        $request->session()->forget($this->examSessionKeys());
+        $request->session()->put('completed_test_session_id', $testSession->id);
+
+        return redirect()->route('scholarship.exam.submitted', app()->getLocale());
     }
 
     public function register()
@@ -444,5 +795,292 @@ class ApplicantController extends Controller
     {
         $applicant->delete();
         return redirect()->route('applicants.index')->with('success', __('messages.deleted'));
+    }
+
+    protected function getAuthenticatedApplicant(): ?Applicant
+    {
+        $applicantId = session('authenticated_applicant_id');
+
+        if (!$applicantId) {
+            return null;
+        }
+
+        return Applicant::query()->find($applicantId);
+    }
+
+    protected function getCurrentPhaseTest(): ?PhaseTest
+    {
+        $edition = ScholarshipEdition::getCurrentEdition();
+
+        if (!$edition) {
+            return null;
+        }
+
+        return PhaseTest::query()
+            ->where('scholarship_edition_id', $edition->id)
+            ->first();
+    }
+
+    protected function getActiveExamSession(?Applicant $applicant): ?TestSession
+    {
+        if (!$applicant) {
+            return null;
+        }
+
+        $sessionId = session('exam_session_id');
+
+        if ($sessionId) {
+            $testSession = TestSession::query()
+                ->where('applicant_id', $applicant->id)
+                ->find($sessionId);
+
+            if ($testSession) {
+                return $testSession;
+            }
+        }
+
+        return TestSession::query()
+            ->where('applicant_id', $applicant->id)
+            ->whereNull('finished_at')
+            ->latest('id')
+            ->first();
+    }
+
+    protected function getLatestApplicantTestSession(?Applicant $applicant): ?TestSession
+    {
+        if (!$applicant) {
+            return null;
+        }
+
+        return TestSession::query()
+            ->where('applicant_id', $applicant->id)
+            ->latest('id')
+            ->first();
+    }
+
+    protected function loadPhaseQuestionPhaseTests(PhaseTest $phaseTest)
+    {
+        return QuestionPhaseTest::query()
+            ->with([
+                'question.category_question',
+                'question.answer_options',
+            ])
+            ->where('phase_test_id', $phaseTest->id)
+            ->get();
+    }
+
+    protected function buildExamViewState(Applicant $applicant, PhaseTest $phaseTest): ?array
+    {
+        $testSession = $this->getActiveExamSession($applicant);
+
+        if (!$testSession) {
+            return null;
+        }
+
+        $questionPhaseTests = $this->loadPhaseQuestionPhaseTests($phaseTest)->keyBy('id');
+        $questionOrder = collect(session('exam_question_order', []))
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn ($id) => $questionPhaseTests->has($id))
+            ->values();
+
+        if ($questionOrder->isEmpty()) {
+            $questionOrder = $questionPhaseTests->keys()->shuffle()->values();
+            session(['exam_question_order' => $questionOrder->all()]);
+        }
+
+        $responses = CandidateResponse::query()
+            ->where('test_session_id', $testSession->id)
+            ->get()
+            ->keyBy('question_phase_test_id');
+
+        $questions = $questionOrder->map(function (int $questionPhaseTestId) use ($questionPhaseTests, $responses) {
+            $item = $questionPhaseTests->get($questionPhaseTestId);
+            $response = $responses->get($questionPhaseTestId);
+
+            return [
+                'id' => $item->id,
+                'question_id' => $item->question_id,
+                'category' => optional($item->question->category_question)->name,
+                'question_text' => $item->question->question_text,
+                'ponderation' => $item->ponderation,
+                'selected_option_id' => $response?->selected_option_id,
+                'options' => $item->question->answer_options->map(function ($option) {
+                    return [
+                        'id' => $option->id,
+                        'option_text' => $option->option_text,
+                    ];
+                })->values()->all(),
+            ];
+        })->values();
+
+        $startedAt = session('exam_started_at')
+            ? Carbon::parse(session('exam_started_at'))
+            : ($testSession->started_at ?? now());
+        $endsAt = (clone $startedAt)->addMinutes((int) $phaseTest->duration);
+        if ($phaseTest->end_time && $phaseTest->end_time->lt($endsAt)) {
+            $endsAt = $phaseTest->end_time->copy();
+        }
+
+        $currentIndex = (int) session('exam_current_index', 0);
+        $currentIndex = max(0, min($currentIndex, max($questions->count() - 1, 0)));
+        session(['exam_current_index' => $currentIndex]);
+
+        return [
+            'testSession' => $testSession,
+            'examQuestions' => $questions->all(),
+            'currentQuestionIndex' => $currentIndex,
+            'violationCount' => (int) session('exam_violation_count', 0),
+            'examMeta' => [
+                'started_at' => $startedAt->toIso8601String(),
+                'ends_at' => $endsAt->toIso8601String(),
+                'duration_minutes' => (int) $phaseTest->duration,
+                'max_violations' => 3,
+            ],
+        ];
+    }
+
+    protected function finalizeExam(
+        TestSession $testSession,
+        PhaseTest $phaseTest,
+        bool $autoSubmitted = false,
+        ?int $cheatingAttempts = null
+    ): void {
+        $responses = CandidateResponse::query()
+            ->with(['question_phase_test.question.answer_options'])
+            ->where('test_session_id', $testSession->id)
+            ->get();
+
+        $score = $responses->sum(function (CandidateResponse $response) {
+            $questionPhaseTest = $response->question_phase_test;
+
+            if (!$questionPhaseTest || !$response->selected_option_id) {
+                return 0;
+            }
+
+            $isCorrect = $questionPhaseTest->question->answer_options
+                ->firstWhere('id', $response->selected_option_id)?->pivot?->is_correct;
+
+            return $isCorrect ? (float) $questionPhaseTest->ponderation : 0;
+        });
+
+        $totalPossibleScore = (float) QuestionPhaseTest::query()
+            ->where('phase_test_id', $phaseTest->id)
+            ->sum('ponderation');
+        $percentageScore = $totalPossibleScore > 0 ? ($score / $totalPossibleScore) * 100 : 0;
+
+        $testSession->update([
+            'finished_at' => $testSession->finished_at ?? now(),
+            'total_score' => $score,
+            'is_passed' => $percentageScore >= (float) $phaseTest->passing_score,
+            'cheating_attempts' => $cheatingAttempts ?? (int) $testSession->cheating_attempts,
+            'auto_submitted' => $autoSubmitted,
+        ]);
+    }
+
+    protected function persistExamResponse(
+        Request $request,
+        TestSession $testSession,
+        QuestionPhaseTest $questionPhaseTest,
+        ?int $selectedOptionId,
+        ?int $currentIndex = null
+    ): void {
+        CandidateResponse::query()->updateOrCreate(
+            [
+                'test_session_id' => $testSession->id,
+                'question_phase_test_id' => $questionPhaseTest->id,
+            ],
+            [
+                'selected_option_id' => $selectedOptionId,
+                'text_answer' => null,
+            ]
+        );
+
+        if ($currentIndex !== null) {
+            $request->session()->put('exam_current_index', $currentIndex);
+        }
+    }
+
+    protected function resolveCompletedTestSession(Applicant $applicant): ?TestSession
+    {
+        $completedSessionId = session('completed_test_session_id');
+
+        if ($completedSessionId) {
+            $testSession = TestSession::query()
+                ->where('applicant_id', $applicant->id)
+                ->find($completedSessionId);
+
+            if ($testSession && $testSession->finished_at) {
+                return $testSession;
+            }
+        }
+
+        return TestSession::query()
+            ->where('applicant_id', $applicant->id)
+            ->whereNotNull('finished_at')
+            ->latest('finished_at')
+            ->first();
+    }
+
+    protected function buildSubmissionSummary(TestSession $testSession): array
+    {
+        $phaseTest = $this->getCurrentPhaseTest();
+        $answeredCount = CandidateResponse::query()
+            ->where('test_session_id', $testSession->id)
+            ->whereNotNull('selected_option_id')
+            ->count();
+
+        $totalQuestions = $phaseTest
+            ? QuestionPhaseTest::query()->where('phase_test_id', $phaseTest->id)->count()
+            : 0;
+
+        $secondsUsed = $testSession->started_at && $testSession->finished_at
+            ? max(0, $testSession->started_at->diffInSeconds($testSession->finished_at))
+            : 0;
+
+        $hours = intdiv($secondsUsed, 3600);
+        $minutes = intdiv($secondsUsed % 3600, 60);
+        $seconds = $secondsUsed % 60;
+
+        return [
+            'answered_count' => $answeredCount,
+            'total_questions' => $totalQuestions,
+            'cheating_attempts' => (int) $testSession->cheating_attempts,
+            'auto_submitted' => (bool) $testSession->auto_submitted,
+            'time_used_label' => sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds),
+            'submitted_at' => optional($testSession->finished_at)?->format('d/m/Y H:i'),
+        ];
+    }
+
+    protected function examSessionKeys(): array
+    {
+        return [
+            'exam_started',
+            'exam_session_id',
+            'exam_phase_test_id',
+            'exam_question_order',
+            'exam_current_index',
+            'exam_started_at',
+            'exam_violation_count',
+        ];
+    }
+
+    protected function phaseWindowErrorMessage(PhaseTest $phaseTest): ?string
+    {
+        $now = now();
+
+        if ($phaseTest->start_time && $now->lt($phaseTest->start_time)) {
+            return "Cette phase n'a pas encore commence.";
+        }
+
+        if ($phaseTest->end_time && $now->gt($phaseTest->end_time)) {
+            return "Cette phase est deja terminee.";
+        }
+
+        return null;
+    }
+
+    protected function isPhaseClosed(PhaseTest $phaseTest): bool
+    {
+        return !is_null($phaseTest->end_time) && now()->gt($phaseTest->end_time);
     }
 }
