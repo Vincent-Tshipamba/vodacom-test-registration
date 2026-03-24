@@ -823,7 +823,8 @@ new class extends Component {
             <h1 class="font-semibold text-gray-900 dark:text-gray-100 text-xl">{{ __('Gestion des questions') }}</h1>
             <p class="text-gray-500 dark:text-gray-400 text-sm">{{ $currentEdition->name }}</p>
             <p class="mt-1 text-gray-600 dark:text-gray-300 text-sm">
-                {{ __('Total questions de la phase') }}: <span class="font-semibold">{{ $this->phaseQuestionsCount() }}</span>
+                {{ __('Total questions de la phase') }}: <span
+                    class="font-semibold">{{ $this->phaseQuestionsCount() }}</span>
             </p>
         </div>
         <div class="flex sm:flex-row flex-col items-stretch sm:items-center gap-2">
@@ -851,391 +852,418 @@ new class extends Component {
     @endif
 
     @php
-$filteredQuestionIndexes = [];
-foreach ($questions as $idx => $_q) {
-    if ($this->passesCategoryFilter($_q)) {
-        $filteredQuestionIndexes[] = $idx;
-    }
-}
+        $filteredQuestionIndexes = [];
+        foreach ($questions as $idx => $_q) {
+            if ($this->passesCategoryFilter($_q)) {
+                $filteredQuestionIndexes[] = $idx;
+            }
+        }
     @endphp
     <div x-data x-on:click.outside="$wire.cancelEditing()">
         <div class="space-y-4 js-list" data-drag-scope="questions">
             @foreach ($filteredQuestionIndexes as $qIndex)
-                            @php
-                $question = $questions[$qIndex];
-                $isEditing = ($question['uuid'] === $editingQuestionUuid);
-                $isDuplicate = $this->isDuplicateInPhase($question['uuid']);
-                            @endphp
-                            <article wire:key="question-card-{{ $question['uuid'] }}" data-question-uuid="{{ $question['uuid'] }}"
-                            class="js-item is-idle bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden {{ !$isEditing && !empty($question['is_validated']) ? 'cursor-pointer transition transform duration-300 ease-in-out hover:scale-[1.02] hover:shadow-lg hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-gray-50 dark:hover:bg-gray-700' : '' }}"
-                            @if (!$isEditing && !empty($question['is_validated'])) wire:click="startEditing('{{ $question['uuid'] }}')"
-                            @endif>
-                            <div class="bg-gray-50 dark:bg-gray-900/40 px-4 py-3 border-gray-200 dark:border-gray-700 border-b">
-                                <div class="flex justify-between items-center">
-                                    <p class="font-medium text-gray-900 dark:text-gray-100 text-sm">{{ __('Question') }}
-                                        {{ $qIndex + 1 }}
-                                    </p>
-                                    <div class="flex items-center gap-2">
-                                        <button type="button" wire:click.stop
-                                            class="inline-flex justify-center items-center rounded w-7 h-7 text-gray-500 dark:text-gray-300 cursor-grab active:cursor-grabbing js-drag-handle"
-                                            title="{{ __('Reordonner') }}">
-                                            <span class="text-sm leading-none">&#x283F;</span>
-                                        </button>
-                                        @if(!empty($question['is_validated']))
-                                            <span
-                                                class="bg-green-100 dark:bg-green-900/40 px-2 py-1 rounded text-green-700 dark:text-green-300 text-xs">{{ __('Validée') }}</span>
-                                        @endif
-                                        @if($isDuplicate)
-                                            <span
-                                                class="bg-amber-100 dark:bg-amber-900/40 px-2 py-1 rounded text-amber-700 dark:text-amber-300 text-xs">{{ __('Doublon dans la phase') }}</span>
-                                        @endif
-                                        <button wire:click.stop="moveQuestionUp('{{ $question['uuid'] }}')"
-                                            class="hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-200 text-xs hover:scale-105 active:scale-95 transition-all duration-200">
-                                            <svg class="w-5 h-5 text-gray-700 dark:text-gray-200" xmlns="http://www.w3.org/2000/svg"
-                                                fill="none" viewBox="0 0 24 24">
-                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                                    stroke-width="2" d="M12 6v13m0-13 4 4m-4-4-4 4" />
-                                            </svg>
-                                        </button>
-                                        <button wire:click.stop="moveQuestionDown('{{ $question['uuid'] }}')"
-                                            class="hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-200 text-xs hover:scale-105 active:scale-95 transition-all duration-200">
-                                            <svg class="w-5 h-5 text-gray-700 dark:text-gray-200" xmlns="http://www.w3.org/2000/svg"
-                                                fill="none" viewBox="0 0 24 24">
-                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                                    stroke-width="2" d="M12 19V5m0 14-4-4m4 4 4-4" />
-                                            </svg>
-                                        </button>
-                                        <button wire:click.stop="duplicateQuestion('{{ $question['uuid'] }}')"
-                                            class="hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-200 text-xs hover:scale-105 active:scale-95 transition-all duration-200">
-                                            <svg class="w-5 h-5 text-gray-700 dark:text-gray-200" viewBox="0 0 48 48" fill="none"
-                                                xmlns="http://www.w3.org/2000/svg">
-                                                <g id="duplicate">
-                                                    <g id="duplicate_2">
-                                                        <path id="Combined Shape" fill-rule="evenodd" clip-rule="evenodd"
-                                                            class="w-5 h-5 text-gray-700 dark:text-gray-200"
-                                                            d="M29.2827 4.88487C28.7191 4.31826 27.954 4 27.1556 4H14.9996C13.3433 4 11.9996 5.34372 11.9996 7V37C11.9996 38.6563 13.3433 40 14.9996 40H31.9992V41C31.9992 41.5526 31.5521 42 30.9992 42H10.9992C10.4475 42 9.99921 41.5517 9.99921 41V9C9.99921 8.44772 9.55149 8 8.99921 8C8.44692 8 7.99921 8.44772 7.99921 9V41C7.99921 42.6563 9.34292 44 10.9992 44H30.9992C32.657 44 33.9992 42.6568 33.9992 41V40H34.9996C36.6574 40 37.9996 38.6568 37.9996 37V17.0162H39.0226C39.5749 17.0162 40.0226 16.5685 40.0226 16.0162C40.0226 15.4639 39.5749 15.0162 39.0226 15.0162H37.9996V14.888C37.9996 14.0969 37.6859 13.3381 37.1285 12.7747L29.2827 4.88487ZM27.0266 15.0162H35.9996V14.888C35.9996 14.6251 35.8947 14.3713 35.7085 14.1831L27.8646 6.29523C27.6764 6.10599 27.4216 6 27.1556 6H14.9996C14.4479 6 13.9996 6.44828 13.9996 7V37C13.9996 37.5517 14.4479 38 14.9996 38H34.9996C35.5525 38 35.9996 37.5526 35.9996 37V17.0162H26.2286C25.5662 17.0162 25.0266 16.4803 25.0266 15.8162V8.9482C25.0266 8.39592 25.4743 7.9482 26.0266 7.9482C26.5789 7.9482 27.0266 8.39592 27.0266 8.9482V15.0162Z"
-                                                            fill="currentColor" />
-                                                    </g>
-                                                </g>
-                                            </svg>
-                                        </button>
-                                        <button wire:click.stop="removeQuestion('{{ $question['uuid'] }}')"
-                                            class="hover:bg-red-50 dark:hover:bg-red-900/30 px-2 py-1 border border-red-300 dark:border-red-700 rounded text-red-600 dark:text-red-300 text-xs hover:scale-105 active:scale-95 transition-all duration-200">
-                                            <svg class="w-5 h-5 text-red-600 dark:text-red-300" xmlns="http://www.w3.org/2000/svg"
-                                                fill="currentColor" viewBox="0 0 24 24">
-                                                <path fill-rule="evenodd"
-                                                    d="M8.586 2.586A2 2 0 0 1 10 2h4a2 2 0 0 1 2 2v2h3a1 1 0 1 1 0 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8a1 1 0 0 1 0-2h3V4a2 2 0 0 1 .586-1.414ZM10 6h4V4h-4v2Zm1 4a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Zm4 0a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Z"
-                                                    clip-rule="evenodd" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
+                @php
+                    $question = $questions[$qIndex];
+                    $isEditing = ($question['uuid'] === $editingQuestionUuid);
+                    $isDuplicate = $this->isDuplicateInPhase($question['uuid']);
+                @endphp
+                <article wire:key="question-card-{{ $question['uuid'] }}" data-question-uuid="{{ $question['uuid'] }}"
+                    class="js-item is-idle bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden {{ !$isEditing && !empty($question['is_validated']) ? 'cursor-pointer transition transform duration-300 ease-in-out hover:scale-[1.02] hover:shadow-lg hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-gray-50 dark:hover:bg-gray-700' : '' }}"
+                    @if (!$isEditing && !empty($question['is_validated']))
+                    wire:click="startEditing('{{ $question['uuid'] }}')" @endif>
+                    <div class="bg-gray-50 dark:bg-gray-900/40 px-4 py-3 border-gray-200 dark:border-gray-700 border-b">
+                        <div class="flex justify-between items-center">
+                            <p class="font-medium text-gray-900 dark:text-gray-100 text-sm">{{ __('Question') }}
+                                {{ $qIndex + 1 }}
+                            </p>
+                            <div class="flex items-center gap-2">
+                                <button type="button" wire:click.stop
+                                    class="inline-flex justify-center items-center rounded w-7 h-7 text-gray-500 dark:text-gray-300 cursor-grab active:cursor-grabbing js-drag-handle"
+                                    title="{{ __('Reordonner') }}">
+                                    <span class="text-sm leading-none">&#x283F;</span>
+                                </button>
+                                @if(!empty($question['is_validated']))
+                                    <span
+                                        class="bg-green-100 dark:bg-green-900/40 px-2 py-1 rounded text-green-700 dark:text-green-300 text-xs">{{ __('Validée') }}</span>
+                                @endif
+                                @if($isDuplicate)
+                                    <span
+                                        class="bg-amber-100 dark:bg-amber-900/40 px-2 py-1 rounded text-amber-700 dark:text-amber-300 text-xs">{{ __('Doublon dans la phase') }}</span>
+                                @endif
+                                <button wire:click.stop="moveQuestionUp('{{ $question['uuid'] }}')"
+                                    class="hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-200 text-xs hover:scale-105 active:scale-95 transition-all duration-200">
+                                    <svg class="w-5 h-5 text-gray-700 dark:text-gray-200" xmlns="http://www.w3.org/2000/svg"
+                                        fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="M12 6v13m0-13 4 4m-4-4-4 4" />
+                                    </svg>
+                                </button>
+                                <button wire:click.stop="moveQuestionDown('{{ $question['uuid'] }}')"
+                                    class="hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-200 text-xs hover:scale-105 active:scale-95 transition-all duration-200">
+                                    <svg class="w-5 h-5 text-gray-700 dark:text-gray-200" xmlns="http://www.w3.org/2000/svg"
+                                        fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="M12 19V5m0 14-4-4m4 4 4-4" />
+                                    </svg>
+                                </button>
+                                <button wire:click.stop="duplicateQuestion('{{ $question['uuid'] }}')"
+                                    class="hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-200 text-xs hover:scale-105 active:scale-95 transition-all duration-200">
+                                    <svg class="w-5 h-5 text-gray-700 dark:text-gray-200" viewBox="0 0 48 48" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <g id="duplicate">
+                                            <g id="duplicate_2">
+                                                <path id="Combined Shape" fill-rule="evenodd" clip-rule="evenodd"
+                                                    class="w-5 h-5 text-gray-700 dark:text-gray-200"
+                                                    d="M29.2827 4.88487C28.7191 4.31826 27.954 4 27.1556 4H14.9996C13.3433 4 11.9996 5.34372 11.9996 7V37C11.9996 38.6563 13.3433 40 14.9996 40H31.9992V41C31.9992 41.5526 31.5521 42 30.9992 42H10.9992C10.4475 42 9.99921 41.5517 9.99921 41V9C9.99921 8.44772 9.55149 8 8.99921 8C8.44692 8 7.99921 8.44772 7.99921 9V41C7.99921 42.6563 9.34292 44 10.9992 44H30.9992C32.657 44 33.9992 42.6568 33.9992 41V40H34.9996C36.6574 40 37.9996 38.6568 37.9996 37V17.0162H39.0226C39.5749 17.0162 40.0226 16.5685 40.0226 16.0162C40.0226 15.4639 39.5749 15.0162 39.0226 15.0162H37.9996V14.888C37.9996 14.0969 37.6859 13.3381 37.1285 12.7747L29.2827 4.88487ZM27.0266 15.0162H35.9996V14.888C35.9996 14.6251 35.8947 14.3713 35.7085 14.1831L27.8646 6.29523C27.6764 6.10599 27.4216 6 27.1556 6H14.9996C14.4479 6 13.9996 6.44828 13.9996 7V37C13.9996 37.5517 14.4479 38 14.9996 38H34.9996C35.5525 38 35.9996 37.5526 35.9996 37V17.0162H26.2286C25.5662 17.0162 25.0266 16.4803 25.0266 15.8162V8.9482C25.0266 8.39592 25.4743 7.9482 26.0266 7.9482C26.5789 7.9482 27.0266 8.39592 27.0266 8.9482V15.0162Z"
+                                                    fill="currentColor" />
+                                            </g>
+                                        </g>
+                                    </svg>
+                                </button>
+                                <button wire:click.stop="removeQuestion('{{ $question['uuid'] }}')"
+                                    class="hover:bg-red-50 dark:hover:bg-red-900/30 px-2 py-1 border border-red-300 dark:border-red-700 rounded text-red-600 dark:text-red-300 text-xs hover:scale-105 active:scale-95 transition-all duration-200">
+                                    <svg class="w-5 h-5 text-red-600 dark:text-red-300" xmlns="http://www.w3.org/2000/svg"
+                                        fill="currentColor" viewBox="0 0 24 24">
+                                        <path fill-rule="evenodd"
+                                            d="M8.586 2.586A2 2 0 0 1 10 2h4a2 2 0 0 1 2 2v2h3a1 1 0 1 1 0 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8a1 1 0 0 1 0-2h3V4a2 2 0 0 1 .586-1.414ZM10 6h4V4h-4v2Zm1 4a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Zm4 0a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </button>
                             </div>
-                            <div class="hidden px-4 py-3 rich-text-content text-gray-900 dark:text-gray-100 text-sm leading-6 question-compact-text">
+                        </div>
+                    </div>
+                    <div
+                        class="hidden px-4 py-3 rich-text-content text-gray-900 dark:text-gray-100 text-sm leading-6 question-compact-text">
+                        {!! $this->previewRichText($question['question_text'], __('Question sans texte')) !!}
+                    </div>
+
+                    <div
+                        class="question-detail {{ (!$isEditing && !empty($question['is_validated'])) ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none' }} overflow-hidden transition-all duration-300 ease-in-out">
+                        <div class="p-4">
+                            <div class="rich-text-content text-gray-900 dark:text-gray-100 text-sm leading-6">
                                 {!! $this->previewRichText($question['question_text'], __('Question sans texte')) !!}
                             </div>
+                            <ul class="space-y-2 mt-3">
+                                @foreach ($question['options'] as $option)
+                                    <li class="flex items-center gap-2 text-sm">
+                                        <span
+                                            class="inline-flex justify-center items-center border rounded-full w-5 h-5 text-xs {{ !empty($option['is_correct']) ? 'border-green-500 text-green-600 dark:text-green-300 dark:border-green-400' : 'border-gray-400 text-gray-500 dark:text-gray-300 dark:border-gray-500' }}">
+                                            @if(!empty($option['is_correct']))&#10003;@else&#10005;@endif
+                                        </span>
+                                        <span
+                                            class="{{ !empty($option['is_correct']) ? 'font-medium text-green-700 dark:text-green-300' : 'text-gray-700 dark:text-gray-200' }} rich-text-content">
+                                            {!! $this->previewRichText($option['option_text']) !!}
+                                        </span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                            <p class="mt-3 text-gray-500 dark:text-gray-400 text-xs">
+                                {{ __('Cliquez pour modifier cette question') }}
+                            </p>
+                        </div>
+                    </div>
 
-                            <div
-                                class="question-detail {{ (!$isEditing && !empty($question['is_validated'])) ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none' }} overflow-hidden transition-all duration-300 ease-in-out">
-                                <div class="p-4">
-                                    <div class="rich-text-content text-gray-900 dark:text-gray-100 text-sm leading-6">
-                                        {!! $this->previewRichText($question['question_text'], __('Question sans texte')) !!}
-                                    </div>
-                                    <ul class="space-y-2 mt-3">
-                                        @foreach ($question['options'] as $option)
-                                            <li class="flex items-center gap-2 text-sm">
-                                                <span
-                                                    class="inline-flex justify-center items-center border rounded-full w-5 h-5 text-xs {{ !empty($option['is_correct']) ? 'border-green-500 text-green-600 dark:text-green-300 dark:border-green-400' : 'border-gray-400 text-gray-500 dark:text-gray-300 dark:border-gray-500' }}">
-                                                    @if(!empty($option['is_correct']))&#10003;@else&#10005;@endif
-                                                </span>
-                                                <span
-                                                    class="{{ !empty($option['is_correct']) ? 'font-medium text-green-700 dark:text-green-300' : 'text-gray-700 dark:text-gray-200' }} rich-text-content">
-                                                    {!! $this->previewRichText($option['option_text']) !!}
-                                                </span>
-                                            </li>
+                    <div
+                        class="question-detail {{ $isEditing ? 'max-h-[2600px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none' }} overflow-hidden transition-all duration-300 ease-in-out">
+                        <div class="p-4">
+                            <div class="gap-3 grid grid-cols-1 md:grid-cols-2 mb-3">
+                                <div>
+                                    <label
+                                        class="block mb-1 text-gray-700 dark:text-gray-300 text-xs">{{ __('Categorie') }}</label>
+                                    <select wire:model.live="questions.{{ $qIndex }}.category_question_id"
+                                        class="bg-white dark:bg-gray-900 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-[#ff1453]/30 focus:ring-2 w-full text-gray-900 dark:text-gray-100 text-sm">
+                                        <option value="">{{ __('Choisir') }}</option>
+                                        @foreach ($categories as $cat)
+                                            <option value="{{ $cat['id'] }}">
+                                                {{ $cat['name'] }}
+                                            </option>
                                         @endforeach
-                                    </ul>
-                                    <p class="mt-3 text-gray-500 dark:text-gray-400 text-xs">
-                                        {{ __('Cliquez pour modifier cette question') }}
-                                    </p>
+                                    </select>
+                                    @error("questions.$qIndex.category_question_id") <p
+                                    class="mt-1 text-red-600 dark:text-red-400 text-xs">{{ $message }}</p> @enderror
+                                </div>
+                                <div>
+                                    <label
+                                        class="block mb-1 text-gray-700 dark:text-gray-300 text-xs">{{ __('Points') }}</label>
+                                    <input type="number" min="1" wire:model.live="questions.{{ $qIndex }}.ponderation"
+                                        class="bg-white dark:bg-gray-900 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-[#ff1453]/30 focus:ring-2 w-full text-gray-900 dark:text-gray-100 text-sm">
+                                    @error("questions.$qIndex.ponderation") <p
+                                        class="mt-1 text-red-600 dark:text-red-400 text-xs">
+                                        {{ $message }}
+                                    </p> @enderror
                                 </div>
                             </div>
 
-                            <div
-                                class="question-detail {{ $isEditing ? 'max-h-[2600px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none' }} overflow-hidden transition-all duration-300 ease-in-out">
-                                <div class="p-4">
-                                    <div class="gap-3 grid grid-cols-1 md:grid-cols-2 mb-3">
-                                        <div>
-                                            <label
-                                                class="block mb-1 text-gray-700 dark:text-gray-300 text-xs">{{ __('Categorie') }}</label>
-                                            <select wire:model.live="questions.{{ $qIndex }}.category_question_id"
-                                                class="bg-white dark:bg-gray-900 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-[#ff1453]/30 focus:ring-2 w-full text-gray-900 dark:text-gray-100 text-sm">
-                                                <option value="">{{ __('Choisir') }}</option>
-                                                @foreach ($categories as $cat)
-                                                    <option value="{{ $cat['id'] }}">
-                                                        {{ $cat['name'] }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            @error("questions.$qIndex.category_question_id") <p
-                                            class="mt-1 text-red-600 dark:text-red-400 text-xs">{{ $message }}</p> @enderror
-                                        </div>
-                                        <div>
-                                            <label
-                                                class="block mb-1 text-gray-700 dark:text-gray-300 text-xs">{{ __('Points') }}</label>
-                                            <input type="number" min="1" wire:model.live="questions.{{ $qIndex }}.ponderation"
-                                                class="bg-white dark:bg-gray-900 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-[#ff1453]/30 focus:ring-2 w-full text-gray-900 dark:text-gray-100 text-sm">
-                                            @error("questions.$qIndex.ponderation") <p
+                            <div class="relative">
+                                <label
+                                    class="block mb-1 text-gray-700 dark:text-gray-300 text-xs">{{ __('Texte de la question') }}</label>
+                                <div wire:ignore
+                                    class="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden rich-editor-shell">
+                                    <div
+                                        class="flex flex-wrap items-center gap-1 bg-gray-50 dark:bg-gray-900/70 px-2 py-2 border-gray-200 dark:border-gray-700 border-b rich-editor-toolbar">
+                                        <button type="button" data-editor-command="bold"
+                                            data-editor-target="question-{{ $question['uuid'] }}"
+                                            class="rich-toolbar-btn"><strong>B</strong></button>
+                                        <button type="button" data-editor-command="italic"
+                                            data-editor-target="question-{{ $question['uuid'] }}"
+                                            class="rich-toolbar-btn"><em>I</em></button>
+                                        <button type="button" data-editor-command="underline"
+                                            data-editor-target="question-{{ $question['uuid'] }}"
+                                            class="rich-toolbar-btn"><span class="underline">U</span></button>
+                                        <button type="button" data-editor-command="subscript"
+                                            data-editor-target="question-{{ $question['uuid'] }}"
+                                            class="rich-toolbar-btn">x<sub>2</sub></button>
+                                        <button type="button" data-editor-command="superscript"
+                                            data-editor-target="question-{{ $question['uuid'] }}"
+                                            class="rich-toolbar-btn">x<sup>2</sup></button>
+                                        <button type="button" data-editor-action="bullet-list"
+                                            data-editor-target="question-{{ $question['uuid'] }}"
+                                            class="rich-toolbar-btn">&bull; {{ __('Liste') }}</button>
+                                        <button type="button" data-editor-action="number-list"
+                                            data-editor-target="question-{{ $question['uuid'] }}"
+                                            class="rich-toolbar-btn">1. {{ __('Liste') }}</button>
+                                        <button type="button" data-editor-command="removeFormat"
+                                            data-editor-target="question-{{ $question['uuid'] }}"
+                                            class="rich-toolbar-btn">{{ __('Effacer') }}</button>
+                                    </div>
+                                    <div contenteditable="true" data-model="questions.{{ $qIndex }}.question_text"
+                                        data-editor-target="question-{{ $question['uuid'] }}"
+                                        class="bg-white dark:bg-gray-900 px-3 py-2 focus:outline-none min-h-[104px] text-gray-900 dark:text-gray-100 text-sm leading-6 rich-editor"
+                                        placeholder="{{ __('Saisissez la question...') }}">
+                                        {!! $this->previewRichText($question['question_text']) !!}</div>
+                                </div>
+                                @error("questions.$qIndex.question_text") <p
+                                    class="mt-1 text-red-600 dark:text-red-400 text-xs">
+                                    {{ $message }}
+                                </p> @enderror
+
+
+                                @if (!empty($questionSuggestions[$question['uuid']] ?? []) && !empty($question['suggestions_enabled']))
+                                    <div
+                                        class="z-20 absolute bg-white dark:bg-gray-900 mt-1 border border-gray-200 dark:border-gray-700 rounded-lg w-full max-h-56 overflow-y-auto">
+                                        @foreach ($questionSuggestions[$question['uuid']] as $s)
+                                            <button type="button"
+                                                wire:click="selectQuestionSuggestion('{{ $question['uuid'] }}', {{ $s['id'] }})"
+                                                class="block hover:bg-gray-50 dark:hover:bg-gray-800 px-3 py-2 border-gray-100 dark:border-gray-700 border-b w-full text-left">
+                                                <span
+                                                    class="block text-gray-900 dark:text-gray-100 text-sm">{{ $this->plainText($s['question_text']) }}</span>
+                                                <span
+                                                    class="text-gray-500 dark:text-gray-400 text-xs">{{ __('Question suggeree') }}</span>
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
+
+                            @if($this->isMathCategory($question['category_question_id'] ?? null))
+                                <div
+                                    class="mt-2 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden math-pad">
+                                    <div
+                                        class="flex justify-between items-center bg-gray-100 dark:bg-gray-900/50 px-3 py-1.5 border-teal-700/70 dark:border-teal-600/60 border-b text-teal-700 dark:text-teal-300 text-sm">
+                                        <span>{{ __('Clavier mathematique') }}</span>
+                                        <button type="button" onclick="insertMathToken('+', '{{ $question['uuid'] }}')"
+                                            class="hover:bg-gray-200 dark:hover:bg-gray-700 px-2 rounded">+</button>
+                                    </div>
+                                    <div
+                                        class="gap-px grid math-pad-grid grid-cols-5 md:grid-cols-10 bg-gray-300 dark:bg-gray-700">
+                                        <button type="button" onclick="insertMathToken('x', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">x</button>
+                                        <button type="button" onclick="insertMathToken('y', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">y</button>
+                                        <button type="button" onclick="insertMathToken('x_n', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">x<sub>n</sub></button>
+                                        <button type="button" onclick="insertMathToken('x^n', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">x<sup>n</sup></button>
+                                        <button type="button" onclick="insertMathToken('[ ]', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">[ ]</button>
+                                        <button type="button" onclick="insertMathToken('( )', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">( )</button>
+                                        <button type="button" onclick="insertMathToken('7', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">7</button>
+                                        <button type="button" onclick="insertMathToken('8', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">8</button>
+                                        <button type="button" onclick="insertMathToken('9', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">9</button>
+                                        <button type="button" onclick="insertMathToken('\u00F7', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">&divide;</button>
+
+                                        <button type="button" onclick="insertMathToken('>', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">&gt;</button>
+                                        <button type="button" onclick="insertMathToken('<', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">&lt;</button>
+                                        <button type="button" onclick="insertMathToken('\u2265', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">&ge;</button>
+                                        <button type="button" onclick="insertMathToken('\u2264', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">&le;</button>
+                                        <button type="button" onclick="insertMathToken('\u2260', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">&ne;</button>
+                                        <button type="button" onclick="insertMathToken('|x|', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">|x|</button>
+                                        <button type="button" onclick="insertMathToken('4', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">4</button>
+                                        <button type="button" onclick="insertMathToken('5', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">5</button>
+                                        <button type="button" onclick="insertMathToken('6', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">6</button>
+                                        <button type="button" onclick="insertMathToken('\u00D7', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">&times;</button>
+
+                                        <button type="button" onclick="insertMathToken('\u221A', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">&radic;</button>
+                                        <button type="button" onclick="insertMathToken('n\u221A', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">n&radic;</button>
+                                        <button type="button" onclick="insertMathToken('x^2', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">x<sup>2</sup></button>
+                                        <button type="button" onclick="insertMathToken('x^n', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">x<sup>n</sup></button>
+                                        <button type="button" onclick="insertMathToken('log', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">log</button>
+                                        <button type="button" onclick="insertMathToken('ln', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">ln</button>
+                                        <button type="button" onclick="insertMathToken('1', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">1</button>
+                                        <button type="button" onclick="insertMathToken('2', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">2</button>
+                                        <button type="button" onclick="insertMathToken('3', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">3</button>
+                                        <button type="button" onclick="insertMathToken('-', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">-</button>
+
+                                        <button type="button" onclick="insertMathToken('\u03C0', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">&pi;</button>
+                                        <button type="button" onclick="insertMathToken('x!', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">x!</button>
+                                        <button type="button" onclick="insertMathToken('\u2211', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">&sum;</button>
+                                        <button type="button" onclick="insertMathToken('\u220F', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">&prod;</button>
+                                        <button type="button" onclick="insertMathToken('[x]', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">[x]</button>
+                                        <button type="button" onclick="insertMathToken('|x|', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">|x|</button>
+                                        <button type="button" onclick="insertMathToken('0', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">0</button>
+                                        <button type="button" onclick="insertMathToken('.', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">.</button>
+                                        <button type="button" onclick="insertMathToken('=', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">=</button>
+                                        <button type="button" onclick="insertMathToken('+', '{{ $question['uuid'] }}')"
+                                            class="math-pad-key">+</button>
+                                    </div>
+                                </div>
+                            @endif
+
+                            <div class="space-y-2 mt-4">
+                                @foreach ($question['options'] as $oIndex => $option)
+                                    <div class="relative flex items-center gap-2" data-option-uuid="{{ $option['uuid'] }}">
+                                        <button type="button"
+                                            wire:click="toggleCorrectOption('{{ $question['uuid'] }}', '{{ $option['uuid'] }}')"
+                                            class="px-2.5 py-1.5 border rounded-lg text-xs transition-colors duration-200 {{ !empty($option['is_correct']) ? 'bg-green-100 dark:bg-green-900/30 border-green-400 dark:border-green-700 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/50' : 'bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
+                                            @if(!empty($option['is_correct']))&#10003;@else&#10005;@endif
+                                        </button>
+                                        <div class="relative flex-1">
+                                            <input
+                                                wire:model.live.debounce.300ms="questions.{{ $qIndex }}.options.{{ $oIndex }}.option_text"
+                                                class="bg-white dark:bg-gray-900 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-[#ff1453]/30 focus:ring-2 w-full text-gray-900 dark:text-gray-100 text-sm"
+                                                placeholder="{{ __('Assertion') }} {{ $oIndex + 1 }}">
+                                            @error("questions.$qIndex.options.$oIndex.option_text") <p
                                                 class="mt-1 text-red-600 dark:text-red-400 text-xs">
                                                 {{ $message }}
                                             </p> @enderror
-                                        </div>
-                                    </div>
-
-                                    <div class="relative">
-                                        <label
-                                            class="block mb-1 text-gray-700 dark:text-gray-300 text-xs">{{ __('Texte de la question') }}</label>
-                                        <div wire:ignore class="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden rich-editor-shell">
-                                            <div class="flex flex-wrap items-center gap-1 bg-gray-50 dark:bg-gray-900/70 px-2 py-2 border-gray-200 dark:border-gray-700 border-b rich-editor-toolbar">
-                                                <button type="button" data-editor-command="bold" data-editor-target="question-{{ $question['uuid'] }}" class="rich-toolbar-btn"><strong>B</strong></button>
-                                                <button type="button" data-editor-command="italic" data-editor-target="question-{{ $question['uuid'] }}" class="rich-toolbar-btn"><em>I</em></button>
-                                                <button type="button" data-editor-command="underline" data-editor-target="question-{{ $question['uuid'] }}" class="rich-toolbar-btn"><span class="underline">U</span></button>
-                                                <button type="button" data-editor-command="subscript" data-editor-target="question-{{ $question['uuid'] }}" class="rich-toolbar-btn">x<sub>2</sub></button>
-                                                <button type="button" data-editor-command="superscript" data-editor-target="question-{{ $question['uuid'] }}" class="rich-toolbar-btn">x<sup>2</sup></button>
-                                                <button type="button" data-editor-action="bullet-list" data-editor-target="question-{{ $question['uuid'] }}" class="rich-toolbar-btn">&bull; {{ __('Liste') }}</button>
-                                                <button type="button" data-editor-action="number-list" data-editor-target="question-{{ $question['uuid'] }}" class="rich-toolbar-btn">1. {{ __('Liste') }}</button>
-                                                <button type="button" data-editor-command="removeFormat" data-editor-target="question-{{ $question['uuid'] }}" class="rich-toolbar-btn">{{ __('Effacer') }}</button>
-                                            </div>
-                                            <div
-                                                contenteditable="true"
-                                                data-model="questions.{{ $qIndex }}.question_text"
-                                                data-editor-target="question-{{ $question['uuid'] }}"
-                                                class="bg-white dark:bg-gray-900 px-3 py-2 focus:outline-none min-h-[104px] text-gray-900 dark:text-gray-100 text-sm leading-6 rich-editor"
-                                                placeholder="{{ __('Saisissez la question...') }}">{!! $this->previewRichText($question['question_text']) !!}</div>
-                                        </div>
-                                        @error("questions.$qIndex.question_text") <p
-                                            class="mt-1 text-red-600 dark:text-red-400 text-xs">
-                                            {{ $message }}
-                                        </p> @enderror
-
-
-                                        @if (!empty($questionSuggestions[$question['uuid']] ?? []) && !empty($question['suggestions_enabled']))
-                                            <div
-                                                class="z-20 absolute bg-white dark:bg-gray-900 mt-1 border border-gray-200 dark:border-gray-700 rounded-lg w-full max-h-56 overflow-y-auto">
-                                                @foreach ($questionSuggestions[$question['uuid']] as $s)
-                                                    <button type="button"
-                                                        wire:click="selectQuestionSuggestion('{{ $question['uuid'] }}', {{ $s['id'] }})"
-                                                        class="block hover:bg-gray-50 dark:hover:bg-gray-800 px-3 py-2 border-gray-100 dark:border-gray-700 border-b w-full text-left">
-                                                        <span
-                                                            class="block text-gray-900 dark:text-gray-100 text-sm">{{ $this->plainText($s['question_text']) }}</span>
-                                                        <span
-                                                            class="text-gray-500 dark:text-gray-400 text-xs">{{ __('Question suggeree') }}</span>
-                                                    </button>
-                                                @endforeach
-                                            </div>
-                                        @endif
-                                    </div>
-
-                                    @if($this->isMathCategory($question['category_question_id'] ?? null))
-                                        <div class="mt-2 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden math-pad">
-                                            <div
-                                                class="flex justify-between items-center bg-gray-100 dark:bg-gray-900/50 px-3 py-1.5 border-teal-700/70 dark:border-teal-600/60 border-b text-teal-700 dark:text-teal-300 text-sm">
-                                                <span>{{ __('Clavier mathematique') }}</span>
-                                                <button type="button" onclick="insertMathToken('+', '{{ $question['uuid'] }}')"
-                                                    class="hover:bg-gray-200 dark:hover:bg-gray-700 px-2 rounded">+</button>
-                                            </div>
-                                            <div class="gap-px grid math-pad-grid grid-cols-5 md:grid-cols-10 bg-gray-300 dark:bg-gray-700">
-                                                <button type="button" onclick="insertMathToken('x', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">x</button>
-                                                <button type="button" onclick="insertMathToken('y', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">y</button>
-                                                <button type="button" onclick="insertMathToken('x_n', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">x<sub>n</sub></button>
-                                                <button type="button" onclick="insertMathToken('x^n', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">x<sup>n</sup></button>
-                                                <button type="button" onclick="insertMathToken('[ ]', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">[ ]</button>
-                                                <button type="button" onclick="insertMathToken('( )', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">( )</button>
-                                                <button type="button" onclick="insertMathToken('7', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">7</button>
-                                                <button type="button" onclick="insertMathToken('8', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">8</button>
-                                                <button type="button" onclick="insertMathToken('9', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">9</button>
-                                                <button type="button" onclick="insertMathToken('\u00F7', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">&divide;</button>
-
-                                                <button type="button" onclick="insertMathToken('>', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">&gt;</button>
-                                                <button type="button" onclick="insertMathToken('<', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">&lt;</button>
-                                                <button type="button" onclick="insertMathToken('\u2265', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">&ge;</button>
-                                                <button type="button" onclick="insertMathToken('\u2264', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">&le;</button>
-                                                <button type="button" onclick="insertMathToken('\u2260', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">&ne;</button>
-                                                <button type="button" onclick="insertMathToken('|x|', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">|x|</button>
-                                                <button type="button" onclick="insertMathToken('4', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">4</button>
-                                                <button type="button" onclick="insertMathToken('5', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">5</button>
-                                                <button type="button" onclick="insertMathToken('6', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">6</button>
-                                                <button type="button" onclick="insertMathToken('\u00D7', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">&times;</button>
-
-                                                <button type="button" onclick="insertMathToken('\u221A', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">&radic;</button>
-                                                <button type="button" onclick="insertMathToken('n\u221A', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">n&radic;</button>
-                                                <button type="button" onclick="insertMathToken('x^2', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">x<sup>2</sup></button>
-                                                <button type="button" onclick="insertMathToken('x^n', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">x<sup>n</sup></button>
-                                                <button type="button" onclick="insertMathToken('log', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">log</button>
-                                                <button type="button" onclick="insertMathToken('ln', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">ln</button>
-                                                <button type="button" onclick="insertMathToken('1', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">1</button>
-                                                <button type="button" onclick="insertMathToken('2', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">2</button>
-                                                <button type="button" onclick="insertMathToken('3', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">3</button>
-                                                <button type="button" onclick="insertMathToken('-', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">-</button>
-
-                                                <button type="button" onclick="insertMathToken('\u03C0', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">&pi;</button>
-                                                <button type="button" onclick="insertMathToken('x!', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">x!</button>
-                                                <button type="button" onclick="insertMathToken('\u2211', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">&sum;</button>
-                                                <button type="button" onclick="insertMathToken('\u220F', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">&prod;</button>
-                                                <button type="button" onclick="insertMathToken('[x]', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">[x]</button>
-                                                <button type="button" onclick="insertMathToken('|x|', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">|x|</button>
-                                                <button type="button" onclick="insertMathToken('0', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">0</button>
-                                                <button type="button" onclick="insertMathToken('.', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">.</button>
-                                                <button type="button" onclick="insertMathToken('=', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">=</button>
-                                                <button type="button" onclick="insertMathToken('+', '{{ $question['uuid'] }}')"
-                                                    class="math-pad-key">+</button>
-                                            </div>
-                                        </div>
-                                    @endif
-
-                                    <div class="space-y-2 mt-4">
-                                        @foreach ($question['options'] as $oIndex => $option)
-                                            <div class="relative flex items-center gap-2" data-option-uuid="{{ $option['uuid'] }}">
-                                                <button type="button"
-                                                    wire:click="toggleCorrectOption('{{ $question['uuid'] }}', '{{ $option['uuid'] }}')"
-                                                    class="px-2.5 py-1.5 border rounded-lg text-xs transition-colors duration-200 {{ !empty($option['is_correct']) ? 'bg-green-100 dark:bg-green-900/30 border-green-400 dark:border-green-700 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/50' : 'bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
-                                                    @if(!empty($option['is_correct']))&#10003;@else&#10005;@endif
-                                                </button>
-                                                <div class="relative flex-1">
-                                                    <input
-                                                        wire:model.live.debounce.300ms="questions.{{ $qIndex }}.options.{{ $oIndex }}.option_text"
-                                                        class="bg-white dark:bg-gray-900 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-[#ff1453]/30 focus:ring-2 w-full text-gray-900 dark:text-gray-100 text-sm"
-                                                        placeholder="{{ __('Assertion') }} {{ $oIndex + 1 }}">
-                                                    @error("questions.$qIndex.options.$oIndex.option_text") <p
-                                                        class="mt-1 text-red-600 dark:text-red-400 text-xs">
-                                                        {{ $message }}
-                                                    </p> @enderror
-                                                    @if (!empty($optionSuggestions[$question['uuid']][$option['uuid']] ?? []) && !empty($question['suggestions_enabled']))
-                                                        <div
-                                                            class="z-20 absolute bg-white dark:bg-gray-900 mt-1 border border-gray-200 dark:border-gray-700 rounded-lg w-full max-h-48 overflow-y-auto">
-                                                            @foreach ($optionSuggestions[$question['uuid']][$option['uuid']] as $s)
-                                                                <button type="button"
-                                                                    wire:click="selectOptionSuggestion('{{ $question['uuid'] }}', '{{ $option['uuid'] }}', {{ $s['id'] }})"
-                                                                    class="block hover:bg-gray-50 dark:hover:bg-gray-800 px-3 py-2 border-gray-100 dark:border-gray-700 border-b w-full text-gray-900 dark:text-gray-100 text-sm text-left">{{ $this->plainText($s['option_text']) }}</button>
-                                                            @endforeach
-                                                        </div>
-                                                    @endif
+                                            @if (!empty($optionSuggestions[$question['uuid']][$option['uuid']] ?? []) && !empty($question['suggestions_enabled']))
+                                                <div
+                                                    class="z-20 absolute bg-white dark:bg-gray-900 mt-1 border border-gray-200 dark:border-gray-700 rounded-lg w-full max-h-48 overflow-y-auto">
+                                                    @foreach ($optionSuggestions[$question['uuid']][$option['uuid']] as $s)
+                                                        <button type="button"
+                                                            wire:click="selectOptionSuggestion('{{ $question['uuid'] }}', '{{ $option['uuid'] }}', {{ $s['id'] }})"
+                                                            class="block hover:bg-gray-50 dark:hover:bg-gray-800 px-3 py-2 border-gray-100 dark:border-gray-700 border-b w-full text-gray-900 dark:text-gray-100 text-sm text-left">{{ $this->plainText($s['option_text']) }}</button>
+                                                    @endforeach
                                                 </div>
-                                                <div class="flex items-center gap-1">
-                                                    <button wire:click="moveOptionUp('{{ $question['uuid'] }}', '{{ $option['uuid'] }}')"
-                                                        class="hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-200 hover:scale-105 active:scale-95 transition-all duration-200">
-                                                        <svg class="w-5 h-5 text-gray-700 dark:text-gray-200"
-                                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2" d="M12 6v13m0-13 4 4m-4-4-4 4" />
-                                                        </svg>
-                                                    </button>
-                                                    <button wire:click="moveOptionDown('{{ $question['uuid'] }}', '{{ $option['uuid'] }}')"
-                                                        class="hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-200 hover:scale-105 active:scale-95 transition-all duration-200">
-                                                        <svg class="w-5 h-5 text-gray-700 dark:text-gray-200"
-                                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2" d="M12 19V5m0 14-4-4m4 4 4-4" />
-                                                        </svg>
-                                                    </button>
-                                                    <button wire:click="removeOption('{{ $question['uuid'] }}', '{{ $option['uuid'] }}')"
-                                                        class="hover:bg-red-50 dark:hover:bg-red-900/30 px-2 py-1 border border-red-300 dark:border-red-700 rounded text-red-600 dark:text-red-300 hover:scale-105 active:scale-95 transition-all duration-200">
-                                                        <svg class="w-5 h-5 text-red-600 dark:text-red-300"
-                                                            xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                                                            <path fill-rule="evenodd"
-                                                                d="M8.586 2.586A2 2 0 0 1 10 2h4a2 2 0 0 1 2 2v2h3a1 1 0 1 1 0 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8a1 1 0 0 1 0-2h3V4a2 2 0 0 1 .586-1.414ZM10 6h4V4h-4v2Zm1 4a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Zm4 0a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Z"
-                                                                clip-rule="evenodd" />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                        @error("questions.$qIndex.options") <p class="text-red-600 dark:text-red-400 text-xs">
-                                            {{ $message }}
-                                        </p> @enderror
-                                        @error("questions.$qIndex.options_correct") <p class="text-red-600 dark:text-red-400 text-xs">
-                                            {{ $message }}
-                                        </p> @enderror
-                                        <button wire:click="addOption('{{ $question['uuid'] }}')"
-                                            class="inline-flex items-center text-[#0e7490] hover:text-[#155e75] dark:hover:text-cyan-300 text-sm">+
-                                            {{ __('Ajouter une assertion') }}</button>
+                                            @endif
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <button
+                                                wire:click="moveOptionUp('{{ $question['uuid'] }}', '{{ $option['uuid'] }}')"
+                                                class="hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-200 hover:scale-105 active:scale-95 transition-all duration-200">
+                                                <svg class="w-5 h-5 text-gray-700 dark:text-gray-200"
+                                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M12 6v13m0-13 4 4m-4-4-4 4" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                wire:click="moveOptionDown('{{ $question['uuid'] }}', '{{ $option['uuid'] }}')"
+                                                class="hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-200 hover:scale-105 active:scale-95 transition-all duration-200">
+                                                <svg class="w-5 h-5 text-gray-700 dark:text-gray-200"
+                                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M12 19V5m0 14-4-4m4 4 4-4" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                wire:click="removeOption('{{ $question['uuid'] }}', '{{ $option['uuid'] }}')"
+                                                class="hover:bg-red-50 dark:hover:bg-red-900/30 px-2 py-1 border border-red-300 dark:border-red-700 rounded text-red-600 dark:text-red-300 hover:scale-105 active:scale-95 transition-all duration-200">
+                                                <svg class="w-5 h-5 text-red-600 dark:text-red-300"
+                                                    xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path fill-rule="evenodd"
+                                                        d="M8.586 2.586A2 2 0 0 1 10 2h4a2 2 0 0 1 2 2v2h3a1 1 0 1 1 0 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8a1 1 0 0 1 0-2h3V4a2 2 0 0 1 .586-1.414ZM10 6h4V4h-4v2Zm1 4a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Zm4 0a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Z"
+                                                        clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </div>
-
-                                    <div
-                                        class="flex flex-wrap items-center gap-5 mt-4 pt-3 border-gray-200 dark:border-gray-700 border-t">
-                                        <label class="inline-flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm"><input
-                                                type="checkbox" wire:model.live="questions.{{ $qIndex }}.allow_multiple"
-                                                class="border-gray-300 dark:border-gray-600 rounded focus:ring-[#ff1453] text-[#ff1453]">{{ __('Plusieurs reponses') }}</label>
-                                        <label class="inline-flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm"><input
-                                                type="checkbox" wire:model.live="questions.{{ $qIndex }}.suggestions_enabled"
-                                                class="border-gray-300 dark:border-gray-600 rounded focus:ring-[#ff1453] text-[#ff1453]">{{ __('Suggestions') }}</label>
-                                    </div>
-                                    @if($isDuplicate)
-                                        <p class="mt-2 text-amber-600 dark:text-amber-300 text-xs">
-                                            {{ __('Cette question existe deja dans cette phase. Corrige ou choisis une autre question avant validation.') }}
-                                        </p>
-                                    @endif
-                                    <div class="flex justify-end gap-2 mt-4">
-                                        <button type="button" wire:click="cancelEditing('{{ $question['uuid'] }}')"
-                                            class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 text-xs">
-                                            {{ __('Annuler') }}
-                                        </button>
-                                        <button wire:click="validateQuestionAndAdd('{{ $question['uuid'] }}')" @disabled($isDuplicate)
-                                            class="inline-flex items-center px-3 py-2 rounded-lg text-white text-xs {{ $isDuplicate ? 'bg-gray-400 cursor-not-allowed' : 'bg-cyan-700 hover:bg-cyan-800' }}">
-                                            {{ __('Valider la question') }}
-                                        </button>
-                                    </div>
-                                </div>
+                                @endforeach
+                                @error("questions.$qIndex.options") <p class="text-red-600 dark:text-red-400 text-xs">
+                                    {{ $message }}
+                                </p> @enderror
+                                @error("questions.$qIndex.options_correct") <p
+                                    class="text-red-600 dark:text-red-400 text-xs">
+                                    {{ $message }}
+                                </p> @enderror
+                                <button wire:click="addOption('{{ $question['uuid'] }}')"
+                                    class="inline-flex items-center text-[#0e7490] hover:text-[#155e75] dark:hover:text-cyan-300 text-sm">+
+                                    {{ __('Ajouter une assertion') }}</button>
                             </div>
-                        </article>
 
-                            @if ($isEditing)
-                                <div wire:key="question-add-after-{{ $question['uuid'] }}" class="py-2 question-add-after">
-                                    <button wire:click="addQuestionAfter('{{ $question['uuid'] }}')"
-                                        class="inline-flex items-center font-medium text-[#0e7490] hover:text-[#155e75] dark:hover:text-cyan-300">
-                                        + {{ __('Ajouter une question') }}
-                                    </button>
-                                </div>
+                            <div
+                                class="flex flex-wrap items-center gap-5 mt-4 pt-3 border-gray-200 dark:border-gray-700 border-t">
+                                <label
+                                    class="inline-flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm"><input
+                                        type="checkbox" wire:model.live="questions.{{ $qIndex }}.allow_multiple"
+                                        class="border-gray-300 dark:border-gray-600 rounded focus:ring-[#ff1453] text-[#ff1453]">{{ __('Plusieurs reponses') }}</label>
+                                <label
+                                    class="inline-flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm"><input
+                                        type="checkbox" wire:model.live="questions.{{ $qIndex }}.suggestions_enabled"
+                                        class="border-gray-300 dark:border-gray-600 rounded focus:ring-[#ff1453] text-[#ff1453]">{{ __('Suggestions') }}</label>
+                            </div>
+                            @if($isDuplicate)
+                                <p class="mt-2 text-amber-600 dark:text-amber-300 text-xs">
+                                    {{ __('Cette question existe deja dans cette phase. Corrige ou choisis une autre question avant validation.') }}
+                                </p>
                             @endif
+                            <div class="flex justify-end gap-2 mt-4">
+                                <button type="button" wire:click="cancelEditing('{{ $question['uuid'] }}')"
+                                    class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 text-xs">
+                                    {{ __('Annuler') }}
+                                </button>
+                                <button wire:click="validateQuestionAndAdd('{{ $question['uuid'] }}')"
+                                    @disabled($isDuplicate)
+                                    class="inline-flex items-center px-3 py-2 rounded-lg text-white text-xs {{ $isDuplicate ? 'bg-gray-400 cursor-not-allowed' : 'bg-cyan-700 hover:bg-cyan-800' }}">
+                                    {{ __('Valider la question') }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                @if ($isEditing)
+                    <div wire:key="question-add-after-{{ $question['uuid'] }}" class="py-2 question-add-after">
+                        <button wire:click="addQuestionAfter('{{ $question['uuid'] }}')"
+                            class="inline-flex items-center font-medium text-[#0e7490] hover:text-[#155e75] dark:hover:text-cyan-300">
+                            + {{ __('Ajouter une question') }}
+                        </button>
+                    </div>
+                @endif
             @endforeach
         </div>
         @if (empty($filteredQuestionIndexes))
