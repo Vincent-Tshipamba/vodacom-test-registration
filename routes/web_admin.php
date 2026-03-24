@@ -61,6 +61,14 @@ Route::group(['prefix' => '{locale}/admin', 'middleware' => ['setLocale', 'auth'
     })->name('admin.chats.index');
 
     Route::get('interview-sessions', [InterviewSessionController::class, 'index'])->name('admin.interview-sessions.index');
+    Route::patch('interview-phase/{interviewPhase}', [InterviewSessionController::class, 'updatePhase'])->name('admin.interview-phase.update');
+    Route::patch('interview-sessions/{applicant}/schedule', [InterviewSessionController::class, 'scheduleCandidate'])->name('admin.interview-sessions.schedule');
+    Route::post('interview-criteria', [InterviewSessionController::class, 'storeCriteria'])->name('admin.interview-criteria.store');
+    Route::patch('interview-criteria/{interviewPhaseCriteria}', [InterviewSessionController::class, 'updateCriteria'])->name('admin.interview-criteria.update');
+    Route::delete('interview-criteria/{interviewPhaseCriteria}', [InterviewSessionController::class, 'destroyCriteria'])->name('admin.interview-criteria.destroy');
+    Route::post('interview-jurors', [InterviewSessionController::class, 'addJuror'])->name('admin.interview-jurors.store');
+    Route::post('interview-jurors/create-agent', [InterviewSessionController::class, 'createJuror'])->name('admin.interview-jurors.create-agent');
+    Route::delete('interview-jurors/{juror}', [InterviewSessionController::class, 'removeJuror'])->name('admin.interview-jurors.destroy');
 
     // Other resources
     Route::resource('universities', UniversityController::class);
