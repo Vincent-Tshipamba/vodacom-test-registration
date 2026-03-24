@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Applicant;
+use App\Models\HistoriqueStatusChange;
 use App\Models\PhaseTest;
 use App\Models\QuestionPhaseTest;
 use App\Models\ScholarshipEdition;
+use App\Models\Scholar;
 use App\Models\TestSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -135,6 +137,28 @@ class TestController extends Controller
         $results = $resultRows
             ->map(fn (array $row) => Arr::except($row, ['details']))
             ->values();
+
+        $adminAgentId = auth()->user()?->agent?->id;
+        $fallbackScholarId = Scholar::query()->value('id');
+        foreach ($results->where('is_passed', true) as $result) {
+            $applicant = $candidats->firstWhere('id', $result['applicant_id']);
+            if (!$applicant || $applicant->application_status === 'TEST_PASSED') {
+                continue;
+            }
+
+            $oldStatus = $applicant->application_status;
+            $applicant->update(['application_status' => 'TEST_PASSED']);
+
+            if ($adminAgentId && $fallbackScholarId) {
+                HistoriqueStatusChange::create([
+                    'applicant_id' => $applicant->id,
+                    'old_status' => $oldStatus,
+                    'new_status' => 'TEST_PASSED',
+                    'changed_by_agent_id' => $adminAgentId,
+                    'changed_by_scholar_id' => $fallbackScholarId,
+                ]);
+            }
+        }
 
         $startedCount = $latestSessionsByApplicant->filter(fn ($session) => !is_null($session?->started_at))->count();
         $completedCount = $results->count();
