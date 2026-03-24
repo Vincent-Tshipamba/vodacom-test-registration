@@ -9,6 +9,8 @@ class EvaluationCriteria extends Model
 {
     use HasFactory;
 
+    protected $table = 'evaluation_criteria';
+
     protected $fillable = [
         'criteria_name',
         'description',
@@ -22,7 +24,7 @@ class EvaluationCriteria extends Model
 
     public function interviewPhases()
     {
-        return $this->belongsToMany(InterviewPhase::class, 'interview_phase_criteria', 'criteria_id', 'interview_phase_id')
+        return $this->belongsToMany(InterviewPhase::class, 'interview_phase_criterias', 'criteria_id', 'interview_phase_id')
             ->withPivot('ponderation')
             ->withTimestamps();
     }

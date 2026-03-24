@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class InterviewPhaseCriteria extends Model
 {
+    protected $table = 'interview_phase_criterias';
+
     protected $fillable = [
         'interview_phase_id',
         'criteria_id',

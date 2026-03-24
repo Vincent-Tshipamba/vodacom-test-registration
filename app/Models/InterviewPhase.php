@@ -15,6 +15,11 @@ class InterviewPhase extends Model
         'status',
     ];
 
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+    ];
+
     public function scholarshipEdition()
     {
         return $this->belongsTo(ScholarshipEdition::class);
@@ -22,7 +27,14 @@ class InterviewPhase extends Model
 
     public function evaluationCriteria()
     {
-        return $this->belongsToMany(EvaluationCriteria::class, 'interview_phase_criteria', 'interview_phase_id', 'criteria_id')
+        return $this->belongsToMany(EvaluationCriteria::class, 'interview_phase_criterias', 'interview_phase_id', 'criteria_id')
+            ->withPivot('ponderation')
+            ->withTimestamps();
+    }
+
+    public function criteria()
+    {
+        return $this->belongsToMany(EvaluationCriteria::class, 'interview_phase_criterias', 'interview_phase_id', 'criteria_id')
             ->withPivot('ponderation')
             ->withTimestamps();
     }
