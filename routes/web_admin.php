@@ -20,6 +20,7 @@ use App\Http\Controllers\ApplicationDocumentController;
 use App\Http\Controllers\Admin\InterviewSessionController;
 use App\Http\Controllers\Admin\ScholarshipEditionController;
 use App\Http\Controllers\Admin\ApplicantController as AdminApplicantController;
+use App\Models\InterviewEvaluator;
 
 Route::group(['prefix' => '{locale}/admin', 'middleware' => ['setLocale', 'auth']], function () {
     Route::post('/check-code-exetat', [CandidatController::class, 'checkCodeExetat'])->name('check.code.exetat');
@@ -59,6 +60,7 @@ Route::group(['prefix' => '{locale}/admin', 'middleware' => ['setLocale', 'auth'
     Route::get('chats', function () {
         return view('admin.chats.index');
     })->name('admin.chats.index');
+
 
     Route::get('interview-sessions', [InterviewSessionController::class, 'index'])->name('admin.interview-sessions.index');
     Route::patch('interview-phase/{interviewPhase}', [InterviewSessionController::class, 'updatePhase'])->name('admin.interview-phase.update');

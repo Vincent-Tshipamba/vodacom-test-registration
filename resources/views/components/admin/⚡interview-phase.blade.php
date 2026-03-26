@@ -59,6 +59,8 @@ new class extends Component {
     public array $stats = [];
     public int $criteriaTotal = 0;
     public ?int $expandedResultSessionId = null;
+    public ?int $confirmDeleteJurorId = null;
+    public string $confirmDeleteJurorName = '';
 
     public function mount($currentEdition): void
     {
@@ -101,14 +103,14 @@ new class extends Component {
         ]);
 
         if ($this->phaseForm['status'] === 'IN_PROGRESS' && $this->criteriaTotal !== 100) {
-            $this->addError('phaseForm.status', 'La somme des ponderations doit etre egale a 100 pour lancer la phase.');
+            $this->addError('phaseForm.status', 'La somme des pondérations doit être égale à 100 pour lancer la phase.');
             $this->activeTab = 'criteria';
             return;
         }
 
         $unscheduledCount = collect($this->candidateRows)->where('schedule_saved', false)->count();
         if ($this->phaseForm['status'] === 'IN_PROGRESS' && $unscheduledCount > 0) {
-            $this->addError('phaseForm.status', 'Toutes les interviews doivent etre planifiees avant le lancement de la phase.');
+            $this->addError('phaseForm.status', 'Toutes les interviews doivent etre planifiées avant le lancement de la phase.');
             $this->activeTab = 'candidates';
             return;
         }
@@ -122,7 +124,7 @@ new class extends Component {
         ]);
 
         $this->loadState();
-        session()->flash('interview_success', 'Configuration de la phase enregistree.');
+        session()->flash('interview_success', 'Configuration de la phase enregistrée.');
     }
 
     public function applySuggestedSchedules(): void
@@ -187,7 +189,7 @@ new class extends Component {
             ->exists();
 
         if ($exists) {
-            $this->addError('criterionDraft.criteria_name', 'Ce critère existe déja pour cette phase.');
+            $this->addError('criterionDraft.criteria_name', 'Ce critère existe déjà pour cette phase.');
             return;
         }
 
@@ -270,10 +272,23 @@ new class extends Component {
             return;
         }
 
+        $alreadyAssignedToApplicant = InterviewEvaluator::query()
+            ->where('evaluator_id', (int) $this->existingJurorForm['agent_id'])
+            ->whereHas('interviewSession', function ($query) use ($session) {
+                $query->where('interview_phase_id', $this->interviewPhase->id)
+                    ->where('applicant_id', $session->applicant_id);
+            })
+            ->exists();
+
+        if ($alreadyAssignedToApplicant) {
+            $this->addError('existingJurorForm.agent_id', 'Cet évaluateur est déjà affecte à ce candidat pour la phase en cours.');
+            return;
+        }
+
         InterviewEvaluator::create([
             'interview_session_id' => $session->id,
             'evaluator_id' => (int) $this->existingJurorForm['agent_id'],
-            'coupon' => $this->generateCoupon(),
+            'coupon' => $this->generateCoupon((int) $this->existingJurorForm['agent_id']),
             'qr_token' => (string) Str::uuid(),
         ]);
 
@@ -321,10 +336,24 @@ new class extends Component {
                 'job_title' => $this->newJurorForm['job_title'] ?: null,
             ]);
 
+            $alreadyAssignedToApplicant = InterviewEvaluator::query()
+                ->where('evaluator_id', $agent->id)
+                ->whereHas('interviewSession', function ($query) use ($session) {
+                    $query->where('interview_phase_id', $this->interviewPhase->id)
+                        ->where('applicant_id', $session->applicant_id);
+                })
+                ->exists();
+
+            if ($alreadyAssignedToApplicant) {
+                throw ValidationException::withMessages([
+                    'newJurorForm.interview_session_id' => 'Cet évaluateur est déjà affecté à ce candidat pour la phase en cours.',
+                ]);
+            }
+
             InterviewEvaluator::create([
                 'interview_session_id' => $session->id,
                 'evaluator_id' => $agent->id,
-                'coupon' => $this->generateCoupon(),
+                'coupon' => $this->generateCoupon($agent->id),
                 'qr_token' => (string) Str::uuid(),
             ]);
         });
@@ -345,7 +374,7 @@ new class extends Component {
         $this->loadCandidates();
         $this->loadStats();
         $this->activeTab = 'jury';
-        session()->flash('interview_success', 'Nouvel evaluateur cree et affecte.');
+        session()->flash('interview_success', 'Nouvel évaluateur créé et affecté.');
     }
 
     public function removeEvaluator(int $interviewEvaluatorId): void
@@ -359,7 +388,38 @@ new class extends Component {
         $this->loadCandidates();
         $this->loadStats();
         $this->activeTab = 'jury';
-        session()->flash('interview_success', 'Affectation retiree.');
+        session()->flash('interview_success', 'Affectation retirée.');
+    }
+
+    public function requestRemoveEvaluator(int $interviewEvaluatorId): void
+    {
+        $juror = InterviewEvaluator::with(['interviewSession', 'evaluator.user', 'scores'])->findOrFail($interviewEvaluatorId);
+        abort_unless((int) $juror->interviewSession->interview_phase_id === (int) $this->interviewPhase->id, 404);
+
+        if ($juror->scores->isEmpty()) {
+            $this->removeEvaluator($interviewEvaluatorId);
+            return;
+        }
+
+        $this->confirmDeleteJurorId = $juror->id;
+        $this->confirmDeleteJurorName = $juror->evaluator?->user?->full_name ?? $juror->evaluator?->user?->name ?? 'Evaluateur';
+    }
+
+    public function cancelRemoveEvaluator(): void
+    {
+        $this->confirmDeleteJurorId = null;
+        $this->confirmDeleteJurorName = '';
+    }
+
+    public function confirmRemoveEvaluator(): void
+    {
+        if (!$this->confirmDeleteJurorId) {
+            return;
+        }
+
+        $jurorId = $this->confirmDeleteJurorId;
+        $this->cancelRemoveEvaluator();
+        $this->removeEvaluator($jurorId);
     }
 
     protected function loadState(): void
@@ -478,6 +538,7 @@ new class extends Component {
     {
         $jurors = InterviewEvaluator::query()
             ->with(['evaluator.user', 'evaluator.department', 'interviewSession.applicant'])
+            ->withCount('scores')
             ->whereHas('interviewSession', fn($query) => $query->where('interview_phase_id', $this->interviewPhase->id))
             ->orderByDesc('id')
             ->get();
@@ -495,6 +556,7 @@ new class extends Component {
                 'coupon' => $juror->coupon ?? '-',
                 'qr_token' => $juror->qr_token ?? '-',
                 'scheduled_at' => optional($juror->interviewSession?->scheduled_at)->format('d/m/Y H:i'),
+                'scores_count' => (int) ($juror->scores_count ?? 0),
                 'mailto' => $email ? 'mailto:' . $email . '?subject=Invitation%20jury&body=' . $shareText : null,
                 'whatsapp' => $phone ? 'https://wa.me/' . $phone . '?text=' . $shareText : null,
             ];
@@ -522,30 +584,31 @@ new class extends Component {
             $evaluatorRows = $assignments->map(function (InterviewEvaluator $assignment): array {
                 $scores = $assignment->scores->map(function ($score): array {
                     return [
-                        'criteria' => $score->criteria?->criteria_name ?? 'Critere',
+                        'criteria' => $score->criteria?->criteria_name ?? 'Critère',
                         'score' => (int) $score->score_given,
                         'comment' => $score->comment,
                     ];
                 })->all();
 
-                $average = $assignment->scores->count() > 0
-                    ? round((float) $assignment->scores->avg('score_given'), 2)
+                $totalScore = $assignment->scores->count() > 0
+                    ? (int) $assignment->scores->sum('score_given')
                     : null;
 
                 return [
                     'name' => $assignment->evaluator?->user?->full_name ?? $assignment->evaluator?->user?->name ?? 'Evaluateur',
                     'coupon' => $assignment->coupon ?? '-',
-                    'average' => $average,
+                    'total_score' => $totalScore,
                     'scores' => $scores,
                 ];
             })->values();
 
-            $finalAverage = $evaluatorRows->pluck('average')->filter(fn ($value) => $value !== null)->avg();
+            $finalAverage = $evaluatorRows->pluck('total_score')->filter(fn($value) => $value !== null)->avg();
             $finalAverage = $finalAverage !== null ? round((float) $finalAverage, 2) : null;
 
             return [
                 'session_id' => $session->id,
-                'candidate' => $session->applicant?->full_name ?? 'Candidat',
+                'candidate_full_name' => $session->applicant?->full_name ?? 'Candidat',
+                'candidate_phone_number' => $session->applicant?->phone_number ?? '+243...',
                 'registration_code' => $session->applicant?->registration_code ?? '-',
                 'scheduled_at' => optional($session->scheduled_at)->format('d/m/Y H:i'),
                 'started_at' => optional($session->started_at)->format('d/m/Y H:i'),
@@ -563,9 +626,9 @@ new class extends Component {
         $startedCount = collect($this->candidateRows)->filter(fn($row) => !empty($row['started_at']))->count();
         $femaleCount = collect($this->candidateRows)->where('gender', 'female')->count();
         $maleCount = collect($this->candidateRows)->where('gender', 'male')->count();
-        $completedCount = collect($this->resultRows)->filter(fn ($row) => $row['average_score'] !== null)->count();
+        $completedCount = collect($this->resultRows)->filter(fn($row) => $row['average_score'] !== null)->count();
         $passedCount = collect($this->resultRows)->where('recommended_status', 'INTERVIEW_PASSED')->count();
-        $averageScore = collect($this->resultRows)->pluck('average_score')->filter(fn ($value) => $value !== null)->avg();
+        $averageScore = collect($this->resultRows)->pluck('average_score')->filter(fn($value) => $value !== null)->avg();
 
         $this->stats = [
             'retained' => count($this->candidateRows),
@@ -584,7 +647,7 @@ new class extends Component {
     protected function ensureScheduleConfiguration(): bool
     {
         if (!$this->phaseForm['duration'] || !$this->phaseForm['start_date'] || !$this->phaseForm['end_date']) {
-            $this->addError('phaseForm.duration', 'Definissez la duree et l intervalle de la phase avant la planification.');
+            $this->addError('phaseForm.duration', 'Définissez la durée et l\'intervalle de la phase avant la planification.');
             $this->activeTab = 'dashboard';
             return false;
         }
@@ -631,7 +694,7 @@ new class extends Component {
 
         if ($duration < 1 || $duration > 480) {
             throw ValidationException::withMessages([
-                'phaseForm.duration' => 'La duree doit rester comprise entre 1 et 480 minutes.',
+                'phaseForm.duration' => 'La durée doit rester comprise entre 1 et 480 minutes.',
             ]);
         }
 
@@ -798,8 +861,18 @@ new class extends Component {
         return $session;
     }
 
-    protected function generateCoupon(): string
+    protected function generateCoupon(int $agentId): string
     {
+        $existingCoupon = InterviewEvaluator::query()
+            ->where('evaluator_id', $agentId)
+            ->whereHas('interviewSession', fn($query) => $query->where('interview_phase_id', $this->interviewPhase->id))
+            ->whereNotNull('coupon')
+            ->value('coupon');
+
+        if ($existingCoupon) {
+            return $existingCoupon;
+        }
+
         do {
             $coupon = 'JRY-' . strtoupper(Str::random(8));
         } while (InterviewEvaluator::query()->where('coupon', $coupon)->exists());
@@ -839,17 +912,23 @@ new class extends Component {
 
 <div class="space-y-6 my-3">
     @if (session()->has('interview_success'))
-        <div class="bg-emerald-50 dark:bg-emerald-900/20 px-4 py-3 border border-emerald-200 dark:border-emerald-800 rounded-xl text-emerald-700 dark:text-emerald-300 text-sm">
+        <div
+            class="bg-emerald-50 dark:bg-emerald-900/20 px-4 py-3 border border-emerald-200 dark:border-emerald-800 rounded-xl text-emerald-700 dark:text-emerald-300 text-sm">
             {{ session('interview_success') }}
         </div>
     @endif
 
-    <div class="bg-white dark:bg-neutral-900 shadow-sm border border-gray-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
-        <div class="flex md:flex-row flex-col md:justify-between md:items-center gap-4 px-6 py-5 border-gray-200 dark:border-neutral-800 border-b">
+    <div
+        class="bg-white dark:bg-neutral-900 shadow-sm border border-gray-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
+        <div
+            class="flex md:flex-row flex-col md:justify-between md:items-center gap-4 px-6 py-5 border-gray-200 dark:border-neutral-800 border-b">
             <div>
                 <div class="flex flex-wrap items-center gap-3 mt-2">
-                    <h2 class="font-semibold text-gray-900 dark:text-white text-xl">Interviews {{ $currentEdition->name }}</h2>
-                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs {{ $this->statusBadgeClasses($phaseForm['status']) }}">
+                    <h2 class="font-semibold text-gray-900 dark:text-white text-xl">Interviews
+                        {{ $currentEdition->name }}
+                    </h2>
+                    <span
+                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs {{ $this->statusBadgeClasses($phaseForm['status']) }}">
                         {{ $phaseForm['status'] }}
                     </span>
                 </div>
@@ -857,132 +936,163 @@ new class extends Component {
 
             <div class="flex flex-wrap gap-2">
                 @if($phaseForm['status'] !== 'AWAITING')
-                <button type="button" wire:click="$set('phaseForm.status', 'AWAITING')" class="bg-white hover:bg-gray-50 dark:bg-neutral-900 dark:hover:bg-neutral-800 px-3 py-2 border border-gray-200 dark:border-neutral-700 rounded-xl text-gray-700 dark:text-gray-200 text-sm">
-                    En attente
-                </button>
+                    <button type="button" wire:click="$set('phaseForm.status', 'AWAITING')"
+                        class="bg-white hover:bg-gray-50 dark:bg-neutral-900 dark:hover:bg-neutral-800 px-3 py-2 border border-gray-200 dark:border-neutral-700 rounded-xl text-gray-700 dark:text-gray-200 text-sm">
+                        En attente
+                    </button>
                 @endif
                 @if($phaseForm['status'] !== 'IN_PROGRESS')
-                <button type="button" wire:click="$set('phaseForm.status', 'IN_PROGRESS')" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-xl text-white text-sm">
-                    Lancer
-                </button>
+                    <button type="button" wire:click="$set('phaseForm.status', 'IN_PROGRESS')"
+                        class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-xl text-white text-sm">
+                        Lancer
+                    </button>
                 @endif
                 @if($phaseForm['status'] !== 'CANCELLED')
-                <button type="button" wire:click="$set('phaseForm.status', 'CANCELLED')" class="bg-red-600 hover:bg-red-700 px-3 py-2 rounded-xl text-white text-sm">
-                    Annuler
-                </button>
+                    <button type="button" wire:click="$set('phaseForm.status', 'CANCELLED')"
+                        class="bg-red-600 hover:bg-red-700 px-3 py-2 rounded-xl text-white text-sm">
+                        Annuler
+                    </button>
                 @endif
                 @if($phaseForm['status'] !== 'COMPLETED')
-                <button type="button" wire:click="$set('phaseForm.status', 'COMPLETED')" class="bg-slate-700 hover:bg-slate-800 px-3 py-2 rounded-xl text-white text-sm">
-                    Cloturer
-                </button>
+                    <button type="button" wire:click="$set('phaseForm.status', 'COMPLETED')"
+                        class="bg-slate-700 hover:bg-slate-800 px-3 py-2 rounded-xl text-white text-sm">
+                        Clôturer
+                    </button>
                 @endif
             </div>
         </div>
 
         <div class="gap-4 grid md:grid-cols-2 xl:grid-cols-5 px-6 py-5">
             <div>
-                <label class="block mb-2 font-medium text-gray-700 dark:text-gray-200 text-sm">Durée par candidat (min)</label>
-                <input type="number" min="1" max="480" wire:model.live="phaseForm.duration" class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 focus:border-[#fe042c] dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
+                <label class="block mb-2 font-medium text-gray-700 dark:text-gray-200 text-sm">Durée par candidat
+                    (min)</label>
+                <input type="number" min="1" max="480" wire:model.live="phaseForm.duration"
+                    class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 focus:border-[#fe042c] dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
                 @error('phaseForm.duration') <p class="mt-1 text-red-600 text-xs">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label class="block mb-2 font-medium text-gray-700 dark:text-gray-200 text-sm">Date de début</label>
-                <input type="date" wire:model.live="phaseForm.start_date" class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 focus:border-[#fe042c] dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
+                <input type="date" wire:model.live="phaseForm.start_date"
+                    class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 focus:border-[#fe042c] dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
                 @error('phaseForm.start_date') <p class="mt-1 text-red-600 text-xs">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label class="block mb-2 font-medium text-gray-700 dark:text-gray-200 text-sm">Date de fin</label>
-                <input type="date" wire:model.live="phaseForm.end_date" class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 focus:border-[#fe042c] dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
+                <input type="date" wire:model.live="phaseForm.end_date"
+                    class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 focus:border-[#fe042c] dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
                 @error('phaseForm.end_date') <p class="mt-1 text-red-600 text-xs">{{ $message }}</p> @enderror
             </div>
 
             <div class="xl:col-span-2">
                 <label class="block mb-2 font-medium text-gray-700 dark:text-gray-200 text-sm">Description</label>
-                <textarea wire:model.defer="phaseForm.description" rows="3" class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 focus:border-[#fe042c] dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm"></textarea>
+                <textarea wire:model.defer="phaseForm.description" rows="3"
+                    class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 focus:border-[#fe042c] dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm"></textarea>
                 @error('phaseForm.description') <p class="mt-1 text-red-600 text-xs">{{ $message }}</p> @enderror
             </div>
         </div>
-        <button type="button" wire:click="savePhase" class="float-right justify-end bg-[#039116] hover:bg-[#02ac18] me-2 mb-2 px-4 py-2 rounded-xl text-white text-sm">
+        <button type="button" wire:click="savePhase"
+            class="float-right justify-end bg-[#039116] hover:bg-[#02ac18] me-2 mb-2 px-4 py-2 rounded-xl text-white text-sm">
             Enregistrer la phase
         </button>
     </div>
 
     <div class="border-gray-300 dark:border-neutral-700 border-b">
         <div class="flex flex-wrap gap-2">
-            <button type="button" wire:click="setTab('dashboard')" class="px-4 py-3 border-b-2 text-sm {{ $activeTab === 'dashboard' ? 'border-[#fe042c] text-[#fe042c]' : 'border-transparent text-gray-600 dark:text-gray-400' }}">
+            <button type="button" wire:click="setTab('dashboard')"
+                class="px-4 py-3 border-b-2 text-sm {{ $activeTab === 'dashboard' ? 'border-[#fe042c] text-[#fe042c]' : 'border-transparent text-gray-600 dark:text-gray-400' }}">
                 Dashboard
             </button>
-            <button type="button" wire:click="setTab('candidates')" class="px-4 py-3 border-b-2 text-sm {{ $activeTab === 'candidates' ? 'border-[#fe042c] text-[#fe042c]' : 'border-transparent text-gray-600 dark:text-gray-400' }}">
+            <button type="button" wire:click="setTab('candidates')"
+                class="px-4 py-3 border-b-2 text-sm {{ $activeTab === 'candidates' ? 'border-[#fe042c] text-[#fe042c]' : 'border-transparent text-gray-600 dark:text-gray-400' }}">
                 Candidats retenus
             </button>
-            <button type="button" wire:click="setTab('criteria')" class="px-4 py-3 border-b-2 text-sm {{ $activeTab === 'criteria' ? 'border-[#fe042c] text-[#fe042c]' : 'border-transparent text-gray-600 dark:text-gray-400' }}">
+            <button type="button" wire:click="setTab('criteria')"
+                class="px-4 py-3 border-b-2 text-sm {{ $activeTab === 'criteria' ? 'border-[#fe042c] text-[#fe042c]' : 'border-transparent text-gray-600 dark:text-gray-400' }}">
                 Critères
             </button>
-            <button type="button" wire:click="setTab('jury')" class="px-4 py-3 border-b-2 text-sm {{ $activeTab === 'jury' ? 'border-[#fe042c] text-[#fe042c]' : 'border-transparent text-gray-600 dark:text-gray-400' }}">
+            <button type="button" wire:click="setTab('jury')"
+                class="px-4 py-3 border-b-2 text-sm {{ $activeTab === 'jury' ? 'border-[#fe042c] text-[#fe042c]' : 'border-transparent text-gray-600 dark:text-gray-400' }}">
                 Jury
             </button>
-            <button type="button" wire:click="setTab('results')" class="px-4 py-3 border-b-2 text-sm {{ $activeTab === 'results' ? 'border-[#fe042c] text-[#fe042c]' : 'border-transparent text-gray-600 dark:text-gray-400' }}">
-                Resultats
+            <button type="button" wire:click="setTab('results')"
+                class="px-4 py-3 border-b-2 text-sm {{ $activeTab === 'results' ? 'border-[#fe042c] text-[#fe042c]' : 'border-transparent text-gray-600 dark:text-gray-400' }}">
+                Résultats
             </button>
         </div>
     </div>
 
     @if ($activeTab === 'dashboard')
         <div class="gap-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 mb-4">
-            <div class="bg-white dark:bg-neutral-900 shadow-sm p-5 border border-gray-200 dark:border-neutral-800 rounded-2xl">
+            <div
+                class="bg-white dark:bg-neutral-900 shadow-sm p-5 border border-gray-200 dark:border-neutral-800 rounded-2xl">
                 <p class="text-gray-500 dark:text-gray-400 text-sm">Candidats retenus</p>
                 <p class="mt-3 font-semibold text-gray-900 dark:text-white text-3xl">{{ $stats['retained'] ?? 0 }}</p>
                 <p class="mt-2 text-gray-500 dark:text-gray-400 text-xs"></p>
             </div>
-            <div class="bg-white dark:bg-neutral-900 shadow-sm p-5 border border-gray-200 dark:border-neutral-800 rounded-2xl">
+            <div
+                class="bg-white dark:bg-neutral-900 shadow-sm p-5 border border-gray-200 dark:border-neutral-800 rounded-2xl">
                 <p class="text-gray-500 dark:text-gray-400 text-sm">Sessions planifiées</p>
                 <p class="mt-3 font-semibold text-gray-900 dark:text-white text-3xl">{{ $stats['scheduled'] ?? 0 }}</p>
                 <p class="mt-2 text-gray-500 dark:text-gray-400 text-xs">Créneaux compris entre 08:00 et 16:00.</p>
             </div>
-            {{-- <div class="bg-white dark:bg-neutral-900 shadow-sm p-5 border border-gray-200 dark:border-neutral-800 rounded-2xl">
+            {{-- <div
+                class="bg-white dark:bg-neutral-900 shadow-sm p-5 border border-gray-200 dark:border-neutral-800 rounded-2xl">
                 <p class="text-gray-500 dark:text-gray-400 text-sm">Pondération totale</p>
-                <p class="mt-3 font-semibold text-gray-900 dark:text-white text-3xl">{{ $stats['criteria_total'] ?? 0 }}%</p>
+                <p class="mt-3 font-semibold text-gray-900 dark:text-white text-3xl">{{ $stats['criteria_total'] ?? 0 }}%
+                </p>
                 <p class="mt-2 text-gray-500 dark:text-gray-400 text-xs">La phase ne peut passer en cours qu'à 100%.</p>
             </div> --}}
-            {{-- <div class="bg-white dark:bg-neutral-900 shadow-sm p-5 border border-gray-200 dark:border-neutral-800 rounded-2xl">
+            {{-- <div
+                class="bg-white dark:bg-neutral-900 shadow-sm p-5 border border-gray-200 dark:border-neutral-800 rounded-2xl">
                 <p class="text-gray-500 dark:text-gray-400 text-sm">Affectations jury</p>
-                <p class="mt-3 font-semibold text-gray-900 dark:text-white text-3xl">{{ $stats['jury_assignments'] ?? 0 }}</p>
+                <p class="mt-3 font-semibold text-gray-900 dark:text-white text-3xl">{{ $stats['jury_assignments'] ?? 0 }}
+                </p>
                 <p class="mt-2 text-gray-500 dark:text-gray-400 text-xs">Affectations sur les sessions planifiées.</p>
             </div> --}}
-            <div class="bg-white dark:bg-neutral-900 shadow-sm p-5 border border-gray-200 dark:border-neutral-800 rounded-2xl">
+            <div
+                class="bg-white dark:bg-neutral-900 shadow-sm p-5 border border-gray-200 dark:border-neutral-800 rounded-2xl">
                 <p class="text-gray-500 dark:text-gray-400 text-sm">Femmes</p>
                 <p class="mt-3 font-semibold text-gray-900 dark:text-white text-3xl">{{ $stats['female'] ?? 0 }}</p>
                 <p class="mt-2 text-gray-500 dark:text-gray-400 text-xs">Parmi les candidats retenus.</p>
             </div>
-            <div class="bg-white dark:bg-neutral-900 shadow-sm p-5 border border-gray-200 dark:border-neutral-800 rounded-2xl">
+            <div
+                class="bg-white dark:bg-neutral-900 shadow-sm p-5 border border-gray-200 dark:border-neutral-800 rounded-2xl">
                 <p class="text-gray-500 dark:text-gray-400 text-sm">Hommes</p>
                 <p class="mt-3 font-semibold text-gray-900 dark:text-white text-3xl">{{ $stats['male'] ?? 0 }}</p>
                 <p class="mt-2 text-gray-500 dark:text-gray-400 text-xs">Parmi les candidats retenus.</p>
             </div>
-            {{-- <div class="bg-white dark:bg-neutral-900 shadow-sm p-5 border border-gray-200 dark:border-neutral-800 rounded-2xl">
+            {{-- <div
+                class="bg-white dark:bg-neutral-900 shadow-sm p-5 border border-gray-200 dark:border-neutral-800 rounded-2xl">
                 <p class="text-gray-500 dark:text-gray-400 text-sm">Evaluations completees</p>
                 <p class="mt-3 font-semibold text-gray-900 dark:text-white text-3xl">{{ $stats['completed'] ?? 0 }}</p>
-                <p class="mt-2 text-gray-500 dark:text-gray-400 text-xs">Moyenne calculable depuis les notes des evaluateurs.</p>
+                <p class="mt-2 text-gray-500 dark:text-gray-400 text-xs">Moyenne calculable depuis les notes des
+                    évaluateurs.</p>
             </div> --}}
-            
-            {{-- <div class="bg-white dark:bg-neutral-900 shadow-sm p-5 border border-gray-200 dark:border-neutral-800 rounded-2xl">
+
+            {{-- <div
+                class="bg-white dark:bg-neutral-900 shadow-sm p-5 border border-gray-200 dark:border-neutral-800 rounded-2xl">
                 <p class="text-gray-500 dark:text-gray-400 text-sm">Moyenne generale</p>
-                <p class="mt-3 font-semibold text-gray-900 dark:text-white text-3xl">{{ $stats['average_score'] ?? '-' }}</p>
+                <p class="mt-3 font-semibold text-gray-900 dark:text-white text-3xl">{{ $stats['average_score'] ?? '-' }}
+                </p>
                 <p class="mt-2 text-gray-500 dark:text-gray-400 text-xs">Moyenne des scores finaux disponibles.</p>
             </div> --}}
         </div>
     @endif
 
     @if ($activeTab === 'candidates')
-        <div class="bg-white dark:bg-neutral-900 shadow-sm border border-gray-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
-            <div class="flex md:flex-row flex-col md:justify-between md:items-center gap-3 px-6 py-4 border-gray-200 dark:border-neutral-800 border-b">
+        <div
+            class="bg-white dark:bg-neutral-900 shadow-sm border border-gray-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
+            <div
+                class="flex md:flex-row flex-col md:justify-between md:items-center gap-3 px-6 py-4 border-gray-200 dark:border-neutral-800 border-b">
                 <div>
                     <h3 class="font-semibold text-gray-900 dark:text-white text-lg">Planification des candidats</h3>
-                    <p class="text-gray-500 dark:text-gray-400 text-sm">Le système propose des créneaux dans l'intervalle de la phase et sur les horaires ouvrables.</p>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm">Le système propose des créneaux dans l'intervalle de
+                        la phase et sur les horaires ouvrables.</p>
                 </div>
-                <button type="button" wire:click="applySuggestedSchedules" class="bg-[#fe042c] hover:bg-[#d90429] px-4 py-2 rounded-xl text-white text-sm">
+                <button type="button" wire:click="applySuggestedSchedules"
+                    class="bg-[#fe042c] hover:bg-[#d90429] px-4 py-2 rounded-xl text-white text-sm">
                     Appliquer toutes les propositions
                 </button>
             </div>
@@ -994,7 +1104,7 @@ new class extends Component {
                             <th class="px-6 py-3 text-left">Candidat</th>
                             <th class="px-6 py-3 text-left">Code</th>
                             <th class="px-6 py-3 text-left">Créneau</th>
-                            <th class="px-6 py-3 text-left">Démarrée</th>
+                            {{-- <th class="px-6 py-3 text-left">Démarrée</th> --}}
                             <th class="px-6 py-3 text-left">Jury</th>
                             <th class="px-6 py-3 text-right">Action</th>
                         </tr>
@@ -1006,25 +1116,29 @@ new class extends Component {
                                     <p class="font-medium text-gray-900 dark:text-white">{{ $candidate['name'] }}</p>
                                     <p class="text-gray-500 dark:text-gray-400">{{ $candidate['phone_number'] ?: '-' }}</p>
                                 </td>
-                                <td class="px-6 py-4 text-gray-700 dark:text-gray-300">{{ $candidate['registration_code'] }}</td>
-                                <td class="px-6 py-4">
-                                    <input type="datetime-local" wire:model.defer="candidateSchedules.{{ $candidate['id'] }}" class="dark:bg-neutral-950 px-3 py-2 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full min-w-[220px] text-gray-900 dark:text-white text-sm">
-                                    @error("candidateSchedules.{$candidate['id']}") <p class="mt-1 text-red-600 text-xs">{{ $message }}</p> @enderror
-                                    @if ($candidate['scheduled_at'])
-                                        <p class="mt-1 text-gray-500 dark:text-gray-400 text-xs">Enregistré: {{ $candidate['scheduled_at'] }}</p>
-                                    @endif
+                                <td class="px-6 py-4 text-gray-700 dark:text-gray-300">{{ $candidate['registration_code'] }}
                                 </td>
-                                <td class="px-6 py-4 text-gray-700 dark:text-gray-300">{{ $candidate['started_at'] ?: '-' }}</td>
+                                <td class="px-6 py-4">
+                                    <input type="datetime-local" wire:model.defer="candidateSchedules.{{ $candidate['id'] }}"
+                                        class="dark:bg-neutral-950 px-3 py-2 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full min-w-[220px] text-gray-900 dark:text-white text-sm">
+                                    @error("candidateSchedules.{$candidate['id']}") <p class="mt-1 text-red-600 text-xs">
+                                        {{ $message }}
+                                    </p> @enderror
+                                </td>
+                                {{-- <td class="px-6 py-4 text-gray-700 dark:text-gray-300">{{ $candidate['started_at'] ?: '-'
+                                    }}</td> --}}
                                 <td class="px-6 py-4 text-gray-700 dark:text-gray-300">{{ $candidate['evaluators_count'] }}</td>
                                 <td class="px-6 py-4 text-right">
-                                    <button type="button" wire:click="saveCandidateSchedule({{ $candidate['id'] }})" class="bg-slate-900 hover:bg-slate-700 dark:bg-slate-100 dark:hover:bg-white px-3 py-2 rounded-xl text-white dark:text-slate-900 text-sm">
+                                    <button type="button" wire:click="saveCandidateSchedule({{ $candidate['id'] }})"
+                                        class="bg-slate-900 hover:bg-slate-700 dark:bg-slate-100 dark:hover:bg-white px-3 py-2 rounded-xl text-white dark:text-slate-900 text-sm">
                                         Enregistrer
                                     </button>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-8 text-gray-500 dark:text-gray-400 text-center">Aucun candidat TEST_PASSED pour cette édition.</td>
+                                <td colspan="6" class="px-6 py-8 text-gray-500 dark:text-gray-400 text-center">Aucun candidat
+                                    n'a réussi le test pour cette édition.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -1035,38 +1149,49 @@ new class extends Component {
 
     @if ($activeTab === 'criteria')
         <div class="gap-6 grid xl:grid-cols-[360px,minmax(0,1fr)]">
-            <div class="bg-white dark:bg-neutral-900 shadow-sm p-6 border border-gray-200 dark:border-neutral-800 rounded-2xl">
+            <div
+                class="bg-white dark:bg-neutral-900 shadow-sm p-6 border border-gray-200 dark:border-neutral-800 rounded-2xl">
                 <h3 class="font-semibold text-gray-900 dark:text-white text-lg">Ajouter un critère</h3>
                 <div class="space-y-4 mt-5">
                     <div>
                         <label class="block mb-2 font-medium text-gray-700 dark:text-gray-200 text-sm">Nom</label>
-                        <input type="text" required wire:model.defer="criterionDraft.criteria_name" class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
-                        @error('criterionDraft.criteria_name') <p class="mt-1 text-red-600 text-xs">{{ $message }}</p> @enderror
+                        <input type="text" required wire:model.defer="criterionDraft.criteria_name"
+                            class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
+                        @error('criterionDraft.criteria_name') <p class="mt-1 text-red-600 text-xs">{{ $message }}</p>
+                        @enderror
                     </div>
                     <div>
                         <label class="block mb-2 font-medium text-gray-700 dark:text-gray-200 text-sm">Description</label>
-                        <textarea rows="2" wire:model.defer="criterionDraft.description" class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm"></textarea>
-                        @error('criterionDraft.description') <p class="mt-1 text-red-600 text-xs">{{ $message }}</p> @enderror
+                        <textarea rows="2" wire:model.defer="criterionDraft.description"
+                            class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm"></textarea>
+                        @error('criterionDraft.description') <p class="mt-1 text-red-600 text-xs">{{ $message }}</p>
+                        @enderror
                     </div>
                     <div>
                         <label class="block mb-2 font-medium text-gray-700 dark:text-gray-200 text-sm">Pondération</label>
-                        <input type="number" inputmode="numeric" required min="1" max="100" wire:model.defer="criterionDraft.ponderation" class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
-                        @error('criterionDraft.ponderation') <p class="mt-1 text-red-600 text-xs">{{ $message }}</p> @enderror
+                        <input type="number" inputmode="numeric" required min="1" max="100"
+                            wire:model.defer="criterionDraft.ponderation"
+                            class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
+                        @error('criterionDraft.ponderation') <p class="mt-1 text-red-600 text-xs">{{ $message }}</p>
+                        @enderror
                     </div>
-                    <button type="button" wire:click="addCriterion" class="bg-[#fe042c] hover:bg-[#d90429] px-4 py-3 rounded-xl w-full text-white text-sm">
+                    <button type="button" wire:click="addCriterion"
+                        class="bg-[#fe042c] hover:bg-[#d90429] px-4 py-3 rounded-xl w-full text-white text-sm">
                         Ajouter le critère
                     </button>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-neutral-900 shadow-sm p-6 border border-gray-200 dark:border-neutral-800 rounded-2xl">
+            <div
+                class="bg-white dark:bg-neutral-900 shadow-sm p-6 border border-gray-200 dark:border-neutral-800 rounded-2xl">
                 <div class="flex justify-between items-center gap-3 mb-4">
                     <div>
                         <h3 class="font-semibold text-gray-900 dark:text-white text-lg">Liste des critères</h3>
                         <p class="text-gray-500 dark:text-gray-400 text-sm">Total actuel: {{ $criteriaTotal }}%</p>
                     </div>
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs {{ $criteriaTotal === 100 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' }}">
-                        {{ $criteriaTotal === 100 ? 'Pret' : 'Ajuster à 100%' }}
+                    <span
+                        class="inline-flex items-center px-3 py-1 rounded-full text-xs {{ $criteriaTotal === 100 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' }}">
+                        {{ $criteriaTotal === 100 ? 'Prêt' : 'Ajuster à 100%' }}
                     </span>
                 </div>
 
@@ -1074,17 +1199,29 @@ new class extends Component {
                     @forelse ($criteriaRows as $criterion)
                         <div class="dark:bg-neutral-950 p-4 border border-gray-200 dark:border-neutral-800 rounded-2xl">
                             <div class="items-start gap-3 grid md:grid-cols-[minmax(0,1.4fr),minmax(0,1fr),120px,auto,auto]">
-                                <input type="text" wire:model.defer="criterionEdits.{{ $criterion['id'] }}.criteria_name" class="dark:bg-neutral-900 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
-                                <textarea rows="3" wire:model.defer="criterionEdits.{{ $criterion['id'] }}.description" class="dark:bg-neutral-900 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full h-full text-gray-900 dark:text-white text-sm"></textarea>
-                                <input type="number" min="1" max="100" wire:model.defer="criterionEdits.{{ $criterion['id'] }}.ponderation" class="dark:bg-neutral-900 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
-                                <button type="button" wire:click="updateCriterion({{ $criterion['id'] }})" class="bg-gray-300 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-800 px-2 py-2 rounded-xl text-white dark:text-slate-900 text-sm">
-                                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5"/>
+                                <input type="text" wire:model.defer="criterionEdits.{{ $criterion['id'] }}.criteria_name"
+                                    class="dark:bg-neutral-900 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
+                                <textarea rows="3" wire:model.defer="criterionEdits.{{ $criterion['id'] }}.description"
+                                    class="dark:bg-neutral-900 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full h-full text-gray-900 dark:text-white text-sm"></textarea>
+                                <input type="number" min="1" max="100"
+                                    wire:model.defer="criterionEdits.{{ $criterion['id'] }}.ponderation"
+                                    class="dark:bg-neutral-900 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
+                                <button type="button" wire:click="updateCriterion({{ $criterion['id'] }})"
+                                    class="bg-gray-300 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-800 px-2 py-2 rounded-xl text-white dark:text-slate-900 text-sm">
+                                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                                        viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5" />
                                     </svg>
                                 </button>
-                                <button type="button" wire:click="removeCriterion({{ $criterion['id'] }})" class="bg-red-600 hover:bg-red-700 px-2 py-2 rounded-xl text-white text-sm">
-                                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7.757 12h8.486M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                                <button type="button" wire:click="removeCriterion({{ $criterion['id'] }})"
+                                    class="bg-red-600 hover:bg-red-700 px-2 py-2 rounded-xl text-white text-sm">
+                                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                                        viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="M7.757 12h8.486M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                     </svg>
                                 </button>
                             </div>
@@ -1100,78 +1237,102 @@ new class extends Component {
     @if ($activeTab === 'jury')
         <div class="gap-6 grid xl:grid-cols-[420px,minmax(0,1fr)]">
             <div class="space-y-6">
-                <div class="bg-white dark:bg-neutral-900 shadow-sm p-6 border border-gray-200 dark:border-neutral-800 rounded-2xl">
+                <div
+                    class="bg-white dark:bg-neutral-900 shadow-sm p-6 border border-gray-200 dark:border-neutral-800 rounded-2xl">
                     <h3 class="font-semibold text-gray-900 dark:text-white text-lg">Affecter un agent existant</h3>
                     <div class="space-y-4 mt-5">
                         <div>
-                            <label class="block mb-2 font-medium text-gray-700 dark:text-gray-200 text-sm">Session candidat</label>
-                            <select wire:model.defer="existingJurorForm.interview_session_id" class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
+                            <label class="block mb-2 font-medium text-gray-700 dark:text-gray-200 text-sm">Session
+                                candidat</label>
+                            <select wire:model.defer="existingJurorForm.interview_session_id"
+                                class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
                                 <option value="">Choisir</option>
                                 @foreach ($candidateRows as $candidate)
                                     @if ($candidate['session_id'])
-                                        <option value="{{ $candidate['session_id'] }}">{{ $candidate['name'] }} - {{ $candidate['scheduled_at'] }}</option>
+                                        <option value="{{ $candidate['session_id'] }}">{{ $candidate['name'] }} -
+                                            {{ $candidate['scheduled_at'] }}
+                                        </option>
                                     @endif
                                 @endforeach
                             </select>
-                            @error('existingJurorForm.interview_session_id') <p class="mt-1 text-red-600 text-xs">{{ $message }}</p> @enderror
+                            @error('existingJurorForm.interview_session_id') <p class="mt-1 text-red-600 text-xs">
+                                {{ $message }}
+                            </p> @enderror
                         </div>
                         <div>
                             <label class="block mb-2 font-medium text-gray-700 dark:text-gray-200 text-sm">Agent</label>
-                            <select wire:model.defer="existingJurorForm.agent_id" class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
+                            <select wire:model.defer="existingJurorForm.agent_id"
+                                class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
                                 <option value="">Choisir</option>
                                 @foreach ($availableAgents as $agent)
-                                    <option value="{{ $agent['id'] }}">{{ $agent['name'] }} - {{ $agent['department'] }}</option>
+                                    <option value="{{ $agent['id'] }}">{{ $agent['name'] }} - {{ $agent['department'] }}
+                                    </option>
                                 @endforeach
                             </select>
-                            @error('existingJurorForm.agent_id') <p class="mt-1 text-red-600 text-xs">{{ $message }}</p> @enderror
+                            @error('existingJurorForm.agent_id') <p class="mt-1 text-red-600 text-xs">{{ $message }}</p>
+                            @enderror
                         </div>
-                        <button type="button" wire:click="addExistingEvaluator" class="bg-[#fe042c] hover:bg-[#d90429] px-4 py-3 rounded-xl w-full text-white text-sm">
+                        <button type="button" wire:click="addExistingEvaluator"
+                            class="bg-[#fe042c] hover:bg-[#d90429] px-4 py-3 rounded-xl w-full text-white text-sm">
                             Affecter cet agent
                         </button>
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-neutral-900 shadow-sm p-6 border border-gray-200 dark:border-neutral-800 rounded-2xl">
+                <div
+                    class="bg-white dark:bg-neutral-900 shadow-sm p-6 border border-gray-200 dark:border-neutral-800 rounded-2xl">
                     <h3 class="font-semibold text-gray-900 dark:text-white text-lg">Créer un nouvel évaluateur</h3>
                     <div class="space-y-4 mt-5">
-                        <select wire:model.defer="newJurorForm.interview_session_id" class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
+                        <select wire:model.defer="newJurorForm.interview_session_id"
+                            class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
                             <option value="">Session candidat</option>
                             @foreach ($candidateRows as $candidate)
                                 @if ($candidate['session_id'])
-                                    <option value="{{ $candidate['session_id'] }}">{{ $candidate['name'] }} - {{ $candidate['scheduled_at'] }}</option>
+                                    <option value="{{ $candidate['session_id'] }}">{{ $candidate['name'] }} -
+                                        {{ $candidate['scheduled_at'] }}
+                                    </option>
                                 @endif
                             @endforeach
                         </select>
                         <div class="gap-3 grid md:grid-cols-2">
-                            <input type="text" wire:model.defer="newJurorForm.first_name" placeholder="Prénom" class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
-                            <input type="text" wire:model.defer="newJurorForm.last_name" placeholder="Nom" class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
+                            <input type="text" wire:model.defer="newJurorForm.first_name" placeholder="Prénom"
+                                class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
+                            <input type="text" wire:model.defer="newJurorForm.last_name" placeholder="Nom"
+                                class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
                         </div>
                         <div class="gap-3 grid md:grid-cols-2">
-                            <input type="email" wire:model.defer="newJurorForm.email" placeholder="Email" class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
-                            <input type="text" wire:model.defer="newJurorForm.phone_number" placeholder="Téléphone" class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
+                            <input type="email" wire:model.defer="newJurorForm.email" placeholder="Email"
+                                class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
+                            <input type="text" wire:model.defer="newJurorForm.phone_number" placeholder="Téléphone"
+                                class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
                         </div>
                         <div class="gap-3 grid md:grid-cols-2">
-                            <select wire:model.defer="newJurorForm.gender" class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
+                            <select wire:model.defer="newJurorForm.gender"
+                                class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
                                 <option value="">Genre</option>
                                 <option value="male">Masculin</option>
                                 <option value="female">Feminin</option>
                             </select>
-                            <select wire:model.defer="newJurorForm.department_id" class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
+                            <select wire:model.defer="newJurorForm.department_id"
+                                class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
                                 <option value="">Département</option>
                                 @foreach ($departments as $department)
                                     <option value="{{ $department['id'] }}">{{ $department['name'] }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        <input type="text" wire:model.defer="newJurorForm.job_title" placeholder="Fonction" class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
-                        <button type="button" wire:click="createAndAssignEvaluator" class="bg-slate-900 hover:bg-slate-700 dark:bg-slate-100 dark:hover:bg-white px-4 py-3 rounded-xl w-full text-white dark:text-slate-900 text-sm">
+                        <input type="text" wire:model.defer="newJurorForm.job_title" placeholder="Fonction"
+                            class="dark:bg-neutral-950 px-4 py-3 border border-gray-200 dark:border-neutral-700 rounded-xl focus:outline-none w-full text-gray-900 dark:text-white text-sm">
+                        <button type="button" wire:click="createAndAssignEvaluator"
+                            class="bg-slate-900 hover:bg-slate-700 dark:bg-slate-100 dark:hover:bg-white px-4 py-3 rounded-xl w-full text-white dark:text-slate-900 text-sm">
                             Créer et affecter
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-neutral-900 shadow-sm border border-gray-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
+            <div
+                class="bg-white dark:bg-neutral-900 shadow-sm border border-gray-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
                 <div class="px-6 py-4 border-gray-200 dark:border-neutral-800 border-b">
                     <h3 class="font-semibold text-gray-900 dark:text-white text-lg">Affectations actuelles</h3>
                 </div>
@@ -1196,33 +1357,39 @@ new class extends Component {
                                     </td>
                                     <td class="px-6 py-4 text-gray-700 dark:text-gray-300">
                                         <p>{{ $juror['candidate'] }}</p>
-                                        <p class="text-gray-500 dark:text-gray-400 text-xs">{{ $juror['scheduled_at'] ?: '-' }}</p>
+                                        <p class="text-gray-500 dark:text-gray-400 text-xs">{{ $juror['scheduled_at'] ?: '-' }}
+                                        </p>
                                     </td>
                                     <td class="px-6 py-4 font-mono text-gray-700 dark:text-gray-300">{{ $juror['coupon'] }}</td>
-                                    {{-- <td class="px-6 py-4 font-mono text-gray-700 dark:text-gray-300">{{ $juror['qr_token'] }}</td> --}}
+                                    {{-- <td class="px-6 py-4 font-mono text-gray-700 dark:text-gray-300">{{ $juror['qr_token']
+                                        }}</td> --}}
                                     <td class="px-6 py-4">
                                         <div class="flex flex-wrap gap-2">
                                             @if ($juror['mailto'])
-                                                <a href="{{ $juror['mailto'] }}" target="_blank" class="bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 px-3 py-2 rounded-xl text-emerald-700 dark:text-emerald-300 text-xs">
+                                                <a href="{{ $juror['mailto'] }}" target="_blank"
+                                                    class="bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 px-3 py-2 rounded-xl text-emerald-700 dark:text-emerald-300 text-xs">
                                                     Mail
                                                 </a>
                                             @endif
                                             @if ($juror['whatsapp'])
-                                                <a href="{{ $juror['whatsapp'] }}" target="_blank" class="bg-sky-100 hover:bg-sky-200 dark:bg-sky-900/30 dark:hover:bg-sky-900/50 px-3 py-2 rounded-xl text-sky-700 dark:text-sky-300 text-xs">
+                                                <a href="{{ $juror['whatsapp'] }}" target="_blank"
+                                                    class="bg-sky-100 hover:bg-sky-200 dark:bg-sky-900/30 dark:hover:bg-sky-900/50 px-3 py-2 rounded-xl text-sky-700 dark:text-sky-300 text-xs">
                                                     WhatsApp
                                                 </a>
                                             @endif
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 text-right">
-                                        <button type="button" wire:click="removeEvaluator({{ $juror['id'] }})" class="bg-red-600 hover:bg-red-700 px-3 py-2 rounded-xl text-white text-sm">
+                                        <button type="button" wire:click="requestRemoveEvaluator({{ $juror['id'] }})"
+                                            class="bg-red-600 hover:bg-red-700 px-3 py-2 rounded-xl text-white text-sm">
                                             Retirer
                                         </button>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-6 py-8 text-gray-500 dark:text-gray-400 text-center">Aucune affectation jury pour l instant.</td>
+                                    <td colspan="6" class="px-6 py-8 text-gray-500 dark:text-gray-400 text-center">Aucune
+                                        affectation jury pour l'instant.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -1230,37 +1397,72 @@ new class extends Component {
                 </div>
             </div>
         </div>
+
+        @if ($confirmDeleteJurorId)
+            <div class="z-50 fixed inset-0 flex justify-center items-center bg-black/50 px-4">
+                <div
+                    class="bg-white dark:bg-neutral-900 shadow-xl border border-gray-200 dark:border-neutral-800 rounded-2xl w-full max-w-lg">
+                    <div class="p-6">
+                        <h4 class="font-semibold text-gray-900 dark:text-white text-lg">Confirmer la suppression</h4>
+                        <p class="mt-3 text-gray-600 dark:text-gray-300 text-sm">
+                            Cette affectation de {{ $confirmDeleteJurorName }} contient déjà des notes. La suppression retirera
+                            aussi l'évaluation associée.
+                        </p>
+                        <div class="flex justify-end gap-3 mt-6">
+                            <button type="button" wire:click="cancelRemoveEvaluator"
+                                class="bg-gray-100 hover:bg-gray-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 px-4 py-2 rounded-xl text-gray-700 dark:text-gray-200 text-sm">
+                                Annuler
+                            </button>
+                            <button type="button" wire:click="confirmRemoveEvaluator"
+                                class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-xl text-white text-sm">
+                                Supprimer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
     @endif
 
     @if ($activeTab === 'results')
-        <div class="bg-white dark:bg-neutral-900 shadow-sm border border-gray-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
+        <div
+            class="bg-white dark:bg-neutral-900 shadow-sm border border-gray-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
             <div class="px-6 py-4 border-gray-200 dark:border-neutral-800 border-b">
-                <h3 class="font-semibold text-gray-900 dark:text-white text-lg">Resultats des interviews</h3>
-                <p class="text-gray-500 dark:text-gray-400 text-sm">Clique sur une ligne pour voir le detail des evaluateurs, notes et commentaires.</p>
+                <h3 class="font-semibold text-gray-900 dark:text-white text-lg">Résultats des interviews</h3>
+                <p class="text-gray-500 dark:text-gray-400 text-sm">Cliquez sur une ligne pour voir le détail des
+                    évaluateurs, notes et commentaires.</p>
             </div>
             <div class="overflow-x-auto">
-                <table class="divide-y divide-gray-200 dark:divide-neutral-800 min-w-full">
+                <table id="interview-results-table" class="divide-y divide-gray-200 dark:divide-neutral-800 min-w-full">
                     <thead class="bg-gray-50 dark:bg-neutral-950">
                         <tr class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
                             <th class="px-6 py-3 text-left">Candidat</th>
+                            <th class="px-6 py-3 text-left">Téléphone</th>
                             <th class="px-6 py-3 text-left">Code</th>
                             <th class="px-6 py-3 text-left">Moyenne</th>
-                            <th class="px-6 py-3 text-left">Statut</th>
+                            {{-- <th class="px-6 py-3 text-left">Statut</th> --}}
                             <th class="px-6 py-3 text-left">Evaluateurs</th>
                             <th class="px-6 py-3 text-left">Horaire</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-neutral-800">
                         @forelse ($resultRows as $row)
-                            <tr class="hover:bg-gray-50 dark:hover:bg-neutral-950/60 text-sm cursor-pointer" wire:click="toggleResultDetails({{ $row['session_id'] }})">
-                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ $row['candidate'] }}</td>
+                            <tr class="hover:bg-gray-50 dark:hover:bg-neutral-950/60 text-sm cursor-pointer"
+                                wire:click="toggleResultDetails({{ $row['session_id'] }})">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                    {{ $row['candidate_full_name'] }}
+                                </td>
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                    {{ $row['candidate_phone_number'] }}
+                                </td>
                                 <td class="px-6 py-4 text-gray-700 dark:text-gray-300">{{ $row['registration_code'] }}</td>
                                 <td class="px-6 py-4 text-gray-700 dark:text-gray-300">{{ $row['average_score'] ?? '-' }}</td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs {{ $this->resultBadgeClasses($row['recommended_status']) }}">
+                                {{-- <td class="px-6 py-4">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs {{ $this->resultBadgeClasses($row['recommended_status']) }}">
                                         {{ $row['recommended_status'] }}
                                     </span>
-                                </td>
+                                </td> --}}
                                 <td class="px-6 py-4 text-gray-700 dark:text-gray-300">{{ $row['evaluators_count'] }}</td>
                                 <td class="px-6 py-4 text-gray-700 dark:text-gray-300">{{ $row['scheduled_at'] ?: '-' }}</td>
                             </tr>
@@ -1269,28 +1471,40 @@ new class extends Component {
                                     <td colspan="6" class="px-6 py-5">
                                         <div class="space-y-4">
                                             @forelse ($row['details'] as $detail)
-                                                <div class="bg-white dark:bg-neutral-900 p-4 border border-gray-200 dark:border-neutral-800 rounded-2xl">
-                                                    <div class="flex md:flex-row flex-col md:justify-between md:items-center gap-2 mb-4">
+                                                <div
+                                                    class="bg-white dark:bg-neutral-900 p-4 border border-gray-200 dark:border-neutral-800 rounded-2xl">
+                                                    <div
+                                                        class="flex md:flex-row flex-col md:justify-between md:items-center gap-2 mb-4">
                                                         <div>
-                                                            <p class="font-semibold text-gray-900 dark:text-white">{{ $detail['name'] }}</p>
-                                                            <p class="text-gray-500 dark:text-gray-400 text-xs">Coupon: {{ $detail['coupon'] }}</p>
+                                                            <p class="font-semibold text-gray-900 dark:text-white">{{ $detail['name'] }}
+                                                            </p>
+                                                            <p class="text-gray-500 dark:text-gray-400 text-xs">Coupon:
+                                                                {{ $detail['coupon'] }}
+                                                            </p>
                                                         </div>
-                                                        <p class="font-medium text-gray-700 dark:text-gray-300 text-sm">Moyenne evaluateur: {{ $detail['average'] ?? '-' }}</p>
+                                                        <p class="font-medium text-gray-700 dark:text-gray-300 text-sm">Score total
+                                                            évaluateur: {{ $detail['total_score'] ?? '-' }}</p>
                                                     </div>
                                                     <div class="space-y-3">
                                                         @forelse ($detail['scores'] as $score)
-                                                            <div class="items-start gap-4 grid md:grid-cols-[minmax(0,1fr),110px,minmax(0,1fr)] text-sm">
+                                                            <div
+                                                                class="items-start gap-4 grid md:grid-cols-[minmax(0,1fr),110px,minmax(0,1fr)] text-sm">
                                                                 <div class="text-gray-900 dark:text-white">{{ $score['criteria'] }}</div>
-                                                                <div class="font-semibold text-gray-700 dark:text-gray-300">{{ $score['score'] }}/100</div>
-                                                                <div class="text-gray-600 dark:text-gray-400">{{ $score['comment'] ?: '-' }}</div>
+                                                                <div class="font-semibold text-gray-700 dark:text-gray-300">
+                                                                    {{ $score['score'] }}/100
+                                                                </div>
+                                                                <div class="text-gray-600 dark:text-gray-400">{{ $score['comment'] ?: '-' }}
+                                                                </div>
                                                             </div>
                                                         @empty
-                                                            <p class="text-gray-500 dark:text-gray-400 text-sm">Aucune note enregistree pour cet evaluateur.</p>
+                                                            <p class="text-gray-500 dark:text-gray-400 text-sm">Aucune note enregistrée pour
+                                                                cet évaluateur.</p>
                                                         @endforelse
                                                     </div>
                                                 </div>
                                             @empty
-                                                <p class="text-gray-500 dark:text-gray-400 text-sm">Aucun evaluateur ou aucune note pour cette session.</p>
+                                                <p class="text-gray-500 dark:text-gray-400 text-sm">Aucun évaluateur ou aucune note pour
+                                                    cette session.</p>
                                             @endforelse
                                         </div>
                                     </td>
@@ -1298,7 +1512,8 @@ new class extends Component {
                             @endif
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-8 text-gray-500 dark:text-gray-400 text-center">Aucun resultat disponible pour le moment.</td>
+                                <td colspan="6" class="px-6 py-8 text-gray-500 dark:text-gray-400 text-center">Aucun résultat
+                                    disponible pour le moment.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -1306,4 +1521,5 @@ new class extends Component {
             </div>
         </div>
     @endif
+
 </div>
