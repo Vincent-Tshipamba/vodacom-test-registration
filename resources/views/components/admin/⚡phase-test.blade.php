@@ -42,11 +42,11 @@ new class extends Component {
                 'type' => 'datetime-local',
                 'icon' => 'end-time-icon',
             ],
-            'total_questions' => [
-                'label' => __('test.total_questions'),
-                'type' => 'number',
-                'icon' => 'questions-icon',
-            ],
+            // 'total_questions' => [
+            //     'label' => __('test.total_questions'),
+            //     'type' => 'number',
+            //     'icon' => 'questions-icon',
+            // ],
             'passing_score' => [
                 'label' => __('test.passing_score'),
                 'type' => 'number',

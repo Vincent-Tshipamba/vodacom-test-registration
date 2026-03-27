@@ -71,13 +71,13 @@ class ScholarshipEdition extends Model
         return $this->hasMany(Applicant::class, 'edition_id');
     }
 
-    public function evaluationCriteria()
-    {
-        return $this->hasMany(EvaluationCriteria::class, 'edition_id');
-    }
-
     public function phase_test()
     {
         return $this->hasOne(PhaseTest::class);
+    }
+
+    public function interviewPhase()
+    {
+        return $this->hasOne(InterviewPhase::class);
     }
 }

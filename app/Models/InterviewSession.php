@@ -11,10 +11,11 @@ class InterviewSession extends Model
 
     protected $fillable = [
         'applicant_id',
-        'scheduled_at',
         'started_at',
+        'scheduled_at',
         'final_average_score',
         'decision_comment',
+        'interview_phase_id',
     ];
 
     protected $casts = [
@@ -31,6 +32,11 @@ class InterviewSession extends Model
     public function evaluators()
     {
         return $this->belongsToMany(Agent::class, 'interview_evaluators', 'interview_session_id', 'evaluator_id')
-                    ->withTimestamps();
+            ->withTimestamps();
+    }
+
+    public function interviewPhase()
+    {
+        return $this->belongsTo(InterviewPhase::class);
     }
 }

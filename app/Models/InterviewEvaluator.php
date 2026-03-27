@@ -12,6 +12,8 @@ class InterviewEvaluator extends Model
     protected $fillable = [
         'interview_session_id',
         'evaluator_id',
+        'coupon',
+        'qr_token',
     ];
 
     public function interviewSession()

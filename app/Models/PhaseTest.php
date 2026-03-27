@@ -12,9 +12,14 @@ class PhaseTest extends Model
         'duration',
         'start_time',
         'end_time',
-        'number_questions',
+        'total_questions',
         'passing_score',
         'status',
+    ];
+
+    protected $casts = [
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
     ];
 
     public function scholarship_edition()

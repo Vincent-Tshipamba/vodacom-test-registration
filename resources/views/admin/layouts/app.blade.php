@@ -21,8 +21,8 @@
     <!-- Tailwind CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/tailwind2.css') }}">
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.6/css/dataTables.dataTables.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.css" rel="stylesheet" />
 
+    @stack('css')
     {{-- <link rel="stylesheet" href="{{ asset('assets/scss/tailwind.scss') }}"> --}}
     <!-- Scripts -->
     @livewireStyles
@@ -34,32 +34,32 @@
     <div class="group-data-[sidebar-size=sm]:relative group-data-[sidebar-size=sm]:min-h-sm">
 
         @php
-            $locale = app()->getLocale();
+$locale = app()->getLocale();
 
-            $languages = [
-                'fr' => [
-                    'label' => __('messages.language_fr'),
-                    'flag' => asset('img/flag-for-france-svgrepo-com.svg'),
-                    'code' => 'fr',
-                ],
-                'en' => [
-                    'label' => __('messages.language_en'),
-                    'flag' => asset('img/flag-for-flag-usa.svg'),
-                    'code' => 'en',
-                ],
-                'ln' => [
-                    'label' => __('messages.language_ln'),
-                    'flag' => asset('img/flag-for-flag-congo-kinshasa-svgrepo-com.svg'),
-                    'code' => 'ln',
-                ],
-                'sw' => [
-                    'label' => __('messages.language_sw'),
-                    'flag' => asset('img/flag-for-flag-congo-kinshasa-svgrepo-com.svg'),
-                    'code' => 'sw',
-                ],
-            ];
+$languages = [
+    'fr' => [
+        'label' => __('messages.language_fr'),
+        'flag' => asset('img/flag-for-france-svgrepo-com.svg'),
+        'code' => 'fr',
+    ],
+    'en' => [
+        'label' => __('messages.language_en'),
+        'flag' => asset('img/flag-for-flag-usa.svg'),
+        'code' => 'en',
+    ],
+    'ln' => [
+        'label' => __('messages.language_ln'),
+        'flag' => asset('img/flag-for-flag-congo-kinshasa-svgrepo-com.svg'),
+        'code' => 'ln',
+    ],
+    'sw' => [
+        'label' => __('messages.language_sw'),
+        'flag' => asset('img/flag-for-flag-congo-kinshasa-svgrepo-com.svg'),
+        'code' => 'sw',
+    ],
+];
 
-            // Si jamais une langue n'est pas connue, fallback FR
+// Si jamais une langue n'est pas connue, fallback FR
 $current = $languages[$locale] ?? $languages['fr'];
         @endphp
         @include('admin.partials.sidebar')
@@ -67,7 +67,7 @@ $current = $languages[$locale] ?? $languages['fr'];
 
         <div class="relative min-h-screen group-data-[sidebar-size=sm]:min-h-sm">
             <div
-                class="group-data-[layout=horizontal]:mx-auto group-data-[sidebar-size=sm]:rtl:mr-vertical-menu-sm group-data-[sidebar-size=lg]:rtl:md:mr-vertical-menu group-data-[sidebar-size=md]:rtl:mr-vertical-menu-md group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:rtl:md:mr-auto group-data-[sidebar-size=sm]:ltr:ml-vertical-menu-sm group-data-[sidebar-size=lg]:ltr:md:ml-vertical-menu group-data-[sidebar-size=md]:ltr:ml-vertical-menu-md group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:ltr:md:ml-auto px-4 group-data-[layout=horizontal]:px-0 group-data-[layout=horizontal]:px-3 pt-[calc(theme('spacing.header')_*_1)] group-data-[layout=horizontal]:md:pt-[calc(theme('spacing.header')_*_1.6)] group-data-[layout=horizontal]:group-data-[navbar=hidden]:pt-[calc(theme('spacing.header')_*_0.9)] group-data-[navbar=bordered]:pt-[calc(theme('spacing.header')_*_1.3)] group-data-[navbar=hidden]:pt-0 pb-[calc(theme('spacing.header')_*_0.8)] group-data-[layout=horizontal]:max-w-screen-2xl">
+                class="group-data-[layout=horizontal]:mx-auto group-data-[sidebar-size=sm]:rtl:mr-vertical-menu-sm group-data-[sidebar-size=lg]:rtl:md:mr-vertical-menu group-data-[sidebar-size=md]:rtl:mr-vertical-menu-md group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:rtl:md:mr-auto group-data-[sidebar-size=sm]:ltr:ml-vertical-menu-sm group-data-[sidebar-size=lg]:ltr:md:ml-vertical-menu group-data-[sidebar-size=md]:ltr:ml-vertical-menu-md group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:ltr:md:ml-auto px-4 pt-[calc(theme('spacing.header')_*_1)] group-data-[layout=horizontal]:md:pt-[calc(theme('spacing.header')_*_1.6)] group-data-[layout=horizontal]:group-data-[navbar=hidden]:pt-[calc(theme('spacing.header')_*_0.9)] group-data-[navbar=bordered]:pt-[calc(theme('spacing.header')_*_1.3)] group-data-[navbar=hidden]:pt-0 pb-[calc(theme('spacing.header')_*_0.8)] group-data-[layout=horizontal]:max-w-screen-2xl">
                 <!-- Page Content -->
                 @yield('content')
             </div>
@@ -88,8 +88,6 @@ $current = $languages[$locale] ?? $languages['fr'];
         <script src="{{ asset('assets/js/pages/dashboards-hr.init.js') }}"></script>
     @endif
 
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"></script>
-
     <!-- Dans la section head -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@9.0.3"></script>
@@ -98,6 +96,36 @@ $current = $languages[$locale] ?? $languages['fr'];
     <script src="{{ asset('js/applyTheme.js') }}"></script>
     <!-- App js -->
     <script src="{{ asset('assets/js/app.js') }}"></script>
+
+    <script>
+        function insertMathToken(token, questionUuid) {
+            const card = document.querySelector(`[data-question-uuid="${questionUuid}"]`);
+            if (!card) return;
+
+            let field = document.activeElement;
+            const isInsideCard = field && card.contains(field);
+            const isTextField = isInsideCard && (field.tagName === 'TEXTAREA' || (field.tagName === 'INPUT' && field.type === 'text'));
+
+            if (!isTextField) {
+                field = card.querySelector('textarea, input[type="text"]');
+            }
+            if (!field) return;
+
+            const start = field.selectionStart ?? field.value.length;
+            const end = field.selectionEnd ?? start;
+            const before = field.value.slice(0, start);
+            const after = field.value.slice(end);
+            field.value = before + token + after;
+
+            const caret = start + token.length;
+            field.focus();
+            field.setSelectionRange(caret, caret);
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    </script>
+
+    <script src="https://cdn.datatables.net/2.3.6/js/dataTables.min.js" defer></script>
+
     @yield('script')
     @stack('scripts')
     @yield('modal')

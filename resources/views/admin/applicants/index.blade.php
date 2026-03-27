@@ -1,4 +1,11 @@
 @extends('admin.layouts.app')
+@push('css')
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.6/css/dataTables.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.tailwindcss.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/3.1.3/css/select.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.2.6/css/buttons.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/searchpanes/2.3.5/css/searchPanes.dataTables.css">
+@endpush
 
 @section('content')
     <div class="flex justify-between items-center mb-6">
@@ -47,7 +54,6 @@
     @include('admin.applicants.partials.search-modal')
 @endsection
 @section('script')
-
     <script defer>
         document.addEventListener('DOMContentLoaded', () => {
             // Initialiser DataTable avec les options de pagination
@@ -57,13 +63,36 @@
                 lengthChange: false,
                 info: true,
                 language: {
-                    search: "Rechercher:",
+                    search: "Rechercher : ",
                     paginate: {
                         next: "Suivant",
                         previous: "Précédent"
                     },
-                    info: "Affichage de _START_ à _END_ sur _TOTAL_ entrées"
-                }
+                    info: "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
+                    lengthMenu: "Afficher _MENU_ entrées",
+                    loadingRecords: "Chargement...",
+                    infoEmpty: 'Aucun candidat jusque-là ! ',
+                    zeroRecords: 'Aucun candidat trouvé, désolé !',
+                },
+                layout: {
+                    topStart: {
+                        buttons: ['copy', 'excel', 'pdf', 'print']
+                    },
+                    top1: {
+                        searchPanes: {
+                            viewTotal: true,
+                        }
+                    }
+                },
+                columnDefs: [
+                    {
+                        // orderable: false,
+                        searchPanes: {
+                            show: false,
+                        },
+                        targets: [0]
+                    },
+                ],
             });
         })
     </script>
@@ -157,7 +186,7 @@
         });
     </script>
     <script>
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             const toggleBtn = e.target.closest('[data-bs-toggle]');
             const isInsideDropdown = e.target.closest('.dropdown-menu');
 
@@ -231,15 +260,15 @@
                 url = url.replace(':id', applicant.id);
                 li.className = 'p-3 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer';
                 li.innerHTML = `
-                <a href="${url}" class="block">
-                    <div class="font-medium text-gray-900 dark:text-white">
-                        ${applicant.first_name} ${applicant.last_name}
-                    </div>
-                    <div class="text-gray-500 dark:text-gray-400 text-sm">
-                        ${applicant.diploma_city} ${applicant.registration_code ? '• ' + applicant.registration_code : ''}
-                    </div>
-                </a>
-            `;
+                        <a href="${url}" class="block">
+                            <div class="font-medium text-gray-900 dark:text-white">
+                                ${applicant.first_name} ${applicant.last_name}
+                            </div>
+                            <div class="text-gray-500 dark:text-gray-400 text-sm">
+                                ${applicant.diploma_city} ${applicant.registration_code ? '• ' + applicant.registration_code : ''}
+                            </div>
+                        </a>
+                    `;
                 resultsContainer.appendChild(li);
             });
             searchResults.classList.remove('hidden');
@@ -250,15 +279,15 @@
             try {
                 const response = await fetch(
                     '{{ route('admin.applicants.search', ['locale' => app()->getLocale()]) }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            query
-                        })
-                    });
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        query
+                    })
+                });
                 const results = await response.json();
                 displaySearchResults(results);
             } catch (error) {
@@ -344,17 +373,17 @@
 
             if (isPdf) {
                 contentHtml = `
-                <div>
-                    <iframe id="certificateIframe${candidateId}" src="${fileUrl}"
-                            style="width: 100%; height: 65vh;" frameborder="0"></iframe>
-                </div>
-            `;
+                        <div>
+                            <iframe id="certificateIframe${candidateId}" src="${fileUrl}"
+                                    style="width: 100%; height: 65vh;" frameborder="0"></iframe>
+                        </div>
+                    `;
             } else {
                 contentHtml = `
-                <div>
-                    <img id="certificateImage${candidateId}" src="${fileUrl}" alt="${fileType}" class="w-full h-48 object-cover">
-                </div>
-            `;
+                        <div>
+                            <img id="certificateImage${candidateId}" src="${fileUrl}" alt="${fileType}" class="w-full h-48 object-cover">
+                        </div>
+                    `;
             }
             Swal.fire({
                 title: title,
@@ -381,7 +410,7 @@
                             is_valid: true
                         },
                         dataType: "json",
-                        success: function(response) {
+                        success: function (response) {
                             const Toast = Swal.mixin({
                                 toast: true,
                                 position: "top-end",
@@ -398,7 +427,7 @@
                                 title: response.message,
                             });
                         },
-                        error: function(xhr, status, error) {
+                        error: function (xhr, status, error) {
                             const Toast = Swal.mixin({
                                 toast: true,
                                 position: "top-end",
@@ -428,7 +457,7 @@
                             id: fileId,
                         },
                         dataType: "json",
-                        success: function(response) {
+                        success: function (response) {
                             const Toast = Swal.mixin({
                                 toast: true,
                                 position: "top-end",
@@ -445,7 +474,7 @@
                                 title: response.message,
                             });
                         },
-                        error: function(xhr, status, error) {
+                        error: function (xhr, status, error) {
                             const Toast = Swal.mixin({
                                 toast: true,
                                 position: "top-end",
@@ -521,23 +550,23 @@
 
             if (isPDF) {
                 contentHtml = `
-                <div>
-                    <iframe id="IdentityIframe${candidatId}" src="${identityUrl}"
-                            style="width: 1000px; height: 400px;" frameborder="0"></iframe>
-                </div>
-            `;
+                        <div>
+                            <iframe id="IdentityIframe${candidatId}" src="${identityUrl}"
+                                    style="width: 1000px; height: 400px;" frameborder="0"></iframe>
+                        </div>
+                    `;
             } else {
                 contentHtml = `
-                <div>
-                    <img id="identityImage${candidatId}" src="${identityUrl}" alt="Piece d'identite" class="w-full h-48 object-cover">
-                </div>
-            `;
+                        <div>
+                            <img id="identityImage${candidatId}" src="${identityUrl}" alt="Piece d'identite" class="w-full h-48 object-cover">
+                        </div>
+                    `;
             }
             Swal.fire({
                 title: `Pièce d\'identité de ${name}`,
                 html: `
-                ${contentHtml}
-                `,
+                        ${contentHtml}
+                        `,
                 showCloseButton: true,
                 focusConfirm: false,
                 confirmButtonText: 'Fermer',
@@ -547,5 +576,20 @@
             });
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@9.0.3"></script>
 @endsection
+
+@push('scripts')
+    <script src="https://cdn.datatables.net/select/3.1.3/js/dataTables.select.js" defer></script>
+    <script src="https://cdn.datatables.net/select/3.1.3/js/select.dataTables.js" defer></script>
+    <script src="https://cdn.datatables.net/searchpanes/2.3.5/js/dataTables.searchPanes.js" defer></script>
+    <script src="https://cdn.datatables.net/searchpanes/2.3.5/js/searchPanes.dataTables.js" defer></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/dataTables.buttons.js" defer></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.dataTables.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" defer></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.html5.min.js" defer></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.print.min.js" defer></script>
+    <script src="https://cdn.datatables.net/2.3.7/js/dataTables.tailwindcss.js" defer></script>
+    <script src="https://unpkg.com/jszip/dist/jszip.min.js"></script>
+@endpush

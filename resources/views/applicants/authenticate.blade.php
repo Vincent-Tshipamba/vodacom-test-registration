@@ -41,10 +41,10 @@
                                     <label for="national_exam_code"
                                         class="block mb-2 font-medium dark:text-white text-sm">{{ __('registration.student_code_label') }}</label>
                                     <input type="text" autocomplete="off" id="national_exam_code"
-                                        name="national_exam_code"
+                                        name="national_exam_code" inputmode="numeric"
                                         class="block bg-gray-50 p-2.5 border border-gray-300 focus:border-white-500 rounded-lg focus:ring-white-500 w-full text-gray-900 text-sm"
                                         placeholder="{{ __('registration.student_code_placeholder') }}" maxlength="14"
-                                        pattern="\d{14}" title="{{ __('registration.validation.pattern') }}" />
+                                        pattern="\d{14}" title="{{ __('registration.validation.pattern') }}" required/>
                                 </div>
                                 <div class="mb-5">
                                     <label for="coupon"
