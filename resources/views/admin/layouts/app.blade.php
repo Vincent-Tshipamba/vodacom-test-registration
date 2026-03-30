@@ -78,6 +78,7 @@ $current = $languages[$locale] ?? $languages['fr'];
     @include('admin.partials.customizer')
 
 
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="{{ asset('assets/libs/simplebar/simplebar.min.js') }}"></script>
     <!--apexchart js-->
     <script src="{{ asset('assets/libs/apexcharts/apexcharts.min.js') }}"></script>
@@ -90,7 +91,7 @@ $current = $languages[$locale] ?? $languages['fr'];
 
     <!-- Dans la section head -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@9.0.3"></script>
+    {{-- <script src="https://cdn.jsdelivr.net/npm/simple-datatables@9.0.3"></script> --}}
 
     <script src="https://cdn.datatables.net/2.3.6/js/dataTables.min.js" defer></script>
     <script src="{{ asset('js/applyTheme.js') }}"></script>
