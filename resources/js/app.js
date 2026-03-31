@@ -15,6 +15,6 @@ if (typeof window !== 'undefined') {
 }
 // import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 
-import DataTable from 'datatables.net-dt';
+// import DataTable from 'datatables.net-dt';
 
 
