@@ -36,33 +36,33 @@
     <div class="group-data-[sidebar-size=sm]:relative group-data-[sidebar-size=sm]:min-h-sm">
 
         @php
-            $locale = app()->getLocale();
+$locale = app()->getLocale();
 
-            $languages = [
-                'fr' => [
-                    'label' => __('messages.language_fr'),
-                    'flag' => asset('img/flag-for-france-svgrepo-com.svg'),
-                    'code' => 'fr',
-                ],
-                'en' => [
-                    'label' => __('messages.language_en'),
-                    'flag' => asset('img/flag-for-flag-usa.svg'),
-                    'code' => 'en',
-                ],
-                'ln' => [
-                    'label' => __('messages.language_ln'),
-                    'flag' => asset('img/flag-for-flag-congo-kinshasa-svgrepo-com.svg'),
-                    'code' => 'ln',
-                ],
-                'sw' => [
-                    'label' => __('messages.language_sw'),
-                    'flag' => asset('img/flag-for-flag-congo-kinshasa-svgrepo-com.svg'),
-                    'code' => 'sw',
-                ],
-            ];
+$languages = [
+    'fr' => [
+        'label' => __('messages.language_fr'),
+        'flag' => asset('img/flag-for-france-svgrepo-com.svg'),
+        'code' => 'fr',
+    ],
+    'en' => [
+        'label' => __('messages.language_en'),
+        'flag' => asset('img/flag-for-flag-usa.svg'),
+        'code' => 'en',
+    ],
+    'ln' => [
+        'label' => __('messages.language_ln'),
+        'flag' => asset('img/flag-for-flag-congo-kinshasa-svgrepo-com.svg'),
+        'code' => 'ln',
+    ],
+    'sw' => [
+        'label' => __('messages.language_sw'),
+        'flag' => asset('img/flag-for-flag-congo-kinshasa-svgrepo-com.svg'),
+        'code' => 'sw',
+    ],
+];
 
-            // Si jamais une langue n'est pas connue, fallback FR
-            $current = $languages[$locale] ?? $languages['fr'];
+// Si jamais une langue n'est pas connue, fallback FR
+$current = $languages[$locale] ?? $languages['fr'];
         @endphp
         @include('admin.partials.sidebar')
         @include('admin.partials.topbar')
@@ -82,6 +82,7 @@
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/preline@4.1.3/dist/preline.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset('assets/libs/simplebar/simplebar.min.js') }}"></script>
     <!--apexchart js-->
     <script src="{{ asset('assets/libs/apexcharts/apexcharts.min.js') }}"></script>
