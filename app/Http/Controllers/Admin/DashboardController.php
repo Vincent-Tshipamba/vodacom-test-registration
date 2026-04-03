@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
-use Carbon\Carbon;
-use App\Models\Payment;
-use App\Models\Scholar;
+use App\Http\Controllers\Controller;
 use App\Models\Applicant;
-use Illuminate\Http\Request;
+use App\Models\Scholar;
 use App\Models\ScholarshipEdition;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {

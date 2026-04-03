@@ -1,34 +1,17 @@
 @extends('admin.layouts.app')
+@push('css')
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.6/css/dataTables.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.tailwindcss.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/3.1.3/css/select.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.2.6/css/buttons.dataTables.css">
+    {{--
+    <link rel="stylesheet" href="https://cdn.datatables.net/searchpanes/2.3.5/css/searchPanes.dataTables.css"> --}}
+@endpush
 @section('content')
     <div class="container-fluid group-data-[content=boxed]:max-w-boxed mx-auto">
         <div class="grid grid-cols-12 2xl:grid-cols-12 gap-x-5">
             <div class="col-span-12 md:order-1 xl:col-span-8 2xl:col-span-6 mt-3">
                 <h5 class="mb-2">{{ __('messages.welcome', ['username' => Auth::user()->name]) }} 🎉</h5>
-                <p class="mb-5 text-slate-500 dark:text-zink-200">The salary of <a href="#!"
-                        class="underline text-slate-800 dark:text-zink-50">Glennie Langosh</a> is pending since 05 Dec,
-                    2023. the documentation of the tasks, workflows, and activities that make up a process managed by the HR
-                    or People Ops team. <a href="#!" class="text-red-500">Learn More</a></p>
-            </div>
-            <div class="col-span-12 md:order-2 xl:col-span-4 2xl:col-start-9 card mt-3">
-                <div class="p-4">
-                    <div class="grid grid-cols-3">
-                        <div
-                            class="px-4 text-center ltr:border-r rtl:border-l border-slate-200 dark:border-zink-500 ltr:last:border-r-0 rtl:last:border-l-0">
-                            <h6 class="mb-1 font-bold"><span class="counter-value" data-target="36"></span></h6>
-                            <p class="text-slate-500 dark:text-zink-200">Absent</p>
-                        </div>
-                        <div
-                            class="px-4 text-center ltr:border-r rtl:border-l border-slate-200 dark:border-zink-500 ltr:last:border-r-0 rtl:last:border-l-0">
-                            <h6 class="mb-1 font-bold"><span class="counter-value" data-target="465"></span></h6>
-                            <p class="text-slate-500 dark:text-zink-200">Attendance</p>
-                        </div>
-                        <div
-                            class="px-4 text-center ltr:border-r rtl:border-l border-slate-200 dark:border-zink-500 ltr:last:border-r-0 rtl:last:border-l-0">
-                            <h6 class="mb-1 font-bold"><span class="counter-value" data-target="50"></span></h6>
-                            <p class="text-slate-500 dark:text-zink-200">Late</p>
-                        </div>
-                    </div>
-                </div>
             </div>
             <div class="col-span-12 md:order-3 lg:col-span-6 2xl:col-span-3 card">
                 <div class="card-body">
@@ -121,8 +104,8 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-3 mt-3">
-                        <p class="text-slate-500 dark:text-slate-200 grow"><span
-                                class="font-medium text-red-500">16%</span> Increase</p>
+                        <p class="text-slate-500 dark:text-slate-200 grow"><span class="font-medium text-red-500">16%</span>
+                            Increase</p>
                         <p class="text-slate-500 dark:text-slate-200">{{ __('dashboard.this_year') }}</p>
                     </div>
                 </div>
@@ -155,129 +138,74 @@
                         </div><!--end col-->
                     </div><!--end grid-->
                     <div class="-mx-5 overflow-x-auto">
-                        <table class="w-full whitespace-nowrap">
-                            <thead
-                                class="ltr:text-left rtl:text-right bg-slate-100 text-slate-500 dark:text-zink-200 dark:bg-zink-600">
-                                <tr>
-                                    <th
-                                        class="px-3.5 py-2.5 first:pl-5 last:pr-5 font-semibold border-y border-slate-200 dark:border-zink-500 w-10">
-                                        <div class="flex items-center h-full">
-                                            <input id="productsCheckAll"
-                                                class="size-4 cursor-pointer bg-white border border-slate-200 checked:bg-none dark:bg-zink-700 dark:border-zink-500 rounded-sm appearance-none arrow-none relative after:absolute after:content-['\eb7b'] after:top-0 after:left-0 after:font-remix after:leading-none after:opacity-0 checked:after:opacity-100 after:text-custom-500 checked:border-custom-500 dark:after:text-custom-500 dark:checked:border-custom-800"
-                                                type="checkbox">
-                                        </div>
-                                    </th>
-                                    <th
-                                        class="px-3.5 py-2.5 first:pl-5 last:pr-5 font-semibold border-y border-slate-200 dark:border-zink-500">
-                                        #</th>
-                                    <th
-                                        class="px-3.5 py-2.5 first:pl-5 last:pr-5 font-semibold border-y border-slate-200 dark:border-zink-500">
-                                        Noms</th>
-                                    <th
-                                        class="px-3.5 py-2.5 first:pl-5 last:pr-5 font-semibold border-y border-slate-200 dark:border-zink-500">
-                                        Telephone</th>
-                                    <th
-                                        class="px-3.5 py-2.5 first:pl-5 last:pr-5 font-semibold border-y border-slate-200 dark:border-zink-500">
-                                        Pourcentage</th>
-                                    <th
-                                        class="px-3.5 py-2.5 first:pl-5 last:pr-5 font-semibold border-y border-slate-200 dark:border-zink-500">
-                                        Performance</th>
-                                    <th
-                                        class="px-3.5 py-2.5 first:pl-5 last:pr-5 font-semibold border-y border-slate-200 dark:border-zink-500">
-                                        Status</th>
-                                    <th
-                                        class="px-3.5 py-2.5 first:pl-5 last:pr-5 font-semibold border-y border-slate-200 dark:border-zink-500">
-                                        Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($applicants as $key => $applicant)
+                        @if ($current_edition->status == 'SELECTION_PHASE')
+                            <table class="w-full whitespace-nowrap" id="recentApplicantTable">
+                                <thead
+                                    class="ltr:text-left rtl:text-right bg-slate-100 text-slate-500 dark:text-zink-200 dark:bg-zink-600">
                                     <tr>
-                                        <td
-                                            class="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500">
-                                            <div class="flex items-center h-full">
-                                                <input id="productsCheck1"
-                                                    class="size-4 cursor-pointer bg-white border border-slate-200 checked:bg-none dark:bg-zink-700 dark:border-zink-500 rounded-sm appearance-none arrow-none relative after:absolute after:content-['\eb7b'] after:top-0 after:left-0 after:font-remix after:leading-none after:opacity-0 checked:after:opacity-100 after:text-custom-500 checked:border-custom-500 dark:after:text-custom-500 dark:checked:border-custom-800"
-                                                    type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td
-                                            class="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500">
-                                            <a href="#!">{{ $key + 1 }}</a>
-                                        </td>
-                                        <td
-                                            class="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500">
-                                            <div class="flex gap-2">
-                                                <div
-                                                    class="bg-green-100 rounded-full size-10 dark:bg-green-500/20 shrink-0">
-                                                    <img src="./assets/images/avatar-10.png" alt=""
-                                                        class="h-10 rounded-full">
-                                                </div>
-                                                <div class="grow">
-                                                    <h6>{{ $applicant->first_name . ' ' . $applicant->last_name }}</h6>
-                                                    <p class="text-slate-500 dark:text-zink-200">
-                                                        {{ $applicant->user->email ?? 'No email provided' }}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td
-                                            class="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500">
-                                            {{ $applicant->phone_number }}</td>
-                                        <td
-                                            class="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500">
-                                            {{ $applicant->percentage }}</td>
-                                        <td
-                                            class="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500 text-green-500">
-                                            Good</td>
-                                        <td
-                                            class="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500">
-                                            <span
-                                                class="px-2.5 py-0.5 text-xs inline-block font-medium rounded border bg-green-100 border-green-200 text-green-500 dark:bg-green-500/20 dark:border-green-500/20">Active</span>
-                                        </td>
-                                        <td
-                                            class="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500">
-                                            <div class="flex gap-2">
-                                                <a href="#!"
-                                                    class="flex items-center justify-center transition-all duration-200 ease-linear rounded-md size-8 bg-slate-100 dark:bg-zink-600 dark:text-zink-200 text-slate-500 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-100 dark:hover:bg-custom-500/20"><i
-                                                        data-lucide="pencil" class="size-4"></i></a>
-                                                <a href="#!"
-                                                    class="flex items-center justify-center transition-all duration-200 ease-linear rounded-md size-8 bg-slate-100 dark:bg-zink-600 dark:text-zink-200 text-slate-500 hover:text-red-500 dark:hover:text-red-500 hover:bg-red-100 dark:hover:bg-red-500/20"><i
-                                                        data-lucide="trash-2" class="size-4"></i></a>
-                                            </div>
-                                        </td>
+                                        <th
+                                            class="px-3.5 py-2.5 first:pl-5 last:pr-5 font-semibold border-y border-slate-200 dark:border-zink-500">
+                                            #</th>
+                                        <th
+                                            class="px-3.5 py-2.5 first:pl-5 last:pr-5 font-semibold border-y border-slate-200 dark:border-zink-500">
+                                            Noms</th>
+                                        <th
+                                            class="px-3.5 py-2.5 first:pl-5 last:pr-5 font-semibold border-y border-slate-200 dark:border-zink-500">
+                                            Téléphone</th>
+                                        <th
+                                            class="px-3.5 py-2.5 first:pl-5 last:pr-5 font-semibold border-y border-slate-200 dark:border-zink-500">
+                                            Pourcentage</th>
+                                        <th
+                                            class="px-3.5 py-2.5 first:pl-5 last:pr-5 font-semibold border-y border-slate-200 dark:border-zink-500">
+                                            Ville</th>
+                                        <th
+                                            class="px-3.5 py-2.5 first:pl-5 last:pr-5 font-semibold border-y border-slate-200 dark:border-zink-500">
+                                            Statut actuel </th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="flex flex-col items-center mt-5 md:flex-row">
-                        <div class="mb-4 grow md:mb-0">
-                            <p class="text-slate-500 dark:text-zink-200">Showing <b>10</b> of <b>19</b> Results</p>
-                        </div>
-                        <ul class="flex flex-wrap items-center gap-2 shrink-0">
-                            <li>
-                                <a href="#!"
-                                    class="inline-flex items-center justify-center bg-white dark:bg-zink-700 h-8 px-3 transition-all duration-150 ease-linear border rounded border-slate-200 dark:border-zink-500 text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-500 dark:[&.active]:text-custom-500 [&.active]:bg-custom-50 dark:[&.active]:bg-custom-500/10 [&.active]:border-custom-50 dark:[&.active]:border-custom-500/10 [&.active]:hover:text-custom-700 dark:[&.active]:hover:text-custom-700 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto"><i
-                                        class="mr-1 size-4 rtl:rotate-180" data-lucide="chevron-left"></i> Prev</a>
-                            </li>
-                            <li>
-                                <a href="#!"
-                                    class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border rounded border-slate-200 dark:border-zink-500 text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-500 dark:[&.active]:text-custom-500 [&.active]:bg-custom-50 dark:[&.active]:bg-custom-500/10 [&.active]:border-custom-50 dark:[&.active]:border-custom-500/10 [&.active]:hover:text-custom-700 dark:[&.active]:hover:text-custom-700 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto">1</a>
-                            </li>
-                            <li>
-                                <a href="#!"
-                                    class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border rounded border-slate-200 dark:border-zink-500 text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-500 dark:[&.active]:text-custom-500 [&.active]:bg-custom-50 dark:[&.active]:bg-custom-500/10 [&.active]:border-custom-50 dark:[&.active]:border-custom-500/10 [&.active]:hover:text-custom-700 dark:[&.active]:hover:text-custom-700 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto active">2</a>
-                            </li>
-                            <li>
-                                <a href="#!"
-                                    class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border rounded border-slate-200 dark:border-zink-500 text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-500 dark:[&.active]:text-custom-500 [&.active]:bg-custom-50 dark:[&.active]:bg-custom-500/10 [&.active]:border-custom-50 dark:[&.active]:border-custom-500/10 [&.active]:hover:text-custom-700 dark:[&.active]:hover:text-custom-700 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto">3</a>
-                            </li>
-                            <li>
-                                <a href="#!"
-                                    class="inline-flex items-center justify-center bg-white dark:bg-zink-700 h-8 px-3 transition-all duration-150 ease-linear border rounded border-slate-200 dark:border-zink-500 text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-500 dark:[&.active]:text-custom-500 [&.active]:bg-custom-50 dark:[&.active]:bg-custom-500/10 [&.active]:border-custom-50 dark:[&.active]:border-custom-500/10 [&.active]:hover:text-custom-700 dark:[&.active]:hover:text-custom-700 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto">Next
-                                    <i class="ml-1 size-4 rtl:rotate-180" data-lucide="chevron-right"></i></a>
-                            </li>
-                        </ul>
+                                </thead>
+                                <tbody>
+                                    @foreach ($applicants as $key => $applicant)
+                                        <tr>
+                                            <td
+                                                class="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500">
+                                                <a href="#!">{{ $key + 1 }}</a>
+                                            </td>
+                                            <td
+                                                class="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500">
+                                                <div class="flex gap-2">
+                                                    <div class="bg-green-100 rounded-full size-10 dark:bg-green-500/20 shrink-0">
+                                                        <img src="./assets/images/avatar-10.png" alt="" class="h-10 rounded-full">
+                                                    </div>
+                                                    <div class="grow">
+                                                        <h6>{{ $applicant->first_name . ' ' . $applicant->last_name }}</h6>
+                                                        <p class="text-slate-500 dark:text-zink-200">
+                                                            {{ $applicant->user->email ?? 'No email provided' }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td
+                                                class="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500">
+                                                {{ $applicant->phone_number }}
+                                            </td>
+                                            <td
+                                                class="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500">
+                                                {{ $applicant->percentage }}
+                                            </td>
+                                            <td
+                                                class="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500 text-green-500">
+                                                {{ $applicant->current_city->name }}
+                                            </td>
+                                            <td
+                                                class="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500">
+                                                <span
+                                                    class="px-2.5 py-0.5 text-xs inline-block font-medium rounded border bg-green-100 border-green-200 text-green-500 dark:bg-green-500/20 dark:border-green-500/20">Active</span>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -431,8 +359,8 @@
                         </div>
                     </div>
                     <div id="totalProjectChart" class="-ml-2 apex-charts"
-                        data-chart-colors='["bg-custom-500", "bg-yellow-500", "bg-green-400", "bg-red-400"]'
-                        dir="ltr"></div>
+                        data-chart-colors='["bg-custom-500", "bg-yellow-500", "bg-green-400", "bg-red-400"]' dir="ltr">
+                    </div>
                 </div>
             </div>
             <div class="col-span-12 md:order-11 lg:col-span-6 xl:col-span-4 2xl:col-span-3 card">
@@ -852,5 +780,47 @@
         </div>
     </div>
 @endsection
+@push('scripts')
+    <script src="https://cdn.datatables.net/select/3.1.3/js/dataTables.select.js" defer></script>
+    <script src="https://cdn.datatables.net/select/3.1.3/js/select.dataTables.js" defer></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/dataTables.buttons.js" defer></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.dataTables.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" defer></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.html5.min.js" defer></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.print.min.js" defer></script>
+    <script src="https://cdn.datatables.net/2.3.7/js/dataTables.tailwindcss.js" defer></script>
+    <script src="https://unpkg.com/jszip/dist/jszip.min.js"></script>
+@endpush
+
 @section('script')
+    <script defer>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialiser DataTable avec les options de pagination
+            const dataTable = $('#recentApplicantTable').DataTable({
+                paging: true,
+                pageLength: 10,
+                lengthChange: false,
+                info: true,
+                language: {
+                    search: "Rechercher : ",
+                    paginate: {
+                        next: "Suivant",
+                        previous: "Précédent"
+                    },
+                    info: "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
+                    lengthMenu: "Afficher _MENU_ entrées",
+                    loadingRecords: "Chargement...",
+                    infoEmpty: 'Aucun candidat jusque-là ! ',
+                    zeroRecords: 'Aucun candidat trouvé, désolé !',
+                },
+                layout: {
+                    topStart: {
+                        buttons: ['copy', 'excel', 'pdf', 'print']
+                    },
+                },
+            });
+        })
+    </script>
 @endsection
