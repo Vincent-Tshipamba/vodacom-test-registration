@@ -246,7 +246,7 @@
                         </p>
                         <p id="confirmation_details" class="mb-8 text-gray-500 dark:text-gray-400 text-sm">
                             @php $confname = session('confirmation_name'); @endphp
-                            {{ $confname ? __('registration.confirmation_details', ['firstname' => $confname]) : __('registration.confirmation_details') }}
+                            {{ __('registration.confirmation_details', ['firstname' => $confname ?? '']) }}
                         </p>
 
                         <div id="confirmation_coupon_block" class="bg-gray-100 dark:bg-gray-700 mb-6 p-4 rounded-lg"

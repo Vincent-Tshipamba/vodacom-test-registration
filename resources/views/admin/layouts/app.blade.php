@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="group scroll-smooth light" data-layout="vertical"
-    data-sidebar="light" data-sidebar-size="lg" data-mode="light" data-topbar="light" data-skin="default" data-navbar="sticky"
-    data-content="fluid" dir="ltr">
+    data-sidebar="light" data-sidebar-size="lg" data-mode="light" data-topbar="light" data-skin="default"
+    data-navbar="sticky" data-content="fluid" dir="ltr">
 
 <head>
     <meta charset="utf-8">
@@ -12,7 +12,8 @@
 
     <!-- Fonts -->
     <link rel="shortcut icon" href="{{ asset('img/instant-school-logo.png') }}" type="image/x-icon">
-    {{-- <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" /> --}}
+    {{--
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" /> --}}
 
     <!-- Layout config Js -->
     <script src="{{ asset('assets/js/layout.js') }}"></script>
@@ -21,9 +22,10 @@
     <!-- Tailwind CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/tailwind2.css') }}">
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.6/css/dataTables.dataTables.min.css">
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/preline@4.1.3/css/themes/theme.min.css">
     @stack('css')
-    {{-- <link rel="stylesheet" href="{{ asset('assets/scss/tailwind.scss') }}"> --}}
+    {{--
+    <link rel="stylesheet" href="{{ asset('assets/scss/tailwind.scss') }}"> --}}
     <!-- Scripts -->
     @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -78,6 +80,9 @@ $current = $languages[$locale] ?? $languages['fr'];
     @include('admin.partials.customizer')
 
 
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/preline@4.1.3/dist/preline.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset('assets/libs/simplebar/simplebar.min.js') }}"></script>
     <!--apexchart js-->
     <script src="{{ asset('assets/libs/apexcharts/apexcharts.min.js') }}"></script>

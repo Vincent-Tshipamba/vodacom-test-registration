@@ -1,10 +1,10 @@
 <?php
 
 return [
-    'ADMITTED' => 'Retenu(e)',
-    'REJECTED' => 'Rejeté',
-    'SHORTLISTED' => 'Présélectionné',
+    'ADMITTED' => 'Retenu(e) comme boursier(ère)',
+    'REJECTED' => 'Rejeté(e)',
+    'SHORTLISTED' => 'Retenu(e) pour le test',
     'PENDING' => 'En attente',
-    'TEST_PASSED' => 'Test réussi',
-    'INTERVIEW_PASSED' => 'Entretien réussi',
+    'TEST_PASSED' => 'A réussi le test',
+    'INTERVIEW_PASSED' => 'A réussi l\'entretien',
 ];

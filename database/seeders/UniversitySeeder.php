@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\University;
 use App\Models\EducationalCity;
-use Illuminate\Database\Seeder;
+use App\Models\University;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
 
 class UniversitySeeder extends Seeder
 {
@@ -58,7 +58,7 @@ class UniversitySeeder extends Seeder
                 'educational_city_id' => EducationalCity::inRandomOrder()->first()->id,
                 'contact_email' => strtolower(str_replace(' ', '_', $universityName)) .'@example.com',
                 'contact_phone' => '+243' . rand(800000000, 899999999),
-                'contact_person_name' => fake()->name(),
+                'contact_person_name' => 'Responsable ' . $universityName,
                 'contact_person_phone' => '+243' . rand(800000000, 899999999),
                 'website_url' => 'https://www.' . strtolower(str_replace(' ', '', $universityName)) . '.com',
             ]);

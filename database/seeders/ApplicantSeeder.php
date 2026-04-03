@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Applicant;
-use Illuminate\Support\Str;
 use App\Models\DocumentType;
 use Illuminate\Database\Seeder;
 use App\Models\ApplicationDocument;
@@ -23,7 +22,7 @@ class ApplicantSeeder extends Seeder
             'PHOTO' => 'applicants/1/photos/vincent_tshipamba_photo_20260106_122233.png',
             'ID' => 'applicants/1/ids/vincent_tshipamba_id_20260106_122234.pdf',
             'DIPLOMA' => 'applicants/1/diplomas/vincent_tshipamba_diploma_20260106_122234.pdf',
-            'RECO_LETTER' => 'applicants/1/reco_letters/vincent_tshipamba_reco_letter_20260106_122234.pdf'
+            'RECO_LETTER' => 'applicants/1/reco_letters/vincent_tshipamba_reco-letter_20260106_122234.pdf'
         ];
 
         $applicants->each(function ($applicant) use ($testFiles) {
