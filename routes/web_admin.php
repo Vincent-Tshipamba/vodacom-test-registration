@@ -33,6 +33,7 @@ Route::group(['prefix' => '{locale}/admin', 'middleware' => ['setLocale', 'auth'
     Route::get('applicants', [AdminApplicantController::class, 'index'])->name('admin.applicants.index');
     Route::get('applicants/{applicant}', [AdminApplicantController::class, 'show'])->name('admin.applicants.show');
     Route::post('applicants/search', [AdminApplicantController::class, 'search'])->name('admin.applicants.search');
+    Route::patch('applicants/{applicant}/status', [AdminApplicantController::class, 'updateStatus'])->name('admin.applicants.update-status');
 
     Route::put('application-documents/change-status', [ApplicationDocumentController::class, 'change_status'])->name('application-documents.change-status');
 
