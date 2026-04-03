@@ -27,7 +27,7 @@
     // Si jamais une langue n'est pas connue, fallback FR
 $current = $languages[$locale] ?? $languages['fr'];
 @endphp
-<nav class="top-0 z-20 fixed bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-600 border-b w-full start-0">
+<nav class="top-0 z-20 fixed bg-white dark:bg-gray-900/50 backdrop-blur-lg border-gray-200 dark:border-gray-600/30 border-b w-full start-0">
     <div class="flex flex-wrap justify-between items-center mx-auto p-4 max-w-screen-xl">
         <a href="{{ route('index', app()->getLocale()) }}" class="flex items-center space-x-3 rtl:space-x-reverse">
             <img src="{{ asset('img/vodacom-seeklogo.png') }}" Loading="lazy" class="h-6 sm:h-8" alt="Logo Vodacom">
@@ -86,25 +86,25 @@ $current = $languages[$locale] ?? $languages['fr'];
                 class="flex md:flex-row flex-col rtl:space-x-reverse md:space-x-8 bg-neutral-secondary-soft md:bg-neutral-primary mt-4 md:mt-0 p-4 md:p-0 border border-default md:border-0 rounded-base font-medium dark:text-slate-300">
                 <li>
                     <a href="{{ route('index', app()->getLocale()) }}#hero"
-                        class="block py-2 px-3 text-heading rounded hover:bg-neutral-tertiary md:hover:bg-transparent md:border-0 md:hover:text-fg-brand md:p-0 md:dark:hover:bg-transparent {{ request()->routeIs('index') ? 'text-blue-600 font-medium' : '' }}">
+                        class="block font-normal py-2 px-3 text-heading rounded md:border-0 md:hover:font-semibold md:p-0 {{ request()->routeIs('index') ? 'text-blue-600 font-medium' : '' }}">
                         {{ __('messages.home') }}
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('index', app()->getLocale()) }}#what-is-it"
-                        class="block md:hover:bg-transparent md:dark:hover:bg-transparent hover:bg-neutral-tertiary md:p-0 px-3 py-2 md:border-0 rounded text-heading md:hover:text-fg-brand">
+                        class="block font-normal md:hover:bg-transparent md:dark:hover:bg-transparent md:p-0 px-3 py-2 md:border-0 rounded text-heading md:hover:font-bold">
                         {{ __('messages.about') }}
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('index', app()->getLocale()) }}#contact"
-                        class="block md:hover:bg-transparent md:dark:hover:bg-transparent hover:bg-neutral-tertiary md:p-0 px-3 py-2 md:border-0 rounded text-heading md:hover:text-fg-brand">
+                        class="block font-normal md:hover:bg-transparent md:dark:hover:bg-transparent md:p-0 px-3 py-2 md:border-0 rounded text-heading md:hover:font-bold">
                         {{ __('messages.contact') }}
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('scholarship.register', app()->getLocale()) }}"
-                        class="block py-2 px-3 text-red-600 font-medium rounded hover:bg-neutral-tertiary md:hover:bg-transparent md:border-0 md:hover:text-red-700 md:p-0 md:dark:hover:bg-transparent {{ request()->routeIs('scholarship.register') ? 'underline' : '' }}">
+                        class="block py-2 px-3 text-red-600 font-normal rounded md:hover:bg-transparent md:border-0 md:hover:text-red-500 hover:font-bold md:p-0 md:dark:hover:bg-transparent {{ request()->routeIs('scholarship.register') ? 'font-bold' : '' }}">
                         {{ __('messages.apply_now') }}
                     </a>
                 </li>

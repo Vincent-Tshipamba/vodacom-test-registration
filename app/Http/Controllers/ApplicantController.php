@@ -471,7 +471,7 @@ class ApplicantController extends Controller
                     return response()->json([
                         'success' => true,
                         'confirmation_message' => __('registration.confirmation_message'),
-                        'confirmation_details' => __('registration.confirmation_details'),
+                        'confirmation_details' => __('registration.confirmation_details', ['firstname' => $validatedData['first_name'] ?? '']),
                         'confirmation_coupon' => null,
                         'status' => 'processing'
                     ]);
@@ -637,6 +637,7 @@ class ApplicantController extends Controller
             session([
                 'confirmation_message' => __('registration.confirmation_message'),
                 'confirmation_name' => $validatedData['first_name'],
+                // 'confirmation_coupon' => $coupon,
             ]);
 
             // mark this submission token as processed (short TTL)

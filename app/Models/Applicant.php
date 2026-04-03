@@ -113,4 +113,9 @@ class Applicant extends Model
     {
         return $this->hasOne(Scholar::class);
     }
+
+    public function historique_status_changes()
+    {
+        return $this->hasMany(HistoriqueStatusChange::class)->latest();
+    }
 }

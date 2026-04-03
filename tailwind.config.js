@@ -254,6 +254,23 @@ export default {
                     '0%': {
                         width: '0'
                     }
+                },
+                typing: {
+                    "0%": {
+                        width: "0%",
+                        visibility: "hidden"
+                    },
+                    "100%": {
+                        width: "100%"
+                    }
+                },
+                blink: {
+                    "50%": {
+                        borderColor: "transparent"
+                    },
+                    "100%": {
+                        borderColor: "white"
+                    }
                 }
             },
             aspectRatio: {
@@ -265,6 +282,9 @@ export default {
             clipPath: {
                 'triangle': 'polygon(50% 0%, 0% 100%, 100% 100%)',
             },
+            animation: {
+                typing: "typing 2s steps(20) infinite alternate, blink .7s infinite"
+            }
         },
     },
 

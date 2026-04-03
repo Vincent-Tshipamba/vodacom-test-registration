@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Applicant;
+use App\Models\HistoriqueStatusChange;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class ApplicantController extends Controller
 {
@@ -51,6 +54,58 @@ class ApplicantController extends Controller
      */
     public function show(String $locale, Applicant $applicant)
     {
+        $applicant->load([
+            'educational_city',
+            'current_city',
+            'application_documents.document_type',
+            'historique_status_changes.changed_by_agent.user',
+            'historique_status_changes.changed_by_scholar.user',
+        ]);
+
         return view('admin.applicants.show', compact('applicant'));
+    }
+
+    public function updateStatus(Request $request, string $locale, Applicant $applicant)
+    {
+        $validated = $request->validate([
+            'application_status' => ['required', 'string', Rule::in(['SHORTLISTED', 'REJECTED'])],
+        ]);
+
+        if ($applicant->application_status !== 'PENDING') {
+            return back()->with('error', 'Seuls les candidats en attente peuvent etre traites depuis cette page.');
+        }
+
+        $user = Auth::user();
+        $agentId = $user?->agent?->id;
+        $scholarId = $user?->scholar?->id;
+
+        if (!$agentId && !$scholarId) {
+            return back()->with('error', 'Votre profil ne permet pas de modifier le statut des candidats.');
+        }
+
+        $newStatus = $validated['application_status'];
+        $oldStatus = $applicant->application_status;
+
+        if ($oldStatus === $newStatus) {
+            return back()->with('success', 'Le statut de ce candidat est deja a jour.');
+        }
+
+        $applicant->update([
+            'application_status' => $newStatus,
+        ]);
+
+        HistoriqueStatusChange::create([
+            'applicant_id' => $applicant->id,
+            'old_status' => $oldStatus,
+            'new_status' => $newStatus,
+            'changed_by_agent_id' => $agentId,
+            'changed_by_scholar_id' => $scholarId,
+        ]);
+
+        $message = $newStatus === 'SHORTLISTED'
+            ? 'Le candidat a ete valide avec succes.'
+            : 'Le candidat a ete marque comme non retenu.';
+
+        return back()->with('success', $message);
     }
 }
