@@ -17,7 +17,7 @@
                         <figure
                             class="relative rounded-2xl bg-white dark:bg-gray-900 p-6 text-center shadow-xl shadow-slate-900/10 dark:shadow-slate-600 hover:scale-110 transition-all duration-300">
                             <blockquote class="relative p-3">
-                                <p class="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
+                                <p class="stats text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
                                     {{ $stat['count'] }}
                                 </p>
                             </blockquote>
@@ -33,3 +33,40 @@
         </div>
     </div>
 </section>
+
+@push('scripts')
+    <script>
+        // Anime chaque statistique en conservant son suffixe (+, %, etc.)
+        document.addEventListener('DOMContentLoaded', function () {
+            const statNumbers = document.querySelectorAll('.stats');
+
+            statNumbers.forEach(stat => {
+                const textContent = stat.textContent.trim();
+                const match = textContent.match(/^(\D*)(\d+)(.*)$/);
+
+                if (!match) {
+                    return;
+                }
+
+                const [, prefix, numberPart, suffix] = match;
+                const targetValue = parseInt(numberPart, 10);
+
+                if (!isNaN(targetValue)) {
+                    stat.textContent = `${prefix}0${suffix}`;
+
+                    setTimeout(() => {
+                        let currentValue = 0;
+                        const interval = setInterval(() => {
+                            currentValue++;
+                            stat.textContent = `${prefix}${currentValue}${suffix}`;
+
+                            if (currentValue >= targetValue) {
+                                clearInterval(interval);
+                            }
+                        }, 50);
+                    }, 300);
+                }
+            });
+        });
+    </script>
+@endpush

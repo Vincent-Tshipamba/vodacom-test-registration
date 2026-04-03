@@ -577,7 +577,7 @@
                                     @empty
                                         <tr>
                                             <td colspan="5" class="px-6 py-4 text-gray-900 dark:text-white text-sm whitespace-nowrap">
-                                                {{ __('Aucun candidat trouve.') }}
+                                                {{ __('Aucun candidat trouvé.') }}
                                             </td>
                                         </tr>
                                     @endforelse
@@ -653,7 +653,7 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 text-gray-900 dark:text-gray-100">
-                                @forelse ($results as $index => $result)
+                                @foreach ($results as $index => $result)
                                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/60">
                                         <td>{{ $index + 1 }}</td>
                                         <td>
@@ -689,16 +689,17 @@
                                             </button>
                                         </td>
                                     </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="12" class="px-6 py-8 text-gray-500 dark:text-gray-400 text-center">
-                                            {{ __('Aucun résultat disponible pour le moment.') }}
-                                        </td>
-                                    </tr>
-                                @endforelse
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
+                    @if ($results->isEmpty())
+                        <div class="flex justify-center items-center bg-gray-50 dark:bg-gray-900/40 mt-4 px-6 py-10 border border-dashed border-gray-200 dark:border-gray-700 rounded-lg text-center">
+                            <p class="text-gray-500 dark:text-gray-400 text-sm">
+                                {{ __('Aucun résultat disponible pour le moment.') }}
+                            </p>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

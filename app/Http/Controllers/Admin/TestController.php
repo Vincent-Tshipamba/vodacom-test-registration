@@ -8,7 +8,6 @@ use App\Models\HistoriqueStatusChange;
 use App\Models\PhaseTest;
 use App\Models\QuestionPhaseTest;
 use App\Models\ScholarshipEdition;
-use App\Models\Scholar;
 use App\Models\TestSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -139,7 +138,6 @@ class TestController extends Controller
             ->values();
 
         $adminAgentId = auth()->user()?->agent?->id;
-        $fallbackScholarId = Scholar::query()->value('id');
         foreach ($results->where('is_passed', true) as $result) {
             $applicant = $candidats->firstWhere('id', $result['applicant_id']);
             if (!$applicant || $applicant->application_status === 'TEST_PASSED') {
@@ -149,13 +147,12 @@ class TestController extends Controller
             $oldStatus = $applicant->application_status;
             $applicant->update(['application_status' => 'TEST_PASSED']);
 
-            if ($adminAgentId && $fallbackScholarId) {
+            if ($adminAgentId) {
                 HistoriqueStatusChange::create([
                     'applicant_id' => $applicant->id,
                     'old_status' => $oldStatus,
                     'new_status' => 'TEST_PASSED',
                     'changed_by_agent_id' => $adminAgentId,
-                    'changed_by_scholar_id' => $fallbackScholarId,
                 ]);
             }
         }

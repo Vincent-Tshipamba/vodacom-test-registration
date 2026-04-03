@@ -2,11 +2,11 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
-use Illuminate\Support\Str;
+use App\Helpers\FormOptionsHelper;
 use App\Models\EducationalCity;
 use App\Models\ScholarshipEdition;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Applicant>
@@ -38,61 +38,9 @@ class ApplicantFactory extends Factory
             'none',
         ];
 
-        $studied_options = [
-            'Aides-Soignantes',
-            'Arts et métiers',
-            'Commerciale',
-            'Coupe & Couture',
-            'Electricité',
-            'Electronique',
-            'Littéraire',
-            'Mécanique',
-            'Pédagogie',
-            'Scientifique',
-            'Secrétariat',
-        ];
+        $studyOptions = FormOptionsHelper::getStudyOptions();
 
-        $university_fields = [
-            'Génie Civil',
-            'Génie Mécanique',
-            'Génie Électrique',
-            'Génie Logiciel',
-            'Génie Informatique',
-            'Génie Chimique',
-            'Génie des Télécommunications',
-            'Mathématiques Appliquées',
-            'Physique',
-            'Chimie',
-            'Biologie',
-            'Géologie',
-            'Sciences Environnementales',
-            'Sciences Économiques',
-            'Sciences de Gestion',
-            'Gestion des Entreprises',
-            'Gestion des Ressources Humaines',
-            'Marketing',
-            'Comptabilité et Finance',
-            'Banque et Finance',
-            'Assurances',
-            'Droit Privé et Judiciaire',
-            'Droit Public',
-            'Droit International',
-            'Droit Économique',
-            'Médecine Générale',
-            'Dentisterie',
-            'Pharmacie',
-            'Sciences Infirmières',
-            'Santé Publique',
-            'Philosophie',
-            'Histoire',
-            'Sociologie',
-            'Psychologie',
-            'Sciences Politiques',
-            'Relations Internationales',
-            'Agronomie Générale',
-            'Sciences Vétérinaires',
-            'Sciences et Techniques de Développement',
-        ];
+        $universityFields = FormOptionsHelper::getUniversityFields();
 
         return [
             'edition_id' => $this->faker->randomElement(ScholarshipEdition::pluck('id')),
@@ -109,8 +57,8 @@ class ApplicantFactory extends Factory
             'school_name' => $this->faker->word,
             'national_exam_code' => $this->faker->numerify('##############'),
             'percentage' => $this->faker->numberBetween(70, 100),
-            'option_studied' => $this->faker->randomElement($studied_options),
-            'intended_field' => $this->faker->randomElement($university_fields),
+            'option_studied' => $this->faker->randomElement($studyOptions),
+            'intended_field' => $this->faker->randomElement($universityFields),
             'intended_field_motivation' => $this->faker->sentence,
             'intended_field_motivation_locale' => $this->faker->randomElement(['fr', 'en', 'ln', 'sw']),
             'career_goals' => $this->faker->sentence,
