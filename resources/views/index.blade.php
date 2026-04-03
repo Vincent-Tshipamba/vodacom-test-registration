@@ -13,7 +13,9 @@
     @include('home.hero-section')
 
     <!-- Statistics -->
-    @include('home.stats-section')
+    <div class="reveal-on-scroll">
+        @include('home.stats-section')
+    </div>
 
     <div class="wave-divider dark:bg-slate-900">
         <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
@@ -24,7 +26,9 @@
     </div>
 
     <!-- Qu'est-ce que la bourse ? -->
-    @include('home.what-is-it-section')
+    <div class="reveal-on-scroll">
+        @include('home.what-is-it-section')
+    </div>
 
     <div class="wave-divider dark:bg-slate-900">
         <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
@@ -35,7 +39,9 @@
     </div>
 
     <!-- Conditions d'eligibiite-->
-    @include('home.conditions-section')
+    <div class="reveal-on-scroll">
+        @include('home.conditions-section')
+    </div>
 
     <div class="wave-divider dark:bg-slate-900">
         <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
@@ -46,7 +52,9 @@
     </div>
 
     <!-- Comment postuler ? -->
-    @include('home.process-section')
+    <div class="reveal-on-scroll">
+        @include('home.process-section')
+    </div>
 
     <div class="wave-divider dark:bg-slate-900">
         <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
@@ -57,7 +65,9 @@
     </div>
 
     <!-- CTA -->
-    @include('home.cta-section')
+    <div class="reveal-on-scroll">
+        @include('home.cta-section')
+    </div>
 
     <div class="wave-divider dark:bg-slate-900">
         <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
@@ -67,10 +77,14 @@
         </svg>
     </div>
 
-    @include('home.testimonials')
+    <div class="reveal-on-scroll">
+        @include('home.testimonials')
+    </div>
 
     <!-- Contact Section -->
-    @include('home.contact-section')
+    <div class="reveal-on-scroll">
+        @include('home.contact-section')
+    </div>
 
     @section('script')
         <script>
