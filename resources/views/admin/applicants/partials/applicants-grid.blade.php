@@ -5,8 +5,8 @@
                 <div
                     class="relative flex justify-center items-center bg-slate-100 dark:bg-zink-600 mx-auto rounded-full size-16 text-lg">
                     @if (isset($candidat->documents->photo))
-                        <img src="{{ $candidat->documents->photo['url'] }}" alt="{{ 'Diplome de ' . $candidat->first_name }}"
-                            class="rounded-full size-16">
+                        <img src="{{ $candidat->documents->photo['url'] }}" alt="{{ 'Photo de ' . $candidat->first_name }}"
+                            class="rounded-full size-16" loading="lazy">
                         <span
                             class="ltr:right-1 bottom-1 rtl:left-1 absolute bg-green-400 border-2 border-white dark:border-zink-700 rounded-full size-3"></span>
                     @else
