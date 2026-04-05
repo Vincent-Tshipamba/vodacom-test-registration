@@ -69,11 +69,11 @@
     </nav>
 
     <section class="relative pt-36 pb-24">
-        <img src="{{ asset('img/OR68WQ0.jpg') }}" alt="cover-image"
+        <img src="{{ asset('img/OR68WQ0.jpg') }}" alt="cover-image" loading="lazy"
             class="top-0 left-0 z-0 absolute w-full h-36 object-cover">
         <div class="top-[-72px] z-10 relative flex justify-center items-center">
             <img src="{{ $applicant->documents->photo['url'] }}" alt="{{ $applicant->full_name . ' avatar' }}"
-                class="bg-[#0a0022] border-4 border-white border-solid rounded-full w-36 h-36 object-cover">
+                loading="lazy" class="bg-[#0a0022] border-4 border-white border-solid rounded-full w-36 h-36 object-cover">
         </div>
         <div class="mx-auto -mt-12 px-6 md:px-8 w-full max-w-7xl">
             <h3 class="mb-3 font-manrope font-bold text-gray-900 text-3xl text-center leading-10">
