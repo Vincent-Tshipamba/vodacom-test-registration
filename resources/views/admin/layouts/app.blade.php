@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Vodacom Test') }}</title>
 
     <!-- Fonts -->
     <link rel="shortcut icon" href="{{ asset('img/instant-school-logo.png') }}" type="image/x-icon">
@@ -95,8 +95,6 @@ $current = $languages[$locale] ?? $languages['fr'];
 
     <!-- Dans la section head -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    {{--
-    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@9.0.3"></script> --}}
 
     <script src="https://cdn.datatables.net/2.3.6/js/dataTables.min.js" defer></script>
     <script src="{{ asset('js/applyTheme.js') }}"></script>

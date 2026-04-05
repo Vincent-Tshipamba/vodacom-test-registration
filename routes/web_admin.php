@@ -1,26 +1,25 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AgentController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\CandidatController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Admin\TestController;
-use App\Http\Controllers\UniversityController;
-use App\Http\Controllers\AnswerOptionController;
-use App\Http\Controllers\Admin\PaymentController;
-use App\Http\Controllers\Admin\ScholarController;
-use App\Http\Controllers\Admin\PhaseTestController;
-use App\Http\Controllers\ScholarDocumentController;
-use App\Http\Controllers\CandidateResponseController;
 use App\Http\Controllers\AcademicYearRecordController;
+use App\Http\Controllers\Admin\ApplicantController as AdminApplicantController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\InterviewSessionController;
+use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\PhaseTestController;
+use App\Http\Controllers\Admin\ScholarController;
+use App\Http\Controllers\Admin\ScholarshipEditionController;
+use App\Http\Controllers\Admin\TestController;
+use App\Http\Controllers\AgentController;
+use App\Http\Controllers\AnswerOptionController;
+use App\Http\Controllers\ApplicationDocumentController;
+use App\Http\Controllers\CandidatController;
+use App\Http\Controllers\CandidateResponseController;
 use App\Http\Controllers\EvaluationCriteriaController;
 use App\Http\Controllers\InterviewEvaluatorController;
-use App\Http\Controllers\ApplicationDocumentController;
-use App\Http\Controllers\Admin\InterviewSessionController;
-use App\Http\Controllers\Admin\ScholarshipEditionController;
-use App\Http\Controllers\Admin\ApplicantController as AdminApplicantController;
-use App\Models\InterviewEvaluator;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ScholarDocumentController;
+use App\Http\Controllers\UniversityController;
+use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => '{locale}/admin', 'middleware' => ['setLocale', 'auth']], function () {
     Route::post('/check-code-exetat', [CandidatController::class, 'checkCodeExetat'])->name('check.code.exetat');
@@ -81,7 +80,7 @@ Route::group(['prefix' => '{locale}/admin', 'middleware' => ['setLocale', 'auth'
     Route::resource('evaluation-criteria', EvaluationCriteriaController::class);
     Route::resource('academic-year-records', AcademicYearRecordController::class);
 
-    Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('admin.dashboard');
+    Route::get('dashboard', [AdminDashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('admin.dashboard');
 
     Route::middleware('auth')->group(function () {
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

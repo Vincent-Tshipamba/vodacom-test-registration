@@ -35,7 +35,7 @@
                     </div>
                 </div>
                 <img src="{{ asset('img/bourse-etudes-removebg-preview.png') }}" alt="{{ __('conditions.alt_image') }}"
-                    class="hidden sm:block" width="2432" height="1442">
+                    class="hidden xl:block" width="2432" height="1442">
             </div>
         </div>
     </div>

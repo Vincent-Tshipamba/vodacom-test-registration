@@ -14,113 +14,7 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/preline@4.1.3/css/themes/theme.min.css">
-    <style>
-        [x-cloak] {
-            display: none;
-        }
-
-        [type="checkbox"] {
-            box-sizing: border-box;
-            padding: 0;
-        }
-
-        .form-checkbox,
-        .form-radio {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            -webkit-print-color-adjust: exact;
-            color-adjust: exact;
-            display: inline-block;
-            vertical-align: middle;
-            background-origin: border-box;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            flex-shrink: 0;
-            color: currentColor;
-            background-color: #fff;
-            border-color: #e2e8f0;
-            border-width: 1px;
-            height: 1.4em;
-            width: 1.4em;
-        }
-
-        .form-checkbox {
-            border-radius: 0.25rem;
-        }
-
-        .form-radio {
-            border-radius: 50%;
-        }
-
-        .form-checkbox:checked {
-            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M5.707 7.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4a1 1 0 0 0-1.414-1.414L7 8.586 5.707 7.293z'/%3e%3c/svg%3e");
-            border-color: transparent;
-            background-color: currentColor;
-            background-size: 100% 100%;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-
-        .form-radio:checked {
-            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e");
-            border-color: transparent;
-            background-color: currentColor;
-            background-size: 100% 100%;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-    </style>
-
-    <style>
-        html {
-            scroll-behavior: smooth;
-        }
-
-        .wave-divider {
-            position: relative;
-            top: 0;
-            left: 0;
-            width: 100%;
-            overflow: hidden;
-            line-height: 0;
-        }
-
-        .wave-divider svg {
-            position: relative;
-            display: block;
-            width: calc(100% + 1.3px);
-            height: 60px;
-        }
-
-        @media (min-width: 768px) {
-            .wave-divider svg {
-                height: 150px;
-            }
-        }
-    </style>
-
-    <style>
-        @keyframes marqueeScroll {
-            0% {
-                transform: translateX(0%);
-            }
-
-            100% {
-                transform: translateX(-50%);
-            }
-        }
-
-        .marquee-inner {
-            animation: marqueeScroll 25s linear infinite;
-        }
-
-        .marquee-reverse {
-            animation-direction: reverse;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/home-public.css') }}">
     <!-- Scripts -->
 
     @stack('head')
@@ -211,6 +105,36 @@
         }
     </script>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sections = document.querySelectorAll('.reveal-on-scroll');
+
+            if (!sections.length) {
+                return;
+            }
+
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                sections.forEach((section) => section.classList.add('is-revealed'));
+                return;
+            }
+
+            const observer = new IntersectionObserver((entries, currentObserver) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) {
+                        return;
+                    }
+
+                    entry.target.classList.add('is-revealed');
+                    currentObserver.unobserve(entry.target);
+                });
+            }, {
+                threshold: 0.15,
+                rootMargin: '0px 0px -10% 0px',
+            });
+
+            sections.forEach((section) => observer.observe(section));
+        });
+    </script>
 
     <!-- Script pour le multi step form -->
     <script>

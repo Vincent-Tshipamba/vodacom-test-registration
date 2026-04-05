@@ -1,0 +1,133 @@
+html {
+    scroll-behavior: smooth;
+}
+
+/* Diviseur en forme de vague */
+.wave-divider {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+}
+
+.wave-divider svg {
+    position: relative;
+    display: block;
+    width: calc(100% + 1.3px);
+    height: 60px;
+}
+
+@media (min-width: 768px) {
+    .wave-divider svg {
+        height: 150px;
+    }
+}
+/* End diviseur en forme de vagues */
+
+/* CSS pour les cases à cocher et les boutons radio personnalisés */
+[x-cloak] {
+    display: none;
+}
+
+[type="checkbox"] {
+    box-sizing: border-box;
+    padding: 0;
+}
+
+.form-checkbox,
+.form-radio {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+    display: inline-block;
+    vertical-align: middle;
+    background-origin: border-box;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    flex-shrink: 0;
+    color: currentColor;
+    background-color: #fff;
+    border-color: #e2e8f0;
+    border-width: 1px;
+    height: 1.4em;
+    width: 1.4em;
+}
+
+.form-checkbox {
+    border-radius: 0.25rem;
+}
+
+.form-radio {
+    border-radius: 50%;
+}
+
+.form-checkbox:checked {
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M5.707 7.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4a1 1 0 0 0-1.414-1.414L7 8.586 5.707 7.293z'/%3e%3c/svg%3e");
+    border-color: transparent;
+    background-color: currentColor;
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.form-radio:checked {
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e");
+    border-color: transparent;
+    background-color: currentColor;
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+/* End CSS pour les cases à cocher et les boutons radio personnalisés */
+
+/* Logique pour les animations de révélation des sections */
+.reveal-on-scroll {
+    will-change: opacity, transform;
+}
+
+.js .reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.js .reveal-on-scroll.is-revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .js .reveal-on-scroll,
+    .js .reveal-on-scroll.is-revealed {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+/* End logique pour les animations de révélation des sections */
+
+/* Animation pour les temoignages */
+@keyframes marqueeScroll {
+    0% {
+        transform: translateX(0%);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.marquee-inner {
+    animation: marqueeScroll 25s linear infinite;
+}
+
+.marquee-reverse {
+    animation-direction: reverse;
+}
