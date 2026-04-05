@@ -19,16 +19,16 @@
             </div>
             <div class="grid grid-cols-5 grid-rows-4 gap-4 md:w-5/12 lg:w-6/12">
                 <div class="col-span-2 row-span-4">
-                    <img src="https://www.rdcetudes.com/static/486a863e03feeaad32165bf5dbccc44c/136cc/md-duran-628456-unsplash.jpg"
+                    <img src="{{ asset('img/bourse-etudes-removebg-preview.png') }}"
                         class="rounded-full" width="640" height="960" alt="shoes" loading="lazy">
                 </div>
                 <div class="col-span-2 row-span-2">
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSS83h5QlnZtCAfhNRgLVJhVA9om9yVkpCZnw&s"
+                    <img src="{{ asset('img/scholars.jpg') }}"
                         class="w-full h-full object-cover object-top rounded-xl" width="640" height="640"
-                        alt="shoe" loading="lazy">
+                        alt="Boursiers" loading="lazy">
                 </div>
                 <div class="col-span-3 row-span-3">
-                    <img src="https://minesursi.gouv.cd/images/bourse-etudes.jpg"
+                    <img src="{{ asset('img/bourse-etudes.jpg') }}"
                         class="w-full h-full object-cover object-top rounded-xl" width="640" height="427"
                         alt="shoes" loading="lazy">
                 </div>
