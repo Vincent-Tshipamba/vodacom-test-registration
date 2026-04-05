@@ -372,65 +372,76 @@ window.addEventListener("resize", function () {
 });
 loadCharts();
 
-//Stacked Columns
-var options = {
-    series: [{
-        name: 'New',
-        data: [44, 55, 41, 67, 22, 43, 14, 55, 41,]
-    }, {
-        name: 'Pending',
-        data: [13, 23, 20, 8, 13, 27, 8, 20, 8,]
-    }, {
-        name: 'Completed',
-        data: [11, 17, 15, 15, 21, 14, 24, 11, 17,]
-    }, {
-        name: 'Rejected',
-        data: [21, 7, 25, 13, 22, 8, 13, 7, 25,]
-    }],
-    chart: {
-        type: 'bar',
-        height: 350,
-        stacked: true,
-        zoom: {
-            enabled: true
-        },
-        toolbar: {
-            show: false,
-        },
-    },
-    plotOptions: {
-        bar: {
-            horizontal: false,
-            borderRadius: 2,
-            columnWidth: '25%',
-        },
-    },
-    grid: {
-        padding: {
-            top: -15,
-            bottom: 5,
-            right: 0,
-        }
-    },
-    xaxis: {
-        categories: ['01', '02', '03', '04',
-            '05', '06', '07', '08', '09'
-        ],
-    },
-    dataLabels: {
-        enabled: false
-    },
-    colors: getChartColorsArray("totalProjectChart"),
-    legend: {
-        position: 'bottom',
-    },
-    fill: {
-        opacity: 1
-    }
-};
+// Editions by status
+const totalProjectChartEl = document.getElementById("totalProjectChart");
+if (totalProjectChartEl) {
+    const editionStatusSeries = JSON.parse(totalProjectChartEl.dataset.series || '[]');
+    const editionStatusLabels = JSON.parse(totalProjectChartEl.dataset.labels || '[]');
+    const editionStatusColors = getChartColorsArray("totalProjectChart");
 
-var chart = new ApexCharts(document.querySelector("#totalProjectChart"), options);
-chart.render();
+    var options = {
+        series: editionStatusSeries,
+        chart: {
+            type: 'bar',
+            height: 350,
+            stacked: true,
+            zoom: {
+                enabled: true
+            },
+            toolbar: {
+                show: false,
+            },
+        },
+        plotOptions: {
+            bar: {
+                horizontal: false,
+                borderRadius: 2,
+                columnWidth: '45%',
+            },
+        },
+        grid: {
+            padding: {
+                top: -15,
+                bottom: 5,
+                right: 0,
+            }
+        },
+        xaxis: {
+            categories: editionStatusLabels,
+            labels: {
+                rotate: -35,
+            }
+        },
+        yaxis: {
+            title: {
+                text: 'Candidats',
+            }
+        },
+        dataLabels: {
+            enabled: false
+        },
+        tooltip: {
+            y: {
+                formatter: function (value) {
+                    return value + " candidats";
+                }
+            }
+        },
+        noData: {
+            text: 'Aucune donnée disponible'
+        },
+        colors: editionStatusColors,
+        legend: {
+            position: 'bottom',
+        },
+        fill: {
+            opacity: 1
+        }
+    };
+
+    var chart = new ApexCharts(document.querySelector("#totalProjectChart"), options);
+    chart.render();
+}
 
 const options44 = {
     settings: {

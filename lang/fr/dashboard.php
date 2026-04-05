@@ -6,7 +6,7 @@ return [
     'total_accepted_applicants' => 'Nombre de postulants retenus cette année',
     'total_rejected_applicants' => 'Nombre de postulants non retenus cette année',
     'this_year' => 'Cette année',
-    'list_recent_applicants' => 'Liste des candidatures recentes',
+    'list_recent_applicants' => 'Liste des candidatures récentes',
     'list_performance_boursiers' => 'Tableau de performances de boursiers',
 
     // Columns
