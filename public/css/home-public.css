@@ -10,6 +10,7 @@ html {
     width: 100%;
     overflow: hidden;
     line-height: 0;
+    isolation: isolate;
 }
 
 .wave-divider svg {
@@ -17,6 +18,61 @@ html {
     display: block;
     width: calc(100% + 1.3px);
     height: 60px;
+    will-change: transform;
+    transform-origin: center bottom;
+    animation: waveDrift 5s ease-in-out infinite alternate;
+}
+
+.wave-divider path {
+    transform-origin: center bottom;
+    animation: waveLift 3s ease-in-out infinite;
+}
+
+.wave-divider--slow svg {
+    animation-duration: 5s;
+}
+
+.wave-divider--fast svg {
+    animation-duration: 3s;
+}
+
+.wave-divider--reverse svg {
+    animation-direction: alternate-reverse;
+}
+
+.wave-divider--slow path {
+    animation-duration: 4s;
+}
+
+.wave-divider--fast path {
+    animation-duration: 3s;
+}
+
+@keyframes waveDrift {
+    0% {
+        transform: translateX(0) translateY(0);
+    }
+
+    50% {
+        transform: translateX(-1.2%) translateY(2px);
+    }
+
+    100% {
+        transform: translateX(1.2%) translateY(0);
+    }
+}
+
+@keyframes waveLift {
+    0%,
+    100% {
+        transform: scaleY(1);
+        opacity: 0.96;
+    }
+
+    50% {
+        transform: scaleY(1.04);
+        opacity: 1;
+    }
 }
 
 @media (min-width: 768px) {
@@ -103,6 +159,12 @@ html {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
+    .wave-divider svg,
+    .wave-divider path {
+        animation: none;
+        transform: none;
+    }
 
     .js .reveal-on-scroll,
     .js .reveal-on-scroll.is-revealed {
