@@ -427,6 +427,11 @@ class ApplicantController extends Controller
             // Validate input first so we can perform idempotency checks that depend on form values
             $validatedData = $request->validated();
 
+            $edition = ScholarshipEdition::getCurrentEdition();
+            if (!$edition) {
+                throw new \Exception("Aucune édition en cours n'est disponible.");
+            }
+
             // Idempotency: use a client-supplied token to prevent duplicate processing.
             // Reserve the token immediately so a second concurrent request will be short-circuited.
             $submissionToken = $request->input('submission_token');
@@ -443,7 +448,7 @@ class ApplicantController extends Controller
                     // process (helps avoid duplicate inserts when the first transaction hasn't committed yet).
                     $existingApplicant = null;
                     if (!empty($validatedData['national_exam_code'])) {
-                        $editionId = optional(ScholarshipEdition::getCurrentEdition())->id;
+                        $editionId = $edition->id;
                         // Poll up to ~2 seconds (10 * 200ms)
                         for ($i = 0; $i < 10; $i++) {
                             $existingApplicant = Applicant::where('national_exam_code', $validatedData['national_exam_code'])
@@ -478,11 +483,6 @@ class ApplicantController extends Controller
                 }
             }
 
-            $edition = ScholarshipEdition::getCurrentEdition();
-
-            if (!$edition) {
-                throw new \Exception("Aucune édition en cours n'est disponible.");
-            }
 
             // Defensive: if an applicant for this national_exam_code already exists for this edition,
             // return a success response pointing to the confirmation so we never create a duplicate.
@@ -501,7 +501,7 @@ class ApplicantController extends Controller
                         'success' => true,
                         'confirmation_message' => __('registration.confirmation_message'),
                         'confirmation_details' => __('registration.confirmation_details', ['firstname' => $existingApplicant->first_name ?? '']),
-                        'confirmation_coupon' => $existingApplicant->registration_code,
+                        // 'confirmation_coupon' => $existingApplicant->registration_code,
                     ]);
                 }
             }
@@ -549,26 +549,6 @@ class ApplicantController extends Controller
                 }
             }
 
-            // Let's ensure that cities exist
-            $diplomaCity = EducationalCity::find($validatedData['educational_city_id']);
-            if (!$diplomaCity) {
-                Log::error('Invalid diploma city ID: ' . $validatedData['educational_city_id']);
-                if ($request->expectsJson()) {
-                    return response()->json([
-                        'message' => 'Validation error',
-                        'errors' => ['educational_city_id' => [__("La ville d'obtention du diplôme n'existe pas.")]],
-                    ], 422);
-                }
-                return redirect()->back()
-                    ->withErrors(['educational_city_id' => __("La ville d'obtention du diplôme n'existe pas.")])
-                    ->withInput();
-            }
-
-            $currentCity = EducationalCity::find($validatedData['current_city_id']);
-            if (!$diplomaCity || !$currentCity) {
-                Log::error('Invalid city IDs: diploma_city_id=' . $validatedData['educational_city_id'] . ', current_city_id=' . $validatedData['current_city_id']);
-                throw new \Exception("La ville d'obtention du diplôme ou la ville actuelle n'existe pas.");
-            }
 
             // Créer le candidat avec toutes les données validées
             $applicant = Applicant::create([
@@ -581,8 +561,8 @@ class ApplicantController extends Controller
                 'vulnerability_type' => $validatedData['vulnerability_type'],
 
                 // Adresse
-                'current_city_id' => $currentCity->id,
-                'educational_city_id' => $diplomaCity->id,
+                'current_city_id' => $validatedData['current_city_id'],
+                'educational_city_id' => $validatedData['educational_city_id'],
                 'full_address' => $validatedData['full_address'],
 
                 // Informations scolaires
@@ -606,7 +586,10 @@ class ApplicantController extends Controller
             ]);
 
             // Stocker les fichiers dynamiquement selon les types de documents demandés aux candidats
-            $documentTypes = DocumentType::where('is_for_candidats', true)->get();
+            $documentTypes = DocumentType::query()
+                ->select(['id', 'name'])
+                ->where('is_for_candidats', true)
+                ->get();
             foreach ($documentTypes as $docType) {
                 // Stocker les fichiers
                 $fileId = strtolower($docType->name);
@@ -652,7 +635,7 @@ class ApplicantController extends Controller
                 'success' => true,
                 'confirmation_message' => __('registration.confirmation_message'),
                 'confirmation_details' => __('registration.confirmation_details', ['firstname' => $validatedData['first_name'] ?? '']),
-                'confirmation_coupon' => $coupon,
+                // 'confirmation_coupon' => $coupon,
             ]);
         } catch (\Exception $e) {
             // Ensure transaction rollback if started
@@ -671,7 +654,7 @@ class ApplicantController extends Controller
 
                 if ($isDuplicate && !empty($validatedData['national_exam_code'])) {
                     $existingApplicant = Applicant::where('national_exam_code', $validatedData['national_exam_code'])
-                        ->where('edition_id', optional(ScholarshipEdition::getCurrentEdition())->id)
+                        ->where('edition_id', $edition->id)
                         ->first();
 
                     if ($existingApplicant) {
@@ -684,7 +667,7 @@ class ApplicantController extends Controller
                             'success' => true,
                             'confirmation_message' => __('registration.confirmation_message'),
                             'confirmation_details' => __('registration.confirmation_details', ['firstname' => $existingApplicant->first_name ?? '']),
-                            'confirmation_coupon' => $existingApplicant->registration_code,
+                            // 'confirmation_coupon' => $existingApplicant->registration_code,
                         ]);
                     }
                 }
@@ -1085,3 +1068,4 @@ class ApplicantController extends Controller
         return !is_null($phaseTest->end_time) && now()->gt($phaseTest->end_time);
     }
 }
+

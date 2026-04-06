@@ -2,9 +2,9 @@
     @push('head')
         <meta name="translations"
             content="{{ json_encode([
-                'personalized_option_field_value' => __('registration.personalized_option_field_value'),
-                'personalized_university_field_value' => __('registration.personalized_university_field_value'),
-            ]) }}">
+    'personalized_option_field_value' => __('registration.personalized_option_field_value'),
+    'personalized_university_field_value' => __('registration.personalized_university_field_value'),
+]) }}">
         <style>
             /* Fullscreen overlay for submitting state */
             .overlay-loading {
@@ -223,7 +223,7 @@
     @endpush
     <div class="bg-slate-100 dark:bg-slate-900 pb-24 min-h-screen text-slate-900 dark:text-slate-300">
         <form id="registrationForm" action="{{ route('scholarship.register.submit', app()->getLocale()) }}" method="POST"
-            enctype="multipart/form-data" x-data="app()" @submit="submitForm($event)" x-cloak>
+            enctype="multipart/form-data" x-data="app()" x-init="init()" @submit="submitForm($event)" x-cloak>
             @csrf
             <div class="mx-auto px-4 py-10 max-w-4xl">
                 <div id="form-global-error" x-show="errors.general" x-text="errors.general"
@@ -437,10 +437,12 @@
                                         <input type="tel" id="phone_number" name="phone_number"
                                             x-model="formData.phone_number" inputmode="tel"
                                             maxlength="9"
-                                            pattern="[1-9][0-9]{8}"
-                                            @input="formData.phone_number = formData.phone_number.replace(/^0/, '').replace(/\D/g, '')"
+                                            pattern="8[0-3][0-9]{7}"
+                                            @input="handlePhoneNumberInput()"
+                                            @blur="validatePhoneNumberField()"
                                             class="dark:bg-gray-700 py-2 pr-4 pl-16 border border-gray-300 focus:border-transparent dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 w-full"
                                             :class="{ 'border-red-500': errors.phone_number }"
+                                            data-error-phone-regex="{{ __('validation.phone_number_regex') }}"
                                             data-error-phone="{{ __('registration.validation.phone') }}"
                                             data-error-required="{{ __('registration.validation.required') }}"
                                             placeholder="826 869 063">
@@ -456,7 +458,7 @@
                                             class="text-red-500">*</span>
                                     </label>
                                     @php
-                                        $genders = App\Helpers\FormOptionsHelper::getGenders();
+$genders = App\Helpers\FormOptionsHelper::getGenders();
                                     @endphp
                                     <div class="flex space-x-4">
                                         @foreach ($genders as $value => $label)
@@ -504,7 +506,7 @@
                                             class="text-red-500">*</span>
                                     </label>
                                     @php
-                                        $identificationTypes = App\Helpers\FormOptionsHelper::getIdentificationTypes();
+$identificationTypes = App\Helpers\FormOptionsHelper::getIdentificationTypes();
                                     @endphp
                                     <div class="space-y-2">
                                         @foreach ($identificationTypes as $value => $label)
@@ -622,7 +624,7 @@
                                             class="text-red-500">*</span>
                                     </label>
                                     @php
-                                        $studyOptions = App\Helpers\FormOptionsHelper::getStudyOptions();
+$studyOptions = App\Helpers\FormOptionsHelper::getStudyOptions();
                                     @endphp
                                     <select id="option_studied" name="option_studied"
                                         x-model="formData.option_studied"
@@ -705,13 +707,13 @@
                             <div class="space-y-8">
                                 @foreach ($document_types as $document)
                                     @php
-                                        // By default treat 'recommendation' like optional; otherwise required.
-                                        $isRequired = !Str::contains(Str::lower($document->name), 'reco');
-                                        // slug used for translation keys (Str::slug will produce e.g. 'reco-letter')
-                                        $slug = strtolower($document->name);
-                                        $labelKey = "registration.documents.$slug.label";
-                                        $descKey = "registration.documents.$slug.description";
-                                        $hintKey = "registration.documents.$slug.hint";
+    // By default treat 'recommendation' like optional; otherwise required.
+    $isRequired = !Str::contains(Str::lower($document->name), 'reco');
+    // slug used for translation keys (Str::slug will produce e.g. 'reco-letter')
+    $slug = strtolower($document->name);
+    $labelKey = "registration.documents.$slug.label";
+    $descKey = "registration.documents.$slug.description";
+    $hintKey = "registration.documents.$slug.hint";
                                     @endphp
                                     <div>
                                         <label for="{{ strtolower($document->name) }}"
@@ -785,7 +787,7 @@
                                             class="text-red-500">*</span>
                                     </label>
                                     @php
-                                        $universityFields = App\Helpers\FormOptionsHelper::getUniversityFields();
+$universityFields = App\Helpers\FormOptionsHelper::getUniversityFields();
                                     @endphp
                                     <select id="intended_field" name="intended_field"
                                         x-model="formData.intended_field" class="form-select"

@@ -52,6 +52,142 @@ function app() {
         MAX_FILE_SIZE: 5 * 1024 * 1024,
         allowedFileTypes: ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
 
+        draftStorageKey: `scholarship_registration_draft_${document.documentElement.lang || 'fr'}`,
+        submittingStorageKey: `scholarship_registration_submitting_${document.documentElement.lang || 'fr'}`,
+        draftSaveTimeout: null,
+
+        init() {
+            this.restoreDraft();
+            this.validatePhoneNumberField();
+
+            const form = document.getElementById('registrationForm');
+            if (form) {
+                const saveDraft = () => this.queueDraftSave();
+                form.addEventListener('input', saveDraft);
+                form.addEventListener('change', saveDraft);
+            }
+
+            window.addEventListener('beforeunload', (event) => {
+                if (this.step !== 'complete') {
+                    this.persistDraft();
+                }
+
+                if (this.isSubmitting) {
+                    event.preventDefault();
+                    event.returnValue = '';
+                }
+            });
+        },
+
+        queueDraftSave() {
+            window.clearTimeout(this.draftSaveTimeout);
+            this.draftSaveTimeout = window.setTimeout(() => this.persistDraft(), 150);
+        },
+
+        buildDraftPayload() {
+            return {
+                step: this.step,
+                submissionToken: this.submissionToken,
+                formData: {
+                    ...this.formData,
+                    photo: null,
+                    id: null,
+                    diploma: null,
+                    reco_letter: null,
+                }
+            };
+        },
+
+        persistDraft() {
+            if (this.step === 'complete') {
+                this.clearDraft();
+                return;
+            }
+
+            try {
+                localStorage.setItem(this.draftStorageKey, JSON.stringify(this.buildDraftPayload()));
+            } catch (error) {
+                console.warn('Unable to persist registration draft:', error);
+            }
+        },
+
+        restoreDraft() {
+            try {
+                const raw = localStorage.getItem(this.draftStorageKey);
+                if (!raw) return;
+
+                const draft = JSON.parse(raw);
+                if (draft?.formData) {
+                    this.formData = {
+                        ...this.formData,
+                        ...draft.formData,
+                        photo: null,
+                        id: null,
+                        diploma: null,
+                        reco_letter: null,
+                    };
+                }
+
+                if (draft?.submissionToken) {
+                    this.submissionToken = draft.submissionToken;
+                }
+
+                if (draft?.step && draft.step !== 'complete') {
+                    this.step = draft.step;
+                }
+            } catch (error) {
+                console.warn('Unable to restore registration draft:', error);
+            }
+        },
+
+        clearDraft() {
+            try {
+                localStorage.removeItem(this.draftStorageKey);
+                sessionStorage.removeItem(this.submittingStorageKey);
+            } catch (error) {
+                console.warn('Unable to clear registration draft:', error);
+            }
+        },
+
+        normalizePhoneNumber(value = '') {
+            return String(value)
+                .replace(/\D/g, '')
+                .replace(/^0+/, '')
+                .slice(0, 9);
+        },
+
+        isValidVodacomNumber(value = '') {
+            return /^8[0-3][0-9]{7}$/.test(this.normalizePhoneNumber(value));
+        },
+
+        validatePhoneNumberField() {
+            const field = document.getElementById('phone_number');
+            if (!field) return true;
+
+            const normalizedValue = this.normalizePhoneNumber(this.formData.phone_number);
+            this.formData.phone_number = normalizedValue;
+
+            if (!normalizedValue) {
+                if (this.errors.phone_number && this.errors.phone_number !== field.dataset.errorRequired) {
+                    delete this.errors.phone_number;
+                }
+                return false;
+            }
+
+            if (!this.isValidVodacomNumber(normalizedValue)) {
+                this.errors.phone_number = field.dataset.errorPhoneRegex;
+                return false;
+            }
+
+            delete this.errors.phone_number;
+            return true;
+        },
+
+        handlePhoneNumberInput() {
+            this.formData.phone_number = this.normalizePhoneNumber(this.formData.phone_number);
+            this.validatePhoneNumberField();
+            this.queueDraftSave();
+        },
         // Calcul de l'âge à partir de la date de naissance
         calculateAge() {
             if (this.formData.date_of_birth) {
@@ -145,7 +281,7 @@ function app() {
                 }
 
                 if (field.validatePhoneNumber) {
-                    if (!/^[0-9]{9,15}$/.test(this.formData.phone_number)) {
+                    if (!this.isValidVodacomNumber(this.formData[field.name])) {
                         this.errors[field.name] = fieldElement.dataset.errorPhone;
                         isValid = false;
                         return;
@@ -237,7 +373,6 @@ function app() {
                 ];
 
                 isValid = this.validateFields(stepOnefieldsToValidate);
-                console.log("isValid 1: ", isValid);
             } else if (step === 2) { // Validation de l'etape 2
                 const stepTwoFieldsToValidate = [
                     {
@@ -260,7 +395,6 @@ function app() {
                 ];
 
                 isValid = this.validateFields(stepTwoFieldsToValidate);
-                console.log("isValid 2: ", isValid);
             } else if (step === 3) {
                 const stepThreeFieldsToValidate = [
                     {
@@ -291,7 +425,6 @@ function app() {
                 ];
 
                 isValid = this.validateFields(stepThreeFieldsToValidate);
-                console.log("isValid 3: ", isValid);
             } else if (step === 4) {
                 // Dynamically collect file inputs rendered by the server-side document types
                 const fileInputs = document.querySelectorAll('.document-upload');
@@ -306,7 +439,6 @@ function app() {
                 });
 
                 isValid = this.validateFields(stepFourFieldsToValidate);
-                console.log("isValid 4: ", isValid);
             } else if (step === 5) {
                 const stepFiveFieldsToValidate = [
                     {
@@ -330,25 +462,22 @@ function app() {
                 ];
 
                 isValid = this.validateFields(stepFiveFieldsToValidate);
-                console.log("isValid 5: ", isValid);
             }
 
             return isValid;
         },
-
-        // Navigation entre les étapes
+        // Navigation entre les �tapes
         nextStep() {
-            console.log('Validation de l\'étape', this.step);
+            if (this.isSubmitting) return;
+
             if (this.validateStep(this.step)) {
-                console.log('Validation réussie, passage à l\'étape suivante');
                 if (this.step < this.totalSteps) {
                     this.step++;
+                    this.persistDraft();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             } else {
-                // Faire défiler jusqu'au premier champ en erreur
                 const firstError = Object.keys(this.errors)[0];
-                console.log('Première erreur:', firstError);
                 if (firstError) {
                     const errorElement = document.getElementById(firstError);
                     if (errorElement) {
@@ -363,6 +492,7 @@ function app() {
             if (this.isSubmitting) return;
             if (this.step > 1) {
                 this.step--;
+                this.persistDraft();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         },
@@ -376,204 +506,179 @@ function app() {
                 return;
             }
 
+            this.persistDraft();
             this.isSubmitting = true;
+            sessionStorage.setItem(this.submittingStorageKey, '1');
 
-            // Valider avant d'envoyer; si invalide, déverrouiller
             if (!this.validateStep(this.step)) {
                 this.isSubmitting = false;
+                sessionStorage.removeItem(this.submittingStorageKey);
                 return;
             }
 
-            if (this.validateStep(this.step)) {
-                console.log('Formulaire soumis avec succès:', this.formData);
+            const form = document.getElementById('registrationForm');
+            const formData = new FormData(form);
 
-                const form = document.getElementById('registrationForm');
-                const formData = new FormData(form);
-
-                // Ensure a submission token exists and include it - helps server deduplicate
-                if (!this.submissionToken) {
-                    if (window.crypto && window.crypto.randomUUID) {
-                        this.submissionToken = window.crypto.randomUUID();
-                    } else {
-                        this.submissionToken = 'sub_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-                    }
+            if (!this.submissionToken) {
+                if (window.crypto && window.crypto.randomUUID) {
+                    this.submissionToken = window.crypto.randomUUID();
+                } else {
+                    this.submissionToken = 'sub_' + Date.now() + '_' + Math.random().toString(36).slice(2);
                 }
-                formData.append('submission_token', this.submissionToken);
-
-                // Disable submit buttons to avoid accidental double-clicks
-                const submitButtons = Array.from(document.querySelectorAll('button[type="submit"]'));
-                submitButtons.forEach(b => b.setAttribute('disabled', 'disabled'));
-
-                let submissionSucceeded = false;
-
-                fetch(form.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
-                    }
-                })
-                    .then(async (response) => {
-                        // Succès HTTP
-                        if (response.ok) {
-                            const data = await response.json();
-                            console.log('data : ', data);
-                            if (data && data.success) {
-                                // Inject server-provided confirmation strings (rendered with translations)
-                                try {
-                                    if (data.confirmation_message) {
-                                        const msgEl = document.getElementById('confirmation_message');
-                                        if (msgEl) msgEl.textContent = data.confirmation_message;
-                                    }
-                                    if (data.confirmation_details) {
-                                        const detailsEl = document.getElementById('confirmation_details');
-                                        if (detailsEl) detailsEl.textContent = data.confirmation_details;
-                                    }
-                                    if (data.confirmation_coupon) {
-                                        const couponBlock = document.getElementById('confirmation_coupon_block');
-                                        const couponEl = document.getElementById('confirmation_coupon');
-                                        const couponInput = document.getElementById('confirmation_coupon_input');
-                                        if (couponEl) couponEl.textContent = data.confirmation_coupon;
-                                        if (couponInput) couponInput.value = data.confirmation_coupon;
-                                        if (couponBlock) couponBlock.style.display = '';
-                                    }
-                                } catch (err) {
-                                    console.warn('Could not inject confirmation details:', err);
-                                }
-
-                                this.step = 'complete';
-                                submissionSucceeded = true;
-
-                                // Focus the confirmation container for accessibility and to ensure
-                                // the user sees the success panel (small timeout to allow Alpine to
-                                // apply the x-show transition).
-                                setTimeout(() => {
-                                    const conf = document.getElementById('confirmation');
-                                    if (conf) {
-                                        try { conf.focus(); } catch (e) { /* ignore */ }
-                                        conf.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                    }
-                                }, 80);
-                            } else {
-                                // Réponse OK mais pas de success flag
-                                console.warn('Réponse OK sans success:true');
-                            }
-                            return;
-                        }
-
-                        // Erreurs de validation Laravel (422)
-                        if (response.status === 422) {
-                            const payload = await response.json().catch(() => ({}));
-                            const errors = payload.errors || {};
-                            this.errors = {};
-
-                            // Mapping champs serveur -> IDs/front
-                            const fieldIdMap = {
-                                firstname: 'first_name',
-                                lastname: 'last_name',
-                                phone: 'phone_number',
-                                gender: 'gender',
-                                birthdate: 'date_of_birth',
-                                identification_type: 'vulnerability_type',
-
-                                current_city_id: 'current_city_id',
-                                educational_city_id: 'educational_city_id',
-                                full_address: 'full_address',
-
-                                school_name: 'school_name',
-                                study_option: 'option_studied',
-                                other_study_option: 'other_study_option',
-                                diploma_score: 'percentage',
-                                student_code: 'national_exam_code',
-
-                                id: 'id',
-                                diploma: 'diploma',
-                                reco_letter: 'reco_letter',
-
-                                university_field: 'intended_field',
-                                other_university_field: 'other_university_field',
-                                passion: 'intended_field_motivation',
-                                career_goals: 'career_goals',
-                                additional_info: 'additional_infos'
-                            };
-
-                            // Mapping champ -> étape pour focus
-                            const fieldStepMap = {
-                                first_name: 1, last_name: 1, phone_number: 1, gender: 1, date_of_birth: 1, vulnerability_type: 1,
-                                current_city_id: 2, educational_city_id: 2, full_address: 2,
-                                school_name: 3, option_studied: 3, other_study_option: 3, percentage: 3, national_exam_code: 3,
-                                id: 4, diploma: 4, reco_letter: 4,
-                                intended_field: 5, other_university_field: 5, intended_field_motivation: 5, career_goals: 5, additional_infos: 5
-                            };
-
-                            let firstErrorFieldId = null;
-                            Object.keys(errors).forEach((serverField) => {
-                                const fieldId = fieldIdMap[serverField] || serverField;
-                                const messages = errors[serverField];
-                                if (Array.isArray(messages) && messages.length) {
-                                    // Enregistrer pour rendu inline
-                                    this.errors[fieldId] = messages[0];
-                                    if (!firstErrorFieldId) firstErrorFieldId = fieldId;
-                                }
-                            });
-
-                            // Gérer un message d'erreur général non lié à un champ
-                            if (errors.general) {
-                                const generalMsg = Array.isArray(errors.general) && errors.general.length ? errors.general[0] : errors.general;
-                                this.errors.general = generalMsg;
-                                this.$nextTick?.(() => {
-                                    const globalEl = document.getElementById('form-global-error');
-                                    if (globalEl) {
-                                        globalEl.textContent = generalMsg;
-                                        globalEl.classList.remove('hidden');
-                                        globalEl.classList.add('block');
-                                        // Accessibilité: amener le conteneur en vue et lui donner le focus
-                                        globalEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                        if (!globalEl.hasAttribute('tabindex')) {
-                                            globalEl.setAttribute('tabindex', '-1');
-                                        }
-                                        globalEl.focus?.();
-                                    } else if (generalMsg) {
-                                        // Fallback si aucun conteneur dédié n'est présent
-                                        alert(generalMsg);
-                                    }
-                                });
-                            }
-
-                            // Aller à l'étape contenant la première erreur
-                            if (firstErrorFieldId && fieldStepMap[firstErrorFieldId]) {
-                                this.step = fieldStepMap[firstErrorFieldId];
-                            }
-
-                            // Scroll/Focus sur le premier champ en erreur
-                            this.$nextTick?.(() => {
-                                const el = document.getElementById(firstErrorFieldId);
-                                if (el) {
-                                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                    el.focus?.();
-                                }
-                            });
-                            return;
-                        }
-
-                        // Autres erreurs
-                        console.error('Erreur lors de la soumission du formulaire:', response.status, response.statusText);
-                    })
-                    .catch(error => {
-                        console.error('Erreur réseau lors de la soumission du formulaire:', error);
-                    })
-                    .finally(() => {
-                        // Re-enable the submit buttons only if submission did not succeed
-                        if (!submissionSucceeded) {
-                            submitButtons.forEach(b => b.removeAttribute('disabled'));
-                        }
-
-                        this.isSubmitting = false;
-                    });
             }
-        },
+            formData.append('submission_token', this.submissionToken);
 
+            const submitButtons = Array.from(document.querySelectorAll('button[type="submit"]'));
+            submitButtons.forEach(b => b.setAttribute('disabled', 'disabled'));
+
+            let submissionSucceeded = false;
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            })
+                .then(async (response) => {
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data && data.success) {
+                            try {
+                                if (data.confirmation_message) {
+                                    const msgEl = document.getElementById('confirmation_message');
+                                    if (msgEl) msgEl.textContent = data.confirmation_message;
+                                }
+                                if (data.confirmation_details) {
+                                    const detailsEl = document.getElementById('confirmation_details');
+                                    if (detailsEl) detailsEl.textContent = data.confirmation_details;
+                                }
+                                if (data.confirmation_coupon) {
+                                    const couponBlock = document.getElementById('confirmation_coupon_block');
+                                    const couponEl = document.getElementById('confirmation_coupon');
+                                    const couponInput = document.getElementById('confirmation_coupon_input');
+                                    if (couponEl) couponEl.textContent = data.confirmation_coupon;
+                                    if (couponInput) couponInput.value = data.confirmation_coupon;
+                                    if (couponBlock) couponBlock.style.display = '';
+                                }
+                            } catch (err) {
+                                console.warn('Could not inject confirmation details:', err);
+                            }
+
+                            this.step = 'complete';
+                            submissionSucceeded = true;
+                            this.clearDraft();
+
+                            setTimeout(() => {
+                                const conf = document.getElementById('confirmation');
+                                if (conf) {
+                                    try { conf.focus(); } catch (error) { }
+                                    conf.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
+                            }, 80);
+                        }
+                        return;
+                    }
+
+                    if (response.status === 422) {
+                        const payload = await response.json().catch(() => ({}));
+                        const errors = payload.errors || {};
+                        this.errors = {};
+
+                        const fieldIdMap = {
+                            firstname: 'first_name',
+                            lastname: 'last_name',
+                            phone: 'phone_number',
+                            gender: 'gender',
+                            birthdate: 'date_of_birth',
+                            identification_type: 'vulnerability_type',
+                            current_city_id: 'current_city_id',
+                            educational_city_id: 'educational_city_id',
+                            full_address: 'full_address',
+                            school_name: 'school_name',
+                            study_option: 'option_studied',
+                            other_study_option: 'other_study_option',
+                            diploma_score: 'percentage',
+                            student_code: 'national_exam_code',
+                            id: 'id',
+                            diploma: 'diploma',
+                            reco_letter: 'reco_letter',
+                            university_field: 'intended_field',
+                            other_university_field: 'other_university_field',
+                            passion: 'intended_field_motivation',
+                            career_goals: 'career_goals',
+                            additional_info: 'additional_infos'
+                        };
+
+                        const fieldStepMap = {
+                            first_name: 1, last_name: 1, phone_number: 1, gender: 1, date_of_birth: 1, vulnerability_type: 1,
+                            current_city_id: 2, educational_city_id: 2, full_address: 2,
+                            school_name: 3, option_studied: 3, other_study_option: 3, percentage: 3, national_exam_code: 3,
+                            id: 4, diploma: 4, reco_letter: 4,
+                            intended_field: 5, other_university_field: 5, intended_field_motivation: 5, career_goals: 5, additional_infos: 5
+                        };
+
+                        let firstErrorFieldId = null;
+                        Object.keys(errors).forEach((serverField) => {
+                            const fieldId = fieldIdMap[serverField] || serverField;
+                            const messages = errors[serverField];
+                            if (Array.isArray(messages) && messages.length) {
+                                this.errors[fieldId] = messages[0];
+                                if (!firstErrorFieldId) firstErrorFieldId = fieldId;
+                            }
+                        });
+
+                        if (errors.general) {
+                            const generalMsg = Array.isArray(errors.general) && errors.general.length ? errors.general[0] : errors.general;
+                            this.errors.general = generalMsg;
+                            this.$nextTick?.(() => {
+                                const globalEl = document.getElementById('form-global-error');
+                                if (globalEl) {
+                                    globalEl.textContent = generalMsg;
+                                    globalEl.classList.remove('hidden');
+                                    globalEl.classList.add('block');
+                                    globalEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    if (!globalEl.hasAttribute('tabindex')) {
+                                        globalEl.setAttribute('tabindex', '-1');
+                                    }
+                                    globalEl.focus?.();
+                                } else if (generalMsg) {
+                                    alert(generalMsg);
+                                }
+                            });
+                        }
+
+                        if (firstErrorFieldId && fieldStepMap[firstErrorFieldId]) {
+                            this.step = fieldStepMap[firstErrorFieldId];
+                            this.persistDraft();
+                        }
+
+                        this.$nextTick?.(() => {
+                            const el = document.getElementById(firstErrorFieldId);
+                            if (el) {
+                                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                el.focus?.();
+                            }
+                        });
+                        return;
+                    }
+
+                    console.error('Erreur lors de la soumission du formulaire:', response.status, response.statusText);
+                })
+                .catch(error => {
+                    console.error('Erreur r�seau lors de la soumission du formulaire:', error);
+                })
+                .finally(() => {
+                    if (!submissionSucceeded) {
+                        submitButtons.forEach(b => b.removeAttribute('disabled'));
+                        this.persistDraft();
+                    }
+
+                    this.isSubmitting = false;
+                    sessionStorage.removeItem(this.submittingStorageKey);
+                });
+        },
         // Obtention du titre de l'étape
         getStepTitle(step) {
             const titles = {
@@ -587,3 +692,6 @@ function app() {
         }
     };
 }
+
+
+

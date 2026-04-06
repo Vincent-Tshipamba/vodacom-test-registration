@@ -265,7 +265,7 @@
                                 ${applicant.first_name} ${applicant.last_name}
                             </div>
                             <div class="text-gray-500 dark:text-gray-400 text-sm">
-                                ${applicant.diploma_city} ${applicant.registration_code ? '• ' + applicant.registration_code : ''}
+                                ${applicant.registration_code ? '• ' + applicant.registration_code : ''}
                             </div>
                         </a>
                     `;

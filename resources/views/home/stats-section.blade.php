@@ -57,14 +57,14 @@
                     setTimeout(() => {
                         let currentValue = 0;
                         const interval = setInterval(() => {
-                            currentValue++;
+                            currentValue+=10;
                             stat.textContent = `${prefix}${currentValue}${suffix}`;
 
                             if (currentValue >= targetValue) {
                                 clearInterval(interval);
                             }
-                        }, 50);
-                    }, 300);
+                        }, 2);
+                    }, 5);
                 }
             });
         });
