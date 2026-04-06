@@ -4,6 +4,10 @@ return [
     'subtitle' => 'Conditions d\'éligibilité',
     'title' => 'Qui peut postuler ?',
     'description' => 'Avant de soumettre votre candidature, assurez-vous de remplir ces critères essentiels pour être éligible à la bourse Vodacom.',
+    'side_title' => 'Critères à respecter',
+    'side_description' => 'Vérifiez chaque point avant de commencer votre candidature.',
+    'note_title' => 'Important',
+    'note_description' => 'Prenez quelques minutes pour relire l\'ensemble de ces conditions avant de passer au formulaire d\'inscription. Cela vous évitera une candidature incomplète ou non conforme.',
 
     'criteria' => [
         'subscriber' => 'Être un abonné Vodacom et disposer d\'un numéro correctement identifié (les mineurs ne peuvent pas avoir un numéro enregistré en leur nom).',
@@ -17,3 +21,4 @@ return [
 
     'alt_image' => 'Étudiant avec un diplôme et des livres',
 ];
+

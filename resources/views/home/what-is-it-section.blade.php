@@ -1,5 +1,5 @@
-<section id="what-is-it" class="bg-slate-50 dark:bg-slate-900 py-16 sm:py-20">
-    <div class="container mx-auto px-4 py-16 sm:py-20">
+<section id="what-is-it" class="bg-slate-50 dark:bg-slate-900 py-16">
+    <div class="container mx-auto px-4">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="mx-auto max-w-2xl md:text-center">
                 <h2 class="font-display text-3xl tracking-tight text-slate-900 dark:text-white sm:text-4xl">
