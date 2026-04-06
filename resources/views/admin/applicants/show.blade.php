@@ -72,8 +72,18 @@
         <img src="{{ asset('img/OR68WQ0.jpg') }}" alt="cover-image" loading="lazy"
             class="top-0 left-0 z-0 absolute w-full h-36 object-cover">
         <div class="top-[-72px] z-10 relative flex justify-center items-center">
-            <img src="{{ $applicant->documents->photo['url'] }}" alt="{{ $applicant->full_name . ' avatar' }}"
-                loading="lazy" class="bg-[#0a0022] border-4 border-white border-solid rounded-full w-36 h-36 object-cover">
+            <button type="button"
+                onclick="showProfilePhoto('{{ $applicant->documents->photo['url'] }}', '{{ addslashes($applicant->full_name) }}')"
+                class="group relative rounded-full focus:outline-none focus:ring-4 focus:ring-blue-400/30">
+                <img src="{{ $applicant->documents->photo['url'] }}" alt="{{ $applicant->full_name . ' avatar' }}"
+                    loading="lazy"
+                    class="bg-[#0a0022] border-4 border-white border-solid rounded-full w-36 h-36 object-cover transition duration-200 group-hover:scale-[1.02]">
+                <span
+                    class="right-1 bottom-1 absolute inline-flex items-center gap-1 bg-slate-900/80 group-hover:bg-slate-900 px-2.5 py-1 rounded-full text-white text-[11px] transition">
+                    <i data-lucide="zoom-in" class="size-3"></i>
+                    Voir
+                </span>
+            </button>
         </div>
         <div class="mx-auto -mt-12 px-6 md:px-8 w-full max-w-7xl">
             <h3 class="mb-3 font-manrope font-bold text-gray-900 text-3xl text-center leading-10">
@@ -428,7 +438,7 @@
                 @empty
                     <div
                         class="bg-white dark:bg-gray-900 p-5 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-500 dark:text-gray-400">
-                        Aucun changement de statut n'a encore ete enregistre pour ce candidat.
+                        Aucun changement de statut n'a encore été enregistré pour ce candidat.
                     </div>
                 @endforelse
             </div>
@@ -440,6 +450,22 @@
 @endsection
 @section('script')
     <script>
+        function showProfilePhoto(photoUrl, fullName) {
+            Swal.fire({
+                title: `Photo de ${fullName}`,
+                html: `
+                    <div class="flex justify-center">
+                        <img src="${photoUrl}" alt="Photo de ${fullName}" class="max-h-[70vh] w-auto max-w-full rounded-2xl object-contain shadow-lg">
+                    </div>
+                `,
+                showCloseButton: true,
+                showConfirmButton: false,
+                customClass: {
+                    popup: 'custom-swal'
+                }
+            });
+        }
+
         function showDocument(event, fileUrl, fileId, fileType, candidateId, name, isPdf) {
             event.preventDefault();
 
