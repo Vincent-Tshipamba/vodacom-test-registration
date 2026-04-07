@@ -7,15 +7,15 @@ return [
     'stats' => [
         'graduates' => [
             'count' => '500+',
-            'description' => '🎓 Graduates who have received the Vodacom scholarship'
+            'description' => 'Graduates who have received the Vodacom scholarship'
         ],
         'support' => [
             'count' => '100%',
-            'description' => '📝 Comprehensive support throughout the application process'
+            'description' => 'Comprehensive support throughout the application process'
         ],
         'events' => [
             'count' => '50+',
-            'description' => '🚀 Career development events and workshops organized each year'
+            'description' => 'Career development events and workshops organized each year'
         ]
     ]
 ];

@@ -22,10 +22,12 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans antialiased">
-    @include('layouts.navigation')
+<body class="site-gradient-body relative font-sans antialiased">
+    <div aria-hidden="true" class="site-gradient-background animated-background"></div>
+    <div class="relative z-10">
+        @include('layouts.navigation')
 
-    <div class="bg-gray-200 dark:bg-gray-700 mt-[75px] max-w-full min-h-screen">
+    <div class="site-shell mt-[75px] max-w-full min-h-screen">
         @if (session('success'))
             <div class="mx-auto p-4 max-w-5xl">
                 <div class="bg-green-100 px-4 py-3 border border-green-300 rounded text-green-800">
@@ -50,7 +52,7 @@
     </div>
 
     @if (!request()->routeIs('scholarship.register'))
-        <footer class="bg-white dark:bg-gray-900">
+        <footer class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
             <div class="items-center p-4 text-center">
                 <a href="#" class="flex justify-center items-center mb-2 font-semibold text-gray-900 text-2xl">
                     <img src="{{ asset('img/vodacom-seeklogo.png') }}" Loading="lazy" class="h-8" alt="Logo Vodacom">
@@ -62,6 +64,7 @@
             </div>
         </footer>
     @endif
+    </div>
 
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.js" defer></script>
     <script src="https://code.jquery.com/jquery-3.7.1.js"

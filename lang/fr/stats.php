@@ -7,15 +7,15 @@ return [
     'stats' => [
         'graduates' => [
             'count' => '500+',
-            'description' => '🎓 Diplômés ayant déjà obtenu la bourse Vodacom'
+            'description' => 'Diplômés d\'Etat ayant déjà obtenu la bourse Vodaeduc'
         ],
         'support' => [
             'count' => '100%',
-            'description' => '📝 Accompagnement complet tout au long du processus de candidature'
+            'description' => 'Accompagnement complet tout au long du processus de sélection'
         ],
         'events' => [
             'count' => '50+',
-            'description' => '🚀 Événements et ateliers de développement de carrière organisés chaque année'
+            'description' => 'Événements et ateliers organisés chaque année'
         ]
     ]
 ];

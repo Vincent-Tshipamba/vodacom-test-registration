@@ -1,4 +1,4 @@
-<section class="bg-slate-50 dark:bg-slate-900 py-16 sm:py-20">
+<section class="site-section-surface py-16 sm:py-20">
     <div class="container mx-auto px-4 py-16 sm:py-20">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="mx-auto max-w-2xl md:text-center">
@@ -15,7 +15,7 @@
                 @foreach (__('stats.stats') as $stat)
                     <li>
                         <figure
-                            class="relative rounded-2xl bg-white dark:bg-gray-900 p-6 text-center shadow-xl shadow-slate-900/10 dark:shadow-slate-600 hover:scale-110 transition-all duration-300">
+                            class="relative rounded-2xl bg-white dark:bg-gray-900 p-6 text-center shadow-xl shadow-slate-900/10 dark:shadow-slate-800/[0.5] dark:border dark:border-slate-800 hover:scale-110 transition-all duration-300">
                             <blockquote class="relative p-3">
                                 <p class="stats text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
                                     {{ $stat['count'] }}

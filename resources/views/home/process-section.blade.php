@@ -45,10 +45,9 @@ $steps = [
 ];
 @endphp
 
-<section class="bg-gray-50 px-6 py-20 dark:bg-slate-900">
+<section class="px-6 py-20">
     <div class="mx-auto max-w-7xl">
-        <div class="relative overflow-hidden bg-gray-50 dark:bg-slate-900 px-6 py-10 sm:px-8 lg:px-10">
-            <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.16),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(37,99,235,0.10),_transparent_28%)]"></div>
+        <div class="site-section-surface relative overflow-hidden h-full px-6 py-10 sm:px-8 lg:px-10">
 
             <div class="relative text-center">
                 <h2 class="text-3xl font-bold tracking-tight dark:text-white text-gray-800 sm:text-4xl">
@@ -60,20 +59,20 @@ $steps = [
             </div>
 
             <div class="relative mt-14">
-                <div class="absolute left-12 right-12 top-10 hidden h-px bg-gradient-to-r from-sky-500/10 via-sky-400/30 to-sky-500/10 xl:block"></div>
+                <div class="absolute left-12 right-12 top-10 hidden h-px bg-gradient-to-r from-red-500/10 via-red-400/30 to-red-500/10 xl:block"></div>
 
                 <div class="grid gap-6 xl:grid-cols-5">
                     @foreach (__('process.steps') as $key => $step)
                         <article class="group relative">
                             <div class="flex h-full flex-col items-center text-center">
-                                <div class="relative z-10 flex h-20 w-20 items-center justify-center rounded-full border border-sky-500/35 dark:bg-[#08111d] bg-white dark:text-sky-400 text-sky-400 transition duration-300 dark:group-hover:border-sky-300/55 group-hover:border-sky-800/55 dark:group-hover:text-sky-300 group-hover:text-sky-700">
-                                    <span class="text-2xl font-bold tracking-[0.18em]">
+                                <div class="relative z-10 flex md:h-16 md:w-16 h-8 w-12 items-center justify-center rounded-full border border-red-500/35 dark:bg-[#08111d] bg-white dark:text-red-400 text-red-400 transition duration-300 dark:group-hover:border-red-300/55 group-hover:border-red-800/55 dark:group-hover:text-red-300 group-hover:text-red-700">
+                                    <span class="md:text-2xl text-lg font-bold tracking-[0.18em]">
                                         {{ str_pad((string) ($loop->iteration), 2, '0', STR_PAD_LEFT) }}
                                     </span>
                                 </div>
 
-                                <div class="mt-6 flex h-full w-full flex-col rounded-[1.4rem] border dark:border-white/5 border-sky-500/[0.15] dark:bg-white/[0.025] bg-white/[0.4] px-5 py-6 transition duration-300 dark:group-hover:border-sky-400/20 group-hover:border-sky-500/20 dark:group-hover:bg-white/[0.04] group-hover:bg-white group-hover:scale-105">
-                                    <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl dark:bg-sky-500/10 bg-sky-100 text-sky-600 dark:text-sky-400 ring-1 ring-inset ring-sky-400/15">
+                                <div class="mt-6 flex h-full w-full flex-col rounded-[1.4rem] border dark:border-white/5 border-red-500/[0.15] dark:bg-white/[0.025] bg-white/[0.4] px-5 py-6 transition duration-300 dark:group-hover:border-red-400/20 group-hover:border-red-500/20 dark:group-hover:bg-white/[0.04] group-hover:bg-white group-hover:scale-105">
+                                    <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl dark:bg-red-500/10 bg-red-100 text-red-600 dark:text-red-400 ring-1 ring-inset ring-red-400/15">
                                         <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg"
                                             viewBox="{{ $steps[$key]['viewBox'] ?? '0 0 24 24' }}"
                                             fill="{{ $steps[$key]['fill'] ?? 'currentColor' }}"
@@ -89,7 +88,7 @@ $steps = [
                                     <h3 class="text-xl font-semibold dark:text-white text-slate-900">
                                         {{ $step['title'] }}
                                     </h3>
-                                    <p class="mt-3 text-sm leading-7 dark:text-slate-300 text-slate-900">
+                                    <p class="mt-3 text-base font-normal leading-7 dark:text-slate-300 text-slate-900">
                                         {{ $step['description'] }}
                                     </p>
                                 </div>

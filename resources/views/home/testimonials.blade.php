@@ -1,4 +1,4 @@
-<section id="testimonials-section" class="bg-gray-50 dark:bg-slate-900 mx-auto px-6 py-16">
+<section id="testimonials-section" class="site-section-surface relative overflow-hidden mx-auto px-6 py-16">
     <div class="text-center mb-16">
         <h2 class="text-3xl font-bold text-slate-900 dark:text-gray-200 sm:text-4xl">
             {{ __('testimonials.title') }}

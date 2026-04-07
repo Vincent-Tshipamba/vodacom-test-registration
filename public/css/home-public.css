@@ -2,6 +2,46 @@ html {
     scroll-behavior: smooth;
 }
 
+body.site-gradient-body {
+    background-color: #f8fafc;
+}
+
+.site-gradient-background {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-color: #f8fafc;
+    background-image:
+        radial-gradient(circle at top left, rgba(230, 0, 0, 0.12), transparent 45%),
+        radial-gradient(circle at bottom right, rgba(179, 0, 0, 0.10), transparent 40%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(248, 250, 252, 0.94) 100%);
+    background-size: 180% 180%;
+}
+
+.dark .site-gradient-background {
+    background-color: #020617;
+    background-image:
+        radial-gradient(circle at top left, rgba(248, 113, 113, 0.12), transparent 42%),
+        radial-gradient(circle at bottom right, rgba(185, 28, 28, 0.12), transparent 40%),
+        linear-gradient(180deg, rgba(2, 6, 23, 0.94) 0%, rgba(15, 23, 42, 0.97) 100%);
+}
+
+.site-shell {
+    position: relative;
+    z-index: 1;
+    background: transparent !important;
+}
+
+.site-section-surface {
+    background-color: rgba(248, 250, 252, 0.72);
+    backdrop-filter: blur(6px);
+}
+
+.dark .site-section-surface {
+    background-color: rgba(15, 23, 42, 0.72);
+}
+
 /* Diviseur en forme de vague */
 .wave-divider {
     position: relative;
@@ -192,4 +232,24 @@ html {
 
 .marquee-reverse {
     animation-direction: reverse;
+}
+
+.animated-background {
+    background-size: 400%;
+
+    -webkit-animation: animation 3s ease infinite;
+    -moz-animation: animation 3s ease infinite;
+    animation: animation 3s ease infinite;
+}
+
+@keyframes animation {
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
 }

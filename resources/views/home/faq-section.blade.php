@@ -2,7 +2,7 @@
 $questions = __('faq.questions');
 @endphp
 <div
-    class="relative w-full bg-slate-50 dark:bg-slate-900 px-6 pt-10 pb-8 shadow-xl ring-1 ring-gray-900/5 sm:mx-auto sm:rounded-lg sm:px-10">
+    class="site-section-surface relative w-full px-6 pt-10 pb-8 shadow-xl ring-1 ring-gray-900/5 sm:mx-auto sm:px-10">
     <div class="mx-auto px-5">
         <div class="flex flex-col items-center">
             <h2 class="mt-5 text-center text-3xl font-bold tracking-tight sm:text-4xl">{{ __('faq.title') }}</h2>
