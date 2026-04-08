@@ -43,14 +43,14 @@
                             Refusé</span>
                     @elseif ($candidat->application_status == 'SHORTLISTED')
                         <span
-                            class="inline-flex items-center bg-yellow-100 dark:bg-green-500/20 px-2.5 py-0.5 border border-transparent dark:border-transparent rounded font-medium text-red-500 text-xs status">
-                            <svg class="w-4 h-4 text-yellow-600 dark:text-yellow-800" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18 17.94 6M18 18 6.06 6" />
+                            class="inline-flex items-center bg-yellow-100 dark:bg-green-500/20 px-2.5 py-0.5 border border-transparent dark:border-transparent rounded font-medium text-yellow-500 text-xs status">
+                            <svg class="size-3.5 me-1.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.53-9.22a.75.75 0 1 0-1.06-1.06L9 11.19 7.53 9.72a.75.75 0 0 0-1.06 1.06l2 2a.75.75 0 0 0 1.06 0l4-4Z"
+                                    clip-rule="evenodd" />
                             </svg>
-                            Préselectionné</span>
+                            Préselectionné
+                        </span>
                     @elseif ($candidat->application_status == 'INTERVIEW_PASSED')
                         <span
                             class="inline-flex items-center bg-green-100 dark:bg-green-500/20 px-2.5 py-0.5 border border-transparent dark:border-transparent rounded font-medium text-green-500 text-xs status">
@@ -159,14 +159,14 @@
                             style="position: absolute; top: 40px; right: 0px; z-index: 1000;"
                             class="hidden right-0 z-5000 absolute bg-white dark:bg-zink-600 shadow-md mt-1 py-2 rounded-md min-w-[10rem] ltr:text-left rtl:text-right list-none dropdown-menu">
                             @php
-        $id = $candidat->documents->id ?? '';
-        $id_id = $id ? $id['id'] : '';
-        $id_url = $id ? $id['url'] : '';
-        $id_is_pdf = $id ? $id['is_pdf'] : '';
-        $diploma = $candidat->documents->diploma ?? '';
-        $diploma_id = $diploma ? $diploma['id'] : '';
-        $diploma_url = $diploma ? $diploma['url'] : '';
-        $diploma_is_pdf = $diploma ? $diploma['is_pdf'] : '';
+    $id = $candidat->documents->id ?? '';
+    $id_id = $id ? $id['id'] : '';
+    $id_url = $id ? $id['url'] : '';
+    $id_is_pdf = $id ? $id['is_pdf'] : '';
+    $diploma = $candidat->documents->diploma ?? '';
+    $diploma_id = $diploma ? $diploma['id'] : '';
+    $diploma_url = $diploma ? $diploma['url'] : '';
+    $diploma_is_pdf = $diploma ? $diploma['is_pdf'] : '';
                             @endphp
                             <ul class="py-2 text-gray-700 dark:text-gray-200 text-sm"
                                 aria-labelledby="userGridDropdown12-{{ $candidat->id }}">

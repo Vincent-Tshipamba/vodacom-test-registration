@@ -8,12 +8,12 @@
                     <div class="space-y-6 text-slate-700 dark:text-slate-200">
                         <div>
                             <h1 class="font-semibold text-slate-900 dark:text-white text-2xl md:text-3xl">
-                                Votre évaluation a été soumise avec succès !
+                                Ton évaluation a été soumise avec succès !
                             </h1>
                         </div>
 
                         <p class="text-sm md:text-base leading-7">
-                            Merci, {{ $applicant->full_name }}. Votre participation a bien été enregistrée. Vous serez recontacté(e) plus tard en fonction de l'issue du processus de sélection.
+                            Merci, {{ $applicant->full_name }}. Ta participation a bien été enregistrée. Tu seras recontacté(e) plus tard en fonction de l'issue du processus de sélection.
                         </p>
 
                         @if (!empty($summary['auto_submitted']))

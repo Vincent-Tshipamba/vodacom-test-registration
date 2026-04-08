@@ -29,15 +29,14 @@ class ApplicationDocumentController extends Controller
 
         $user = User::find(Auth::id());
 
-        $related_scholar_applicant = $user->applicant;
-        $scholar_id = $related_scholar_applicant->scholar?->id;
-        $agent_id = $user->staff_profile?->id;
+        $scholar_id = $user->scholar?->id;
+        $agent_id = $user->agent?->id;
 
         $application_document = ApplicationDocument::find($request->input('id'));
 
         if (!$application_document) {
             return response()->json([
-                'message' => 'Aucun document correspondant a l\'identifiant envoye n\'a ete trouve',
+                'message' => 'Aucun document correspondant à l\'identifiant envoyé n\'a été trouvé',
             ]);
         }
 

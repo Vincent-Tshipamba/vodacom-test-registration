@@ -12,6 +12,8 @@ use Illuminate\Validation\Rule;
 
 class ApplicantController extends Controller
 {
+    private const REQUIRED_DOCUMENT_TYPES_FOR_SHORTLISTING = ['DIPLOMA', 'ID'];
+
     /**
      * Display a listing of the resource.
      */
@@ -72,7 +74,7 @@ class ApplicantController extends Controller
         ]);
 
         if ($applicant->application_status !== 'PENDING') {
-            return back()->with('error', 'Seuls les candidats en attente peuvent etre traites depuis cette page.');
+            return back()->with('error', 'Seuls les candidats en attente peuvent etre traités depuis cette page.');
         }
 
         $user = Auth::user();
@@ -87,7 +89,15 @@ class ApplicantController extends Controller
         $oldStatus = $applicant->application_status;
 
         if ($oldStatus === $newStatus) {
-            return back()->with('success', 'Le statut de ce candidat est deja a jour.');
+            return back()->with('success', 'Le statut de ce candidat est déjà à jour.');
+        }
+
+        if ($newStatus === 'SHORTLISTED') {
+            $validationError = $this->validateDocumentsBeforeShortlisting($applicant);
+
+            if ($validationError !== null) {
+                return back()->with('error', $validationError);
+            }
         }
 
         $applicant->update([
@@ -103,9 +113,64 @@ class ApplicantController extends Controller
         ]);
 
         $message = $newStatus === 'SHORTLISTED'
-            ? 'Le candidat a ete valide avec succes.'
-            : 'Le candidat a ete marque comme non retenu.';
+            ? 'Le candidat a été validé avec succès.'
+            : 'Le candidat a été marqué comme non retenu.';
 
         return back()->with('success', $message);
+    }
+
+    private function validateDocumentsBeforeShortlisting(Applicant $applicant): ?string
+    {
+        $applicant->loadMissing('application_documents.document_type');
+
+        $documents = $applicant->application_documents;
+
+        if ($documents->isEmpty()) {
+            return 'Impossible de valider ce candidat tant que ses documents n\'ont pas été éxamines.';
+        }
+
+        $firstUnreviewedDocument = $documents->first(function ($document) {
+            return $document->reviewed_at === null;
+        });
+
+        if ($firstUnreviewedDocument !== null) {
+            return sprintf(
+                'Le document "%s" doit être examiné avant de valider ce candidat.',
+                $this->getDocumentLabel($firstUnreviewedDocument->document_type->name ?? null)
+            );
+        }
+
+        foreach (self::REQUIRED_DOCUMENT_TYPES_FOR_SHORTLISTING as $requiredDocumentType) {
+            $document = $documents->first(function ($item) use ($requiredDocumentType) {
+                return ($item->document_type->name ?? null) === $requiredDocumentType;
+            });
+
+            if ($document === null) {
+                return sprintf(
+                    'Le document obligatoire "%s" est introuvable. La validation du candidat est impossible.',
+                    $this->getDocumentLabel($requiredDocumentType)
+                );
+            }
+
+            if ($document->is_valid !== true) {
+                return sprintf(
+                    'Le document obligatoire "%s" est invalide. Corrigez-le ou validez-le avant de valider ce candidat.',
+                    $this->getDocumentLabel($requiredDocumentType)
+                );
+            }
+        }
+
+        return null;
+    }
+
+    private function getDocumentLabel(?string $documentType): string
+    {
+        return match ($documentType) {
+            'DIPLOMA' => 'Diplôme',
+            'ID' => 'Pièce d\'identité',
+            'PHOTO' => 'Photo',
+            'RECO_LETTER' => 'Lettre de recommandation',
+            default => $documentType ?? 'Document inconnu',
+        };
     }
 }

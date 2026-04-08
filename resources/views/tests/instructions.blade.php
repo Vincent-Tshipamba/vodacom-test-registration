@@ -196,7 +196,7 @@
                                 <h3
                                     class="font-semibold text-slate-500 dark:text-slate-400 text-sm uppercase tracking-[0.22em]">
                                     Navigation</h3>
-                                <span class="text-slate-500 dark:text-slate-400 text-xs">Cliquez sur un numéro</span>
+                                <span class="text-slate-500 dark:text-slate-400 text-xs">Clique sur un numéro</span>
                             </div>
                             <div id="question-nav" class="gap-2 grid grid-cols-5 sm:grid-cols-8 xl:grid-cols-5 mt-4"></div>
                         </div>
@@ -209,7 +209,7 @@
                                     class="font-semibold text-slate-900 dark:text-white">{{ $violationCount }}</span> /
                                 {{ $maxViolations }}
                             </p>
-                            <p class="mt-2 leading-6">Ne réduisez pas la fenêtre et ne changez pas d'onglet. Au maximum
+                            <p class="mt-2 leading-6">Ne réduis pas la fenêtre et ne change pas d'onglet. Au maximum
                                 autorisé, tout est soumis automatiquement.</p>
                         </div>
                     </aside>
@@ -433,7 +433,7 @@
                     els.timerProgress.style.width = `${Math.min(100, Math.max(0, (remainingSeconds / totalSeconds) * 100))}%`;
 
                     if (remainingSeconds === 0 && !examState.submitting) {
-                        autoSubmit('Le temps est ecoule. Les reponses sont soumises.');
+                        autoSubmit('Le temps est écoulé. Les réponses sont soumises.');
                     }
                 }
 
@@ -466,7 +466,7 @@
                             setWarning('');
                         }
                     } catch (error) {
-                        setWarning("La sauvegarde automatique a echoue. Verifiez votre connexion avant de continuer.");
+                        setWarning("La sauvegarde automatique a échoué. Vérifie ta connexion avant de continuer.");
                     }
                 }
 
@@ -526,7 +526,7 @@
 
                         if (payload.auto_submitted) {
                             examState.submitting = true;
-                            showViolationModal("Le nombre maximal de tentatives a ete atteint. L'evaluation a ete soumise automatiquement.");
+                            showViolationModal("Le nombre maximal de tentatives a été atteint. L'évaluation a été soumise automatiquement.");
                             els.submitAutoSubmitted.value = '1';
                             window.setTimeout(() => {
                                 window.location.href = payload.redirect_url || examState.redirectUrl;
@@ -534,7 +534,7 @@
                             return;
                         }
 
-                        showViolationModal(`Tentative detectee. Il vous reste ${payload.remaining} tentative(s) avant soumission automatique.`);
+                        showViolationModal(`Tentative détectée. Il te reste ${payload.remaining} tentative(s) avant soumission automatique.`);
                     } catch (error) {
                         // anti-cheat tracking must not break the exam UI
                     }
